@@ -1108,4 +1108,70 @@ async function loadPixels() {
 
 }
 
+function subscribeToPixels() {
+
+  console.log("Подключаем Realtime...");
+
+  supabaseClient
+    .channel("pixel-map")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "pixels"
+      },
+      (payload) => {
+
+        console.log(
+          "Realtime pixel:",
+          payload
+        );
+
+        const pixel = payload.new;
+
+        if (!pixel) {
+          return;
+        }
+
+        const x = pixel.x;
+        const y = pixel.y;
+
+        if (
+          x < 0 ||
+          y < 0 ||
+          x >= MAP_WIDTH ||
+          y >= MAP_HEIGHT
+        ) {
+          return;
+        }
+
+        const colorIndex =
+          COLORS.indexOf(pixel.color);
+
+        if (colorIndex === -1) {
+          return;
+        }
+
+        const index =
+          y * MAP_WIDTH + x;
+
+        pixels[index] =
+          colorIndex;
+
+        drawMap();
+      }
+    )
+    .subscribe((status) => {
+
+      console.log(
+        "Realtime status:",
+        status
+      );
+
+    });
+
+}
+
 initializeAuth();
+subscribeToPixels();
