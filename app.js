@@ -10,6 +10,22 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
+const authScreen =
+  document.getElementById("auth-screen");
+
+const loginForm =
+  document.getElementById("login-form");
+
+const loginEmail =
+  document.getElementById("login-email");
+
+const loginPassword =
+  document.getElementById("login-password");
+
+const loginError =
+  document.getElementById("login-error");
+
+let currentUser = null;
 const MAP_WIDTH = 300;
 const MAP_HEIGHT = 424;
 
@@ -313,7 +329,140 @@ function getColorIndex(color) {
 }
 
 
-function placePixel() {
+async function placePixel() {
+
+  if (
+    selectedX === null ||
+    selectedY === null
+  ) {
+    return;
+  }
+
+
+  if (!currentUser) {
+
+    alert("Сначала войдите в аккаунт.");
+
+    return;
+  }
+
+
+  if (cooldownRemaining > 0) {
+    return;
+  }
+
+
+  placeButton.disabled = true;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "place_pixel",
+      {
+        p_x: selectedX,
+        p_y: selectedY,
+        p_color: selectedColor
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Ошибка установки пикселя:",
+      error
+    );
+
+    alert(
+      "Не удалось поставить пиксель."
+    );
+
+    updatePlaceButton();
+
+    return;
+  }
+
+
+  /*
+   * Сервер сообщил, что cooldown
+   * ещё не закончился.
+   */
+
+  if (!data.success) {
+
+    if (
+      data.reason === "COOLDOWN"
+    ) {
+
+      cooldownRemaining =
+        data.remaining;
+
+      updateCooldown();
+
+      clearInterval(
+        cooldownTimer
+      );
+
+      cooldownTimer =
+        setInterval(() => {
+
+          cooldownRemaining--;
+
+          if (
+            cooldownRemaining <= 0
+          ) {
+
+            cooldownRemaining = 0;
+
+            clearInterval(
+              cooldownTimer
+            );
+
+          }
+
+          updateCooldown();
+
+        }, 1000);
+
+    }
+
+    return;
+  }
+
+
+  /*
+   * Сервер разрешил установку.
+   */
+
+  const index =
+    data.y * MAP_WIDTH +
+    data.x;
+
+  const colorIndex =
+    COLORS.indexOf(
+      data.color
+    );
+
+  pixels[index] =
+    colorIndex;
+
+
+  pixelCount++;
+
+  pixelCountText.textContent =
+    pixelCount.toLocaleString(
+      "ru-RU"
+    );
+
+
+  drawMap();
+
+  startCooldown();
+
+}
 
   if (
     selectedX === null ||
@@ -838,3 +987,157 @@ async function testSupabaseConnection() {
 }
 
 testSupabaseConnection();
+async function initializeAuth() {
+
+  const {
+    data: { session }
+  } =
+    await supabaseClient.auth.getSession();
+
+  if (session) {
+
+    currentUser = session.user;
+
+    authScreen.classList.add("hidden");
+
+    await loadPixels();
+
+  } else {
+
+    authScreen.classList.remove("hidden");
+
+  }
+
+}
+
+
+loginForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+    loginError.textContent = "";
+
+    const email =
+      loginEmail.value.trim();
+
+    const password =
+      loginPassword.value;
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+
+    if (error) {
+
+      console.error(error);
+
+      loginError.textContent =
+        "Неверный логин или пароль";
+
+      return;
+    }
+
+
+    currentUser =
+      data.user;
+
+    authScreen.classList.add("hidden");
+
+    await loadPixels();
+
+  }
+);
+async function loadPixels() {
+
+  const {
+    data: seasons,
+    error: seasonError
+  } =
+    await supabaseClient
+      .from("seasons")
+      .select("id")
+      .eq("is_active", true)
+      .limit(1);
+
+
+  if (
+    seasonError ||
+    !seasons ||
+    seasons.length === 0
+  ) {
+
+    console.error(
+      "Не удалось получить сезон:",
+      seasonError
+    );
+
+    return;
+  }
+
+
+  const seasonId =
+    seasons[0].id;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("pixels")
+      .select("x,y,color")
+      .eq("season_id", seasonId);
+
+
+  if (error) {
+
+    console.error(
+      "Ошибка загрузки карты:",
+      error
+    );
+
+    return;
+  }
+
+
+  pixels.fill(0);
+
+
+  for (const pixel of data) {
+
+    const colorIndex =
+      COLORS.indexOf(pixel.color);
+
+    if (colorIndex === -1) {
+      continue;
+    }
+
+    const index =
+      pixel.y * MAP_WIDTH +
+      pixel.x;
+
+    pixels[index] =
+      colorIndex;
+
+  }
+
+
+  pixelCount =
+    data.length;
+
+  pixelCountText.textContent =
+    pixelCount.toLocaleString("ru-RU");
+
+  drawMap();
+
+}
+
+initializeAuth();
