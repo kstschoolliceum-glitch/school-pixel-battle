@@ -464,43 +464,6 @@ async function placePixel() {
 
 }
 
-  if (
-    selectedX === null ||
-    selectedY === null
-  ) {
-    return;
-  }
-
-  if (cooldownRemaining > 0) {
-    return;
-  }
-
-  const index =
-    selectedY * MAP_WIDTH +
-    selectedX;
-
-  const colorIndex =
-    getColorIndex(selectedColor);
-
-  pixels[index] = colorIndex;
-
-  pixelCount++;
-
-  pixelCountText.textContent =
-    pixelCount.toLocaleString("ru-RU");
-
-  drawMap();
-
-  startCooldown();
-
-}
-
-
-placeButton.addEventListener(
-  "click",
-  placePixel
-);
-
 
 /* -------------------------
    COOLDOWN
