@@ -16,8 +16,37 @@ const authScreen =
 const loginForm =
   document.getElementById("login-form");
 
-const loginEmail =
-  document.getElementById("login-email");
+const loginUsername =
+  document.getElementById("login-username");
+
+const showLogin =
+  document.getElementById("show-login");
+
+const showRegister =
+  document.getElementById("show-register");
+
+const registerForm =
+  document.getElementById("register-form");
+
+const registerInvite =
+  document.getElementById("register-invite");
+
+const registerUsername =
+  document.getElementById("register-username");
+
+const registerNickname =
+  document.getElementById("register-nickname");
+
+const registerPassword =
+  document.getElementById("register-password");
+
+const registerPasswordRepeat =
+  document.getElementById(
+    "register-password-repeat"
+  );
+
+const registerMessage =
+  document.getElementById("register-message");
 
 const loginPassword =
   document.getElementById("login-password");
@@ -955,6 +984,44 @@ async function testSupabaseConnection() {
 }
 
 testSupabaseConnection();
+function openLogin() {
+
+  loginForm.classList.remove("hidden");
+  registerForm.classList.add("hidden");
+
+  showLogin.classList.add("active");
+  showRegister.classList.remove("active");
+
+  loginError.textContent = "";
+  registerMessage.textContent = "";
+
+}
+
+
+function openRegister() {
+
+  loginForm.classList.add("hidden");
+  registerForm.classList.remove("hidden");
+
+  showLogin.classList.remove("active");
+  showRegister.classList.add("active");
+
+  loginError.textContent = "";
+  registerMessage.textContent = "";
+
+}
+
+
+showLogin.addEventListener(
+  "click",
+  openLogin
+);
+
+
+showRegister.addEventListener(
+  "click",
+  openRegister
+);
 async function initializeAuth() {
 
   const {
@@ -987,11 +1054,34 @@ loginForm.addEventListener(
 
     loginError.textContent = "";
 
-    const email =
-      loginEmail.value.trim();
+    const username =
+      loginUsername.value
+        .trim()
+        .toLowerCase();
 
     const password =
       loginPassword.value;
+
+
+    if (
+      !/^[a-z0-9_]{3,20}$/.test(username)
+    ) {
+
+      loginError.textContent =
+        "Проверьте логин.";
+
+     return;
+
+    }
+
+
+/*
+ * Ученик вводит dragon77,
+ * а Supabase получает технический email.
+ */
+
+  const email =
+    `${username}@pixel.local`;
 
     const {
       data,
@@ -1172,6 +1262,218 @@ function subscribeToPixels() {
     });
 
 }
+
+registerForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+    registerMessage.classList.remove(
+      "success"
+    );
+
+    registerMessage.textContent = "";
+
+
+    const inviteCode =
+      registerInvite.value
+        .trim()
+        .toUpperCase();
+
+    const username =
+      registerUsername.value
+        .trim()
+        .toLowerCase();
+
+    const nickname =
+      registerNickname.value.trim();
+
+    const password =
+      registerPassword.value;
+
+    const passwordRepeat =
+      registerPasswordRepeat.value;
+
+
+    if (
+      !/^[a-z0-9_]{3,20}$/.test(username)
+    ) {
+
+      registerMessage.textContent =
+        "Логин: 3–20 латинских букв, цифр или _";
+
+      return;
+    }
+
+
+    if (
+      nickname.length < 3 ||
+      nickname.length > 20
+    ) {
+
+      registerMessage.textContent =
+        "Никнейм должен содержать 3–20 символов.";
+
+      return;
+    }
+
+
+    if (password.length < 8) {
+
+      registerMessage.textContent =
+        "Пароль должен содержать минимум 8 символов.";
+
+      return;
+    }
+
+
+    if (password !== passwordRepeat) {
+
+      registerMessage.textContent =
+        "Пароли не совпадают.";
+
+      return;
+    }
+
+
+    const submitButton =
+      registerForm.querySelector(
+        'button[type="submit"]'
+      );
+
+    submitButton.disabled = true;
+    submitButton.textContent =
+      "СОЗДАЁМ АККАУНТ...";
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.functions.invoke(
+          "register-student",
+          {
+            body: {
+              inviteCode,
+              username,
+              nickname,
+              password
+            }
+          }
+        );
+
+
+      if (error) {
+
+        console.error(
+          "REGISTER FUNCTION ERROR:",
+          error
+        );
+
+        registerMessage.textContent =
+          "Ошибка соединения с сервером.";
+
+        return;
+      }
+
+
+      if (!data?.success) {
+
+        const messages = {
+
+          INVALID_INVITE:
+            "Такого кода приглашения нет.",
+
+          INVITE_ALREADY_USED:
+            "Этот код уже использован.",
+
+          INVITE_EXPIRED:
+            "Срок действия кода закончился.",
+
+          INVITE_REVOKED:
+            "Этот код был отозван.",
+
+          USERNAME_TAKEN:
+            "Этот логин уже занят.",
+
+          NICKNAME_TAKEN:
+            "Этот никнейм уже занят.",
+
+          INVALID_USERNAME:
+            "Недопустимый логин.",
+
+          INVALID_NICKNAME:
+            "Недопустимый никнейм.",
+
+          PASSWORD_TOO_SHORT:
+            "Пароль слишком короткий."
+
+        };
+
+
+        registerMessage.textContent =
+          messages[data.error] ??
+          "Не удалось зарегистрироваться.";
+
+        return;
+      }
+
+
+      registerMessage.classList.add(
+        "success"
+      );
+
+      registerMessage.textContent =
+        "Аккаунт создан! Сейчас можно войти.";
+
+
+      /*
+       * Запоминаем логин и переключаем
+       * пользователя на форму входа.
+       */
+
+      loginUsername.value =
+        username;
+
+      registerForm.reset();
+
+
+      setTimeout(
+        () => {
+
+          openLogin();
+
+          loginUsername.value =
+            username;
+
+          loginPassword.focus();
+
+        },
+        1200
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      registerMessage.textContent =
+        "Не удалось связаться с сервером.";
+
+    } finally {
+
+      submitButton.disabled = false;
+
+      submitButton.textContent =
+        "СОЗДАТЬ АККАУНТ";
+
+    }
+
+  }
+);
 
 initializeAuth();
 subscribeToPixels();
