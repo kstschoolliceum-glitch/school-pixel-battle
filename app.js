@@ -464,6 +464,11 @@ async function placePixel() {
 
 }
 
+placeButton.addEventListener(
+  "click",
+  placePixel
+);
+
 
 /* -------------------------
    COOLDOWN
