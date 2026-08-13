@@ -1,3 +1,15 @@
+const SUPABASE_URL =
+  "https://rfhrqjowxwxpaqmjoikn.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_SictxwPd578IRmRLeoDzBw_7kEG-Y8-";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
 const MAP_WIDTH = 300;
 const MAP_HEIGHT = 424;
 
