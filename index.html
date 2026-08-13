@@ -1,1 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>School Pixel Battle</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="logo">
+      👑 <span>PIXEL <b>BATTLE</b></span>
+    </div>
+
+    <div class="season">
+      Неделя #1
+    </div>
+  </header>
+
+
+  <main class="game">
+
+    <section class="map-section">
+
+      <div class="map-header">
+        <span>🎨 Карта</span>
+
+        <span id="coordinates">
+          Выберите пиксель
+        </span>
+      </div>
+
+
+      <div id="canvas-container">
+
+        <canvas id="pixel-canvas"></canvas>
+
+      </div>
+
+
+      <div class="controls">
+
+        <div class="palette" id="palette">
+
+          <button class="color active"
+                  data-color="#ef4444"
+                  style="background:#ef4444">
+          </button>
+
+          <button class="color"
+                  data-color="#f97316"
+                  style="background:#f97316">
+          </button>
+
+          <button class="color"
+                  data-color="#facc15"
+                  style="background:#facc15">
+          </button>
+
+          <button class="color"
+                  data-color="#22c55e"
+                  style="background:#22c55e">
+          </button>
+
+          <button class="color"
+                  data-color="#06b6d4"
+                  style="background:#06b6d4">
+          </button>
+
+          <button class="color"
+                  data-color="#3b82f6"
+                  style="background:#3b82f6">
+          </button>
+
+          <button class="color"
+                  data-color="#8b5cf6"
+                  style="background:#8b5cf6">
+          </button>
+
+          <button class="color"
+                  data-color="#ec4899"
+                  style="background:#ec4899">
+          </button>
+
+          <button class="color light"
+                  data-color="#ffffff"
+                  style="background:#ffffff">
+          </button>
+
+          <button class="color"
+                  data-color="#111111"
+                  style="background:#111111">
+          </button>
+
+        </div>
+
+
+        <button id="place-button" disabled>
+          ПОСТАВИТЬ ПИКСЕЛЬ
+        </button>
+
+
+        <div class="cooldown">
+          ⏳
+          <span id="cooldown-text">
+            Пиксель готов
+          </span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <aside class="sidebar">
+
+      <div class="panel">
+
+        <h2>🏆 Рейтинг классов</h2>
+
+        <div class="ranking">
+
+          <div>
+            <span>🥇 7А</span>
+            <strong>0</strong>
+          </div>
+
+          <div>
+            <span>🥈 8Б</span>
+            <strong>0</strong>
+          </div>
+
+          <div>
+            <span>🥉 9А</span>
+            <strong>0</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="panel">
+
+        <h2>📊 Эта неделя</h2>
+
+        <div class="stats">
+
+          <p>
+            Пикселей поставлено
+            <strong id="pixel-count">0</strong>
+          </p>
+
+          <p>
+            Размер карты
+            <strong>300 × 424</strong>
+          </p>
+
+          <p>
+            Участников онлайн
+            <strong>1</strong>
+          </p>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+  </main>
+
+
+  <nav class="mobile-nav">
+
+    <button class="selected">
+      🗺️
+      <span>Карта</span>
+    </button>
+
+    <button>
+      🏆
+      <span>Рейтинг</span>
+    </button>
+
+    <button>
+      👤
+      <span>Профиль</span>
+    </button>
+
+  </nav>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
