@@ -10,7 +10,38 @@
 </head>
 
 <body>
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">👑</div>
 
+    <h1>PIXEL <span>BATTLE</span></h1>
+    <p>Тестовый вход</p>
+
+    <form id="login-form">
+      <input
+        id="login-email"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+        required
+      >
+
+      <input
+        id="login-password"
+        type="password"
+        placeholder="Пароль"
+        autocomplete="current-password"
+        required
+      >
+
+      <button type="submit">
+        ВОЙТИ
+      </button>
+
+      <div id="login-error"></div>
+    </form>
+  </div>
+</div>
   <header class="header">
     <div class="logo">
       👑 <span>PIXEL <b>BATTLE</b></span>
@@ -22,7 +53,7 @@
   </header>
 
 
-  <main class="game">
+  <main class="game" id="game">
 
     <section class="map-section">
 
