@@ -12,17 +12,41 @@
 <body>
 <div id="auth-screen">
   <div class="auth-card">
+
     <div class="auth-logo">👑</div>
 
-    <h1>PIXEL <span>BATTLE</span></h1>
-    <p>Тестовый вход</p>
+    <h1>
+      PIXEL <span>BATTLE</span>
+    </h1>
+
+    <div class="auth-tabs">
+      <button
+        id="show-login"
+        class="auth-tab active"
+        type="button"
+      >
+        Вход
+      </button>
+
+      <button
+        id="show-register"
+        class="auth-tab"
+        type="button"
+      >
+        Регистрация
+      </button>
+    </div>
+
+
+    <!-- ВХОД -->
 
     <form id="login-form">
+
       <input
-        id="login-email"
-        type="email"
-        placeholder="Email"
-        autocomplete="email"
+        id="login-username"
+        type="text"
+        placeholder="Логин"
+        autocomplete="username"
         required
       >
 
@@ -38,8 +62,80 @@
         ВОЙТИ
       </button>
 
-      <div id="login-error"></div>
+      <div
+        id="login-error"
+        class="auth-message"
+      ></div>
+
     </form>
+
+
+    <!-- РЕГИСТРАЦИЯ -->
+
+    <form
+      id="register-form"
+      class="hidden"
+    >
+
+      <input
+        id="register-invite"
+        type="text"
+        placeholder="Код приглашения"
+        autocomplete="off"
+        required
+      >
+
+      <input
+        id="register-username"
+        type="text"
+        placeholder="Логин"
+        autocomplete="username"
+        minlength="3"
+        maxlength="20"
+        required
+      >
+
+      <small>
+        Латинские буквы, цифры и _
+      </small>
+
+      <input
+        id="register-nickname"
+        type="text"
+        placeholder="Никнейм"
+        maxlength="20"
+        required
+      >
+
+      <input
+        id="register-password"
+        type="password"
+        placeholder="Пароль — минимум 8 символов"
+        autocomplete="new-password"
+        minlength="8"
+        required
+      >
+
+      <input
+        id="register-password-repeat"
+        type="password"
+        placeholder="Повторите пароль"
+        autocomplete="new-password"
+        minlength="8"
+        required
+      >
+
+      <button type="submit">
+        СОЗДАТЬ АККАУНТ
+      </button>
+
+      <div
+        id="register-message"
+        class="auth-message"
+      ></div>
+
+    </form>
+
   </div>
 </div>
   <header class="header">
