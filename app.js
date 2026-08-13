@@ -809,3 +809,32 @@ requestAnimationFrame(() => {
 });
 
 updateCooldown();
+async function testSupabaseConnection() {
+
+  console.log("Проверяем Supabase...");
+
+  const { data, error } =
+    await supabaseClient
+      .from("seasons")
+      .select("*")
+      .eq("is_active", true)
+      .limit(1);
+
+  if (error) {
+
+    console.error(
+      "Ошибка Supabase:",
+      error
+    );
+
+    return;
+  }
+
+  console.log(
+    "Supabase подключён!",
+    data
+  );
+
+}
+
+testSupabaseConnection();
