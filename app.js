@@ -1194,6 +1194,7 @@ async function loadMyProfile() {
 }
 let activeSeason = null;
 let seasonCountdownTimer = null;
+let seasonCheckTimer = null;
 
 function startSeasonCountdown() {
 
@@ -1383,6 +1384,175 @@ async function loadActiveSeason() {
   return activeSeason;
 
 }
+async function checkForSeasonChange() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("seasons")
+      .select(`
+        id,
+        number,
+        title,
+        map_width,
+        map_height,
+        starts_at,
+        ends_at,
+        status
+      `)
+      .eq("is_active", true)
+      .eq("status", "active")
+      .lte(
+        "starts_at",
+        new Date().toISOString()
+      )
+      .gt(
+        "ends_at",
+        new Date().toISOString()
+      )
+      .order(
+        "starts_at",
+        {
+          ascending: false
+        }
+      )
+      .limit(1);
+
+
+  if (error) {
+
+    console.error(
+      "SEASON CHECK ERROR:",
+      error
+    );
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+    return;
+  }
+
+
+  const serverSeason =
+    data[0];
+
+
+  /*
+   * Первый запуск — просто запоминаем сезон.
+   */
+
+  if (!activeSeason) {
+
+    activeSeason =
+      serverSeason;
+
+    startSeasonCountdown();
+
+    return;
+  }
+
+
+  /*
+   * Сезон тот же — ничего не делаем.
+   */
+
+  if (
+    serverSeason.id ===
+    activeSeason.id
+  ) {
+    return;
+  }
+
+
+  /*
+   * Сервер переключил неделю.
+   */
+
+  console.log(
+    `Смена сезона: #${activeSeason.number} → #${serverSeason.number}`
+  );
+
+
+  activeSeason =
+    serverSeason;
+
+
+  // Убираем старую карту из памяти браузера.
+
+  pixels.fill(0);
+
+  selectedX = null;
+  selectedY = null;
+
+  coordinatesText.textContent =
+    "Выберите пиксель";
+
+
+  // Обновляем название недели.
+
+  const seasonElement =
+    document.getElementById(
+      "season-info"
+    );
+
+  seasonElement.textContent =
+    `Неделя #${activeSeason.number}`;
+
+
+  // Перезапускаем таймер.
+
+  startSeasonCountdown();
+
+
+  // Загружаем данные новой недели.
+
+  await loadPixels();
+  await loadClassRanking();
+  await loadMyProfile();
+
+
+  drawMap();
+
+
+  console.log(
+    "Новая неделя загружена."
+  );
+
+}
+function startSeasonWatcher() {
+
+  clearInterval(
+    seasonCheckTimer
+  );
+
+
+  /*
+   * Проверяем раз в минуту.
+   *
+   * Cron переключает сезон максимум
+   * раз в 5 минут, поэтому чаще
+   * проверять нет необходимости.
+   */
+
+  seasonCheckTimer =
+    setInterval(
+      checkForSeasonChange,
+      60000
+    );
+
+}
 async function initializeAuth() {
 
   const {
@@ -1400,6 +1570,8 @@ async function initializeAuth() {
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
+
+    startSeasonWatcher();
   } else {
 
     authScreen.classList.remove("hidden");
@@ -1476,6 +1648,8 @@ loginForm.addEventListener(
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
+
+    startSeasonWatcher();
   }
 );
 async function loadPixels() {
@@ -1869,6 +2043,12 @@ logoutButton.addEventListener(
 
 
     currentUser = null;
+
+    clearInterval(
+  seasonCheckTimer
+);
+
+seasonCheckTimer = null;
 
     openLogin();
 
