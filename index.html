@@ -373,9 +373,9 @@
     </button>
 
     <button
+      id="admin-students-tab"
       class="admin-tab"
       type="button"
-      disabled
     >
       👥 Ученики
     </button>
@@ -441,7 +441,89 @@
     </div>
 
   </div>
+<div
+  id="admin-students-content"
+  class="admin-students-content hidden"
+>
 
+  <div class="admin-section-title">
+    <h2>👥 Ученики</h2>
+    <p>
+      Зарегистрированные участники Pixel Battle
+    </p>
+  </div>
+
+
+  <div class="students-toolbar">
+
+    <input
+      id="students-search"
+      type="search"
+      placeholder="🔎 Логин или никнейм"
+      autocomplete="off"
+    >
+
+
+    <select id="students-class-filter">
+      <option value="">
+        Все классы
+      </option>
+    </select>
+
+
+    <select id="students-status-filter">
+      <option value="">
+        Все статусы
+      </option>
+
+      <option value="active">
+        Активные
+      </option>
+
+      <option value="banned">
+        Заблокированные
+      </option>
+    </select>
+
+  </div>
+
+
+  <div class="students-summary">
+    Найдено учеников:
+    <strong id="students-count">0</strong>
+  </div>
+
+
+  <div class="students-table-wrapper">
+
+    <table class="students-table">
+
+      <thead>
+        <tr>
+          <th>Логин</th>
+          <th>Никнейм</th>
+          <th>Класс</th>
+          <th>За неделю</th>
+          <th>Всего</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+
+      <tbody id="students-table-body">
+
+        <tr>
+          <td colspan="6">
+            Загрузка...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
   <div
   id="admin-invites-content"
   class="admin-invites-content hidden"
