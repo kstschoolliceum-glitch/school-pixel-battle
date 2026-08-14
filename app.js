@@ -1193,8 +1193,115 @@ async function loadMyProfile() {
 
 }
 let activeSeason = null;
+let seasonCountdownTimer = null;
+
+function startSeasonCountdown() {
+
+  clearInterval(
+    seasonCountdownTimer
+  );
 
 
+  const countdownElement =
+    document.getElementById(
+      "season-countdown"
+    );
+
+
+  function updateCountdown() {
+
+    if (!activeSeason) {
+
+      countdownElement.textContent = "";
+
+      return;
+    }
+
+
+    const endTime =
+      new Date(
+        activeSeason.ends_at
+      ).getTime();
+
+    const now =
+      Date.now();
+
+    let difference =
+      endTime - now;
+
+
+    if (difference <= 0) {
+
+      countdownElement.textContent =
+        "Сезон завершён";
+
+      clearInterval(
+        seasonCountdownTimer
+      );
+
+      return;
+    }
+
+
+    const days =
+      Math.floor(
+        difference /
+        (1000 * 60 * 60 * 24)
+      );
+
+
+    difference %=
+      1000 * 60 * 60 * 24;
+
+
+    const hours =
+      Math.floor(
+        difference /
+        (1000 * 60 * 60)
+      );
+
+
+    difference %=
+      1000 * 60 * 60;
+
+
+    const minutes =
+      Math.floor(
+        difference /
+        (1000 * 60)
+      );
+
+
+    if (days > 0) {
+
+      countdownElement.textContent =
+        `Осталось ${days} дн. ${hours} ч.`;
+
+    } else if (hours > 0) {
+
+      countdownElement.textContent =
+        `Осталось ${hours} ч. ${minutes} мин.`;
+
+    } else {
+
+      countdownElement.textContent =
+        `Осталось ${minutes} мин.`;
+
+    }
+
+  }
+
+
+  updateCountdown();
+
+
+  seasonCountdownTimer =
+    setInterval(
+      updateCountdown,
+      30000
+    );
+
+}
 async function loadActiveSeason() {
 
   const seasonElement =
@@ -1271,6 +1378,7 @@ async function loadActiveSeason() {
     activeSeason
   );
 
+  startSeasonCountdown();
 
   return activeSeason;
 
