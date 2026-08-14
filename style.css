@@ -831,3 +831,25 @@ body {
     font-size: 10px;
   }
 }
+/* ---------- ADMIN BUTTON ---------- */
+
+#admin-button {
+  min-height: 44px;
+
+  border: 1px solid #6d28d9;
+  border-radius: 8px;
+
+  background: #20133d;
+  color: #c4b5fd;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#admin-button:hover {
+  background: #2e1958;
+}
+
+#admin-button.hidden {
+  display: none;
+}
