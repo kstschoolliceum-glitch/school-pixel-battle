@@ -492,7 +492,7 @@ async function placePixel() {
   startCooldown();
 
   loadClassRanking();
-
+  loadMyProfile();
 }
 
 placeButton.addEventListener(
@@ -1124,6 +1124,74 @@ async function loadClassRanking() {
   );
 
 }
+async function loadMyProfile() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_my_profile"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "PROFILE ERROR:",
+      error
+    );
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+    return;
+  }
+
+
+  const profile =
+    data[0];
+
+
+  document.getElementById(
+    "profile-nickname"
+  ).textContent =
+    profile.nickname;
+
+
+  document.getElementById(
+    "profile-class"
+  ).textContent =
+    profile.class_name ?? "—";
+
+
+  document.getElementById(
+    "profile-username"
+  ).textContent =
+    profile.username ?? "—";
+
+
+  document.getElementById(
+    "profile-weekly-pixels"
+  ).textContent =
+    Number(
+      profile.weekly_pixels
+    ).toLocaleString("ru-RU");
+
+
+  document.getElementById(
+    "profile-total-pixels"
+  ).textContent =
+    Number(
+      profile.total_pixels
+    ).toLocaleString("ru-RU");
+
+}
 async function initializeAuth() {
 
   const {
@@ -1139,7 +1207,7 @@ async function initializeAuth() {
 
     await loadPixels();
     await loadClassRanking();
-
+    await loadMyProfile();
   } else {
 
     authScreen.classList.remove("hidden");
@@ -1214,7 +1282,7 @@ loginForm.addEventListener(
 
     await loadPixels();
     await loadClassRanking();
-
+    await loadMyProfile();
   }
 );
 async function loadPixels() {
@@ -1580,6 +1648,56 @@ registerForm.addEventListener(
 
   }
 );
+const logoutButton =
+  document.getElementById(
+    "logout-button"
+  );
 
+
+logoutButton.addEventListener(
+  "click",
+  async () => {
+
+    logoutButton.disabled = true;
+    logoutButton.textContent =
+      "ВЫХОД...";
+
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+      console.error(
+        "LOGOUT ERROR:",
+        error
+      );
+
+      logoutButton.disabled = false;
+      logoutButton.textContent =
+        "ВЫЙТИ ИЗ АККАУНТА";
+
+      return;
+    }
+
+
+    currentUser = null;
+
+    openLogin();
+
+    authScreen.classList.remove(
+      "hidden"
+    );
+
+
+    logoutButton.disabled = false;
+    logoutButton.textContent =
+      "ВЫЙТИ ИЗ АККАУНТА";
+
+  }
+);
 initializeAuth();
 subscribeToPixels();
