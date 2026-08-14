@@ -2417,6 +2417,10 @@ const adminInvitesContent =
 
 
 function openAdminOverview() {
+  
+  adminStudentsContent.classList.add(
+    "hidden"
+  );
 
   adminOverviewContent.classList.remove(
     "hidden"
@@ -2443,6 +2447,10 @@ async function openAdminInvites() {
     return;
   }
 
+  adminStudentsContent.classList.add(
+    "hidden"
+  );
+  
   adminOverviewContent.classList.add(
     "hidden"
   );
@@ -2976,5 +2984,366 @@ async function loadInviteStats() {
     body.appendChild(row);
   }
 }
+const adminStudentsTab =
+  document.getElementById(
+    "admin-students-tab"
+  );
+
+const adminStudentsContent =
+  document.getElementById(
+    "admin-students-content"
+  );
+
+const studentsSearch =
+  document.getElementById(
+    "students-search"
+  );
+
+const studentsClassFilter =
+  document.getElementById(
+    "students-class-filter"
+  );
+
+const studentsStatusFilter =
+  document.getElementById(
+    "students-status-filter"
+  );
+
+
+let adminStudents = [];
+async function loadAdminStudents() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "admin_get_students"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ADMIN STUDENTS ERROR:",
+      error
+    );
+
+    return;
+  }
+
+
+  adminStudents =
+    data ?? [];
+
+
+  fillStudentsClassFilter();
+
+  renderAdminStudents();
+
+}
+function fillStudentsClassFilter() {
+
+  const currentValue =
+    studentsClassFilter.value;
+
+
+  const classes =
+    [
+      ...new Map(
+        adminStudents
+          .filter(
+            item =>
+              item.class_id &&
+              item.class_name
+          )
+          .map(
+            item => [
+              String(item.class_id),
+              item.class_name
+            ]
+          )
+      ).entries()
+    ];
+
+
+  studentsClassFilter.innerHTML =
+    '<option value="">Все классы</option>';
+
+
+  for (
+    const [id, name]
+    of classes
+  ) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value = id;
+    option.textContent = name;
+
+    studentsClassFilter.appendChild(
+      option
+    );
+
+  }
+
+
+  studentsClassFilter.value =
+    currentValue;
+
+}
+function renderAdminStudents() {
+
+  const body =
+    document.getElementById(
+      "students-table-body"
+    );
+
+  const countElement =
+    document.getElementById(
+      "students-count"
+    );
+
+
+  const search =
+    studentsSearch.value
+      .trim()
+      .toLowerCase();
+
+
+  const classId =
+    studentsClassFilter.value;
+
+
+  const status =
+    studentsStatusFilter.value;
+
+
+  const filtered =
+    adminStudents.filter(
+      student => {
+
+        const matchesSearch =
+          !search ||
+          String(
+            student.username ?? ""
+          )
+            .toLowerCase()
+            .includes(search) ||
+          String(
+            student.nickname ?? ""
+          )
+            .toLowerCase()
+            .includes(search);
+
+
+        const matchesClass =
+          !classId ||
+          String(student.class_id) ===
+            classId;
+
+
+        let matchesStatus = true;
+
+
+        if (status === "active") {
+          matchesStatus =
+            !student.banned;
+        }
+
+
+        if (status === "banned") {
+          matchesStatus =
+            student.banned;
+        }
+
+
+        return (
+          matchesSearch &&
+          matchesClass &&
+          matchesStatus
+        );
+
+      }
+    );
+
+
+  countElement.textContent =
+    filtered.length.toLocaleString(
+      "ru-RU"
+    );
+
+
+  body.innerHTML = "";
+
+
+  if (filtered.length === 0) {
+
+    const row =
+      document.createElement("tr");
+
+    const cell =
+      document.createElement("td");
+
+    cell.colSpan = 6;
+    cell.textContent =
+      "Ученики не найдены";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+
+    return;
+  }
+
+
+  for (const student of filtered) {
+
+    const row =
+      document.createElement("tr");
+
+
+    const username =
+      document.createElement("td");
+
+    username.textContent =
+      student.username ?? "—";
+
+
+    const nickname =
+      document.createElement("td");
+
+    nickname.textContent =
+      student.nickname ?? "—";
+
+
+    const className =
+      document.createElement("td");
+
+    className.textContent =
+      student.class_name ?? "—";
+
+
+    const weekly =
+      document.createElement("td");
+
+    weekly.textContent =
+      Number(
+        student.weekly_pixels ?? 0
+      ).toLocaleString("ru-RU");
+
+
+    const total =
+      document.createElement("td");
+
+    total.textContent =
+      Number(
+        student.total_pixels ?? 0
+      ).toLocaleString("ru-RU");
+
+
+    const statusCell =
+      document.createElement("td");
+
+
+    if (student.banned) {
+
+      statusCell.textContent =
+        "🔴 Заблокирован";
+
+      statusCell.classList.add(
+        "student-status-banned"
+      );
+
+    } else {
+
+      statusCell.textContent =
+        "🟢 Активен";
+
+      statusCell.classList.add(
+        "student-status-active"
+      );
+
+    }
+
+
+    row.append(
+      username,
+      nickname,
+      className,
+      weekly,
+      total,
+      statusCell
+    );
+
+
+    body.appendChild(row);
+
+  }
+
+}
+studentsSearch.addEventListener(
+  "input",
+  renderAdminStudents
+);
+
+studentsClassFilter.addEventListener(
+  "change",
+  renderAdminStudents
+);
+
+studentsStatusFilter.addEventListener(
+  "change",
+  renderAdminStudents
+);
+async function openAdminStudents() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  adminOverviewContent.classList.add(
+    "hidden"
+  );
+
+  adminInvitesContent.classList.add(
+    "hidden"
+  );
+
+  adminStudentsContent.classList.remove(
+    "hidden"
+  );
+
+
+  adminOverviewTab.classList.remove(
+    "active"
+  );
+
+  adminInvitesTab.classList.remove(
+    "active"
+  );
+
+  adminStudentsTab.classList.add(
+    "active"
+  );
+
+
+  await loadAdminStudents();
+
+}
+
+
+adminStudentsTab.addEventListener(
+  "click",
+  openAdminStudents
+);
 initializeAuth();
 subscribeToPixels();
