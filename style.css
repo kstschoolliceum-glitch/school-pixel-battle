@@ -853,3 +853,148 @@ body {
 #admin-button.hidden {
   display: none;
 }
+/* ==========================================
+   ADMIN PANEL
+========================================== */
+
+.admin-section {
+  display: none;
+
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+body.admin-view .admin-section {
+  display: block;
+}
+
+body.admin-view .map-section,
+body.admin-view .sidebar {
+  display: none;
+}
+
+.admin-header {
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.admin-header h1 {
+  margin: 0 0 4px;
+}
+
+.admin-header p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+#admin-close-button {
+  min-height: 42px;
+  padding: 0 15px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  background: #111827;
+  color: white;
+
+  cursor: pointer;
+}
+
+.admin-tabs {
+  margin-bottom: 20px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-tab {
+  min-height: 40px;
+  padding: 0 14px;
+
+  border: 1px solid #273247;
+  border-radius: 8px;
+
+  background: #111827;
+  color: #94a3b8;
+
+  font-weight: 700;
+}
+
+.admin-tab.active {
+  background: #6d28d9;
+  color: white;
+}
+
+.admin-tab:disabled {
+  opacity: 0.4;
+}
+
+.admin-overview {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.admin-card {
+  min-height: 125px;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.admin-card span {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.admin-card strong {
+  font-size: 25px;
+  color: white;
+}
+
+
+@media (max-width: 850px) {
+
+  .admin-overview {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .admin-section {
+    padding: 12px 10px 80px;
+  }
+
+  .admin-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-overview {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-card {
+    min-height: 105px;
+  }
+
+}
