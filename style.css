@@ -809,3 +809,25 @@ body {
   }
 
 }
+.season {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#season-countdown {
+  color: #a78bfa;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .season {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  #season-countdown {
+    font-size: 10px;
+  }
+}
