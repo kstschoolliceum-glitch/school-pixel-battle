@@ -365,6 +365,7 @@
   <div class="admin-tabs">
 
     <button
+      id="admin-overview-tab"
       class="admin-tab active"
       type="button"
     >
@@ -380,9 +381,9 @@
     </button>
 
     <button
+      id="admin-invites-tab"
       class="admin-tab"
       type="button"
-      disabled
     >
       🎟️ Приглашения
     </button>
@@ -406,7 +407,10 @@
   </div>
 
 
-  <div class="admin-overview">
+  <div
+  class="admin-overview"
+  id="admin-overview-content"
+>
 
     <div class="admin-card">
       <span>🟢 Активный сезон</span>
@@ -438,6 +442,127 @@
 
   </div>
 
+  <div
+  id="admin-invites-content"
+  class="admin-invites-content hidden"
+>
+
+  <div class="admin-section-title">
+    <h2>🎟️ Коды приглашений</h2>
+
+    <p>
+      Создание одноразовых кодов регистрации
+      для учеников.
+    </p>
+  </div>
+
+
+  <div class="invite-generator">
+
+    <div class="invite-generator-form">
+
+      <label>
+        Класс
+
+        <select id="invite-class-select">
+          <option value="">
+            Загрузка классов...
+          </option>
+        </select>
+      </label>
+
+
+      <label>
+        Количество кодов
+
+        <input
+          id="invite-count"
+          type="number"
+          min="1"
+          max="100"
+          value="10"
+        >
+      </label>
+
+
+      <label>
+        Срок действия
+
+        <select id="invite-expiration">
+          <option value="7">
+            7 дней
+          </option>
+
+          <option
+            value="30"
+            selected
+          >
+            30 дней
+          </option>
+
+          <option value="90">
+            90 дней
+          </option>
+        </select>
+      </label>
+
+
+      <button
+        id="generate-invites-button"
+        type="button"
+      >
+        СГЕНЕРИРОВАТЬ КОДЫ
+      </button>
+
+
+      <div
+        id="invite-generator-message"
+        class="admin-message"
+      ></div>
+
+    </div>
+
+
+    <div
+      id="generated-invites"
+      class="generated-invites hidden"
+    >
+
+      <div class="generated-invites-header">
+
+        <div>
+          <strong id="generated-invites-title">
+            Созданные коды
+          </strong>
+
+          <p>
+            Сохраните их сейчас. В базе
+            хранятся только хэши кодов.
+          </p>
+        </div>
+
+
+        <button
+          id="copy-invites-button"
+          type="button"
+        >
+          📋 Копировать все
+        </button>
+
+      </div>
+
+
+      <div
+        id="generated-invites-list"
+        class="generated-invites-list"
+      ></div>
+
+    </div>
+
+  </div>
+
+</div>
+  
 </section>
   </main>
 
