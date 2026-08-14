@@ -1699,5 +1699,103 @@ logoutButton.addEventListener(
 
   }
 );
+const mobileMapButton =
+  document.getElementById(
+    "mobile-map-button"
+  );
+
+const mobileRankingButton =
+  document.getElementById(
+    "mobile-ranking-button"
+  );
+
+const mobileProfileButton =
+  document.getElementById(
+    "mobile-profile-button"
+  );
+
+
+function setMobileView(view) {
+
+  document.body.classList.remove(
+    "mobile-ranking-view",
+    "mobile-profile-view"
+  );
+
+
+  mobileMapButton.classList.remove(
+    "selected"
+  );
+
+  mobileRankingButton.classList.remove(
+    "selected"
+  );
+
+  mobileProfileButton.classList.remove(
+    "selected"
+  );
+
+
+  if (view === "ranking") {
+
+    document.body.classList.add(
+      "mobile-ranking-view"
+    );
+
+    mobileRankingButton.classList.add(
+      "selected"
+    );
+
+    loadClassRanking();
+
+    return;
+  }
+
+
+  if (view === "profile") {
+
+    document.body.classList.add(
+      "mobile-profile-view"
+    );
+
+    mobileProfileButton.classList.add(
+      "selected"
+    );
+
+    loadMyProfile();
+
+    return;
+  }
+
+
+  mobileMapButton.classList.add(
+    "selected"
+  );
+
+}
+
+
+mobileMapButton.addEventListener(
+  "click",
+  () => {
+    setMobileView("map");
+  }
+);
+
+
+mobileRankingButton.addEventListener(
+  "click",
+  () => {
+    setMobileView("ranking");
+  }
+);
+
+
+mobileProfileButton.addEventListener(
+  "click",
+  () => {
+    setMobileView("profile");
+  }
+);
 initializeAuth();
 subscribeToPixels();
