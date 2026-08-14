@@ -2395,5 +2395,377 @@ async function loadAdminOverview() {
   }
 
 }
+const adminOverviewTab =
+  document.getElementById(
+    "admin-overview-tab"
+  );
+
+const adminInvitesTab =
+  document.getElementById(
+    "admin-invites-tab"
+  );
+
+const adminOverviewContent =
+  document.getElementById(
+    "admin-overview-content"
+  );
+
+const adminInvitesContent =
+  document.getElementById(
+    "admin-invites-content"
+  );
+
+
+function openAdminOverview() {
+
+  adminOverviewContent.classList.remove(
+    "hidden"
+  );
+
+  adminInvitesContent.classList.add(
+    "hidden"
+  );
+
+  adminOverviewTab.classList.add(
+    "active"
+  );
+
+  adminInvitesTab.classList.remove(
+    "active"
+  );
+
+}
+
+
+async function openAdminInvites() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+  adminOverviewContent.classList.add(
+    "hidden"
+  );
+
+  adminInvitesContent.classList.remove(
+    "hidden"
+  );
+
+  adminOverviewTab.classList.remove(
+    "active"
+  );
+
+  adminInvitesTab.classList.add(
+    "active"
+  );
+
+  await loadInviteClasses();
+
+}
+
+
+adminOverviewTab.addEventListener(
+  "click",
+  async () => {
+
+    openAdminOverview();
+
+    await loadAdminOverview();
+
+  }
+);
+
+
+adminInvitesTab.addEventListener(
+  "click",
+  openAdminInvites
+);
+async function loadInviteClasses() {
+
+  const select =
+    document.getElementById(
+      "invite-class-select"
+    );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("classes")
+      .select("id,name,grade")
+      .order("grade")
+      .order("name");
+
+
+  if (error) {
+
+    console.error(
+      "CLASSES ERROR:",
+      error
+    );
+
+    select.innerHTML =
+      '<option value="">Ошибка загрузки</option>';
+
+    return;
+  }
+
+
+  select.innerHTML =
+    '<option value="">Выберите класс</option>';
+
+
+  for (const item of data) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      item.id;
+
+    option.textContent =
+      item.name;
+
+    select.appendChild(
+      option
+    );
+
+  }
+
+}
+const generateInvitesButton =
+  document.getElementById(
+    "generate-invites-button"
+  );
+
+const copyInvitesButton =
+  document.getElementById(
+    "copy-invites-button"
+  );
+
+let lastGeneratedInvites = [];
+
+
+generateInvitesButton.addEventListener(
+  "click",
+  async () => {
+
+    const classSelect =
+      document.getElementById(
+        "invite-class-select"
+      );
+
+    const countInput =
+      document.getElementById(
+        "invite-count"
+      );
+
+    const expirationSelect =
+      document.getElementById(
+        "invite-expiration"
+      );
+
+    const message =
+      document.getElementById(
+        "invite-generator-message"
+      );
+
+    const resultBox =
+      document.getElementById(
+        "generated-invites"
+      );
+
+    const resultList =
+      document.getElementById(
+        "generated-invites-list"
+      );
+
+
+    message.classList.remove(
+      "success"
+    );
+
+    message.textContent = "";
+
+
+    const classId =
+      Number(classSelect.value);
+
+    const count =
+      Number(countInput.value);
+
+    const expiration =
+      Number(expirationSelect.value);
+
+
+    if (!classId) {
+
+      message.textContent =
+        "Выберите класс.";
+
+      return;
+    }
+
+
+    if (
+      !Number.isInteger(count) ||
+      count < 1 ||
+      count > 100
+    ) {
+
+      message.textContent =
+        "Количество: от 1 до 100.";
+
+      return;
+    }
+
+
+    generateInvitesButton.disabled =
+      true;
+
+    generateInvitesButton.textContent =
+      "ГЕНЕРАЦИЯ...";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "admin_generate_invites",
+        {
+          p_class_id: classId,
+          p_count: count,
+          p_expires_days: expiration
+        }
+      );
+
+
+    generateInvitesButton.disabled =
+      false;
+
+    generateInvitesButton.textContent =
+      "СГЕНЕРИРОВАТЬ КОДЫ";
+
+
+    if (error) {
+
+      console.error(
+        "GENERATE INVITES ERROR:",
+        error
+      );
+
+      message.textContent =
+        "Не удалось создать коды.";
+
+      return;
+    }
+
+
+    lastGeneratedInvites =
+      data.map(
+        item => item.invite_code
+      );
+
+
+    resultList.innerHTML = "";
+
+
+    for (
+      const code
+      of lastGeneratedInvites
+    ) {
+
+      const element =
+        document.createElement(
+          "div"
+        );
+
+      element.className =
+        "generated-invite-code";
+
+      element.textContent =
+        code;
+
+      resultList.appendChild(
+        element
+      );
+
+    }
+
+
+    document.getElementById(
+      "generated-invites-title"
+    ).textContent =
+      `Создано кодов: ${lastGeneratedInvites.length}`;
+
+
+    resultBox.classList.remove(
+      "hidden"
+    );
+
+
+    message.classList.add(
+      "success"
+    );
+
+    message.textContent =
+      "Коды успешно созданы.";
+
+  }
+);
+copyInvitesButton.addEventListener(
+  "click",
+  async () => {
+
+    if (
+      lastGeneratedInvites.length === 0
+    ) {
+      return;
+    }
+
+
+    const text =
+      lastGeneratedInvites.join(
+        "\n"
+      );
+
+
+    try {
+
+      await navigator.clipboard.writeText(
+        text
+      );
+
+      copyInvitesButton.textContent =
+        "✓ Скопировано";
+
+
+      setTimeout(
+        () => {
+
+          copyInvitesButton.textContent =
+            "📋 Копировать все";
+
+        },
+        1500
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "COPY ERROR:",
+        error
+      );
+
+    }
+
+  }
+);
 initializeAuth();
 subscribeToPixels();
