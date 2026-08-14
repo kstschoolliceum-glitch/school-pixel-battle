@@ -1553,6 +1553,83 @@ function startSeasonWatcher() {
     );
 
 }
+let currentUserIsAdmin = false;
+
+
+async function checkAdminStatus() {
+
+  const adminButton =
+    document.getElementById(
+      "admin-button"
+    );
+
+
+  if (!currentUser) {
+
+    currentUserIsAdmin = false;
+
+    adminButton.classList.add(
+      "hidden"
+    );
+
+    return false;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "is_admin"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ADMIN CHECK ERROR:",
+      error
+    );
+
+    currentUserIsAdmin = false;
+
+    adminButton.classList.add(
+      "hidden"
+    );
+
+    return false;
+  }
+
+
+  currentUserIsAdmin =
+    data === true;
+
+
+  if (currentUserIsAdmin) {
+
+    adminButton.classList.remove(
+      "hidden"
+    );
+
+  } else {
+
+    adminButton.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  console.log(
+    "Admin:",
+    currentUserIsAdmin
+  );
+
+
+  return currentUserIsAdmin;
+
+}
 async function initializeAuth() {
 
   const {
@@ -1570,6 +1647,7 @@ async function initializeAuth() {
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
+    await checkAdminStatus();
 
     startSeasonWatcher();
   } else {
@@ -1648,6 +1726,7 @@ loginForm.addEventListener(
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
+    await checkAdminStatus();
 
     startSeasonWatcher();
   }
@@ -2043,6 +2122,12 @@ logoutButton.addEventListener(
 
 
     currentUser = null;
+
+    currentUserIsAdmin = false;
+
+document
+  .getElementById("admin-button")
+  .classList.add("hidden");
 
     clearInterval(
   seasonCheckTimer
