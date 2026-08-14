@@ -756,3 +756,56 @@ body {
 #logout-button:hover {
   background: #3b151d;
 }
+/* ---------- MOBILE SCREENS ---------- */
+
+@media (max-width: 650px) {
+
+  body.mobile-ranking-view
+  .map-section {
+    display: none;
+  }
+
+  body.mobile-profile-view
+  .map-section {
+    display: none;
+  }
+
+
+  body.mobile-ranking-view
+  .sidebar,
+  body.mobile-profile-view
+  .sidebar {
+    display: block;
+  }
+
+
+  body.mobile-ranking-view
+  .sidebar .panel {
+    display: none;
+  }
+
+  body.mobile-ranking-view
+  #ranking-panel {
+    display: block;
+  }
+
+
+  body.mobile-profile-view
+  .sidebar .panel {
+    display: none;
+  }
+
+  body.mobile-profile-view
+  #profile-panel {
+    display: block;
+  }
+
+
+  body.mobile-ranking-view
+  #ranking-panel,
+  body.mobile-profile-view
+  #profile-panel {
+    min-height: calc(100vh - 150px);
+  }
+
+}
