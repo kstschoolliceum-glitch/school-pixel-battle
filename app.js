@@ -2246,5 +2246,59 @@ mobileProfileButton.addEventListener(
     setMobileView("profile");
   }
 );
+const adminButton =
+  document.getElementById(
+    "admin-button"
+  );
+
+const adminCloseButton =
+  document.getElementById(
+    "admin-close-button"
+  );
+
+
+adminButton.addEventListener(
+  "click",
+  async () => {
+
+    /*
+     * Проверяем права ещё раз.
+     * Не доверяем только видимости кнопки.
+     */
+
+    const isAdmin =
+      await checkAdminStatus();
+
+
+    if (!isAdmin) {
+
+      console.warn(
+        "Попытка открыть админку без прав."
+      );
+
+      return;
+    }
+
+
+    document.body.classList.add(
+      "admin-view"
+    );
+
+  }
+);
+
+
+adminCloseButton.addEventListener(
+  "click",
+  () => {
+
+    document.body.classList.remove(
+      "admin-view"
+    );
+
+    setMobileView("map");
+
+  }
+);
 initializeAuth();
 subscribeToPixels();
