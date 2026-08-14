@@ -1186,3 +1186,59 @@ body.admin-view .sidebar {
   }
 
 }
+/* ---------- INVITE STATS ---------- */
+
+.invite-stats-section {
+  margin-top: 28px;
+}
+
+.invite-stats-table-wrapper {
+  overflow-x: auto;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.invite-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.invite-stats-table th,
+.invite-stats-table td {
+  padding: 13px 15px;
+
+  text-align: left;
+
+  border-bottom: 1px solid #243044;
+}
+
+.invite-stats-table th {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.invite-stats-table td {
+  color: white;
+  font-size: 14px;
+}
+
+.invite-stats-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.invite-stat-available {
+  color: #4ade80 !important;
+}
+
+.invite-stat-used {
+  color: #60a5fa !important;
+}
+
+.invite-stat-expired,
+.invite-stat-revoked {
+  color: #f87171 !important;
+}
