@@ -998,3 +998,191 @@ body.admin-view .sidebar {
   }
 
 }
+/* ==========================================
+   ADMIN INVITES
+========================================== */
+
+.admin-invites-content.hidden {
+  display: none;
+}
+
+.admin-section-title {
+  margin-bottom: 20px;
+}
+
+.admin-section-title h2 {
+  margin: 0 0 5px;
+}
+
+.admin-section-title p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+
+.invite-generator {
+  display: grid;
+
+  grid-template-columns:
+    minmax(260px, 360px)
+    minmax(300px, 1fr);
+
+  gap: 20px;
+}
+
+
+.invite-generator-form,
+.generated-invites {
+  padding: 20px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+
+.invite-generator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+.invite-generator-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+
+.invite-generator-form select,
+.invite-generator-form input {
+  min-height: 44px;
+  padding: 0 12px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #0b1220;
+  color: white;
+
+  font-size: 14px;
+}
+
+
+#generate-invites-button {
+  min-height: 46px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #6d28d9;
+  color: white;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+
+#generate-invites-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+
+.admin-message {
+  min-height: 18px;
+
+  color: #f87171;
+  font-size: 13px;
+}
+
+
+.admin-message.success {
+  color: #4ade80;
+}
+
+
+.generated-invites.hidden {
+  display: none;
+}
+
+
+.generated-invites-header {
+  margin-bottom: 16px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+
+.generated-invites-header p {
+  margin: 5px 0 0;
+
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+
+#copy-invites-button {
+  min-height: 38px;
+  padding: 0 12px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: white;
+
+  cursor: pointer;
+}
+
+
+.generated-invites-list {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(150px, 1fr)
+    );
+
+  gap: 8px;
+}
+
+
+.generated-invite-code {
+  padding: 10px;
+
+  text-align: center;
+
+  background: #0b1220;
+  border: 1px solid #273247;
+  border-radius: 7px;
+
+  font-family: monospace;
+  font-size: 14px;
+
+  user-select: all;
+}
+
+
+@media (max-width: 750px) {
+
+  .invite-generator {
+    grid-template-columns: 1fr;
+  }
+
+  .generated-invites-header {
+    flex-direction: column;
+  }
+
+}
