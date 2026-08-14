@@ -1192,6 +1192,89 @@ async function loadMyProfile() {
     ).toLocaleString("ru-RU");
 
 }
+let activeSeason = null;
+
+
+async function loadActiveSeason() {
+
+  const seasonElement =
+    document.getElementById(
+      "season-info"
+    );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("seasons")
+      .select(`
+        id,
+        number,
+        title,
+        map_width,
+        map_height,
+        starts_at,
+        ends_at,
+        status
+      `)
+      .eq("is_active", true)
+      .eq("status", "active")
+      .lte(
+        "starts_at",
+        new Date().toISOString()
+      )
+      .gt(
+        "ends_at",
+        new Date().toISOString()
+      )
+      .order(
+        "starts_at",
+        {
+          ascending: false
+        }
+      )
+      .limit(1);
+
+
+  if (
+    error ||
+    !data ||
+    data.length === 0
+  ) {
+
+    console.error(
+      "ACTIVE SEASON ERROR:",
+      error
+    );
+
+    activeSeason = null;
+
+    seasonElement.textContent =
+      "Нет активного сезона";
+
+    return null;
+  }
+
+
+  activeSeason =
+    data[0];
+
+
+  seasonElement.textContent =
+    `Неделя #${activeSeason.number}`;
+
+
+  console.log(
+    "Активный сезон:",
+    activeSeason
+  );
+
+
+  return activeSeason;
+
+}
 async function initializeAuth() {
 
   const {
@@ -1205,6 +1288,7 @@ async function initializeAuth() {
 
     authScreen.classList.add("hidden");
 
+    await loadActiveSeason();
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
@@ -1280,6 +1364,7 @@ loginForm.addEventListener(
 
     authScreen.classList.add("hidden");
 
+    await loadActiveSeason();
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
@@ -1287,34 +1372,25 @@ loginForm.addEventListener(
 );
 async function loadPixels() {
 
-  const {
-    data: seasons,
-    error: seasonError
-  } =
-    await supabaseClient
-      .from("seasons")
-      .select("id")
-      .eq("is_active", true)
-      .limit(1);
+if (!activeSeason) {
+
+  await loadActiveSeason();
+
+}
 
 
-  if (
-    seasonError ||
-    !seasons ||
-    seasons.length === 0
-  ) {
+if (!activeSeason) {
 
-    console.error(
-      "Не удалось получить сезон:",
-      seasonError
-    );
+  console.error(
+    "Нельзя загрузить карту: активного сезона нет."
+  );
 
-    return;
-  }
+  return;
+}
 
 
-  const seasonId =
-    seasons[0].id;
+const seasonId =
+  activeSeason.id;
 
 
   const {
