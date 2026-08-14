@@ -2657,10 +2657,6 @@ const generateInvitesButton =
   document.getElementById(
     "generate-invites-button"
   );
-const generateInvitesButton =
-  document.getElementById(
-    "generate-invites-button"
-  );
 
 const copyInvitesButton =
   document.getElementById(
