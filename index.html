@@ -245,7 +245,8 @@
 
     <aside class="sidebar">
 
-      <div class="panel">
+      <div class="panel"
+          id="ranking-panel">
 
         <h2>🏆 Рейтинг классов</h2>
 
@@ -333,24 +334,34 @@
   </main>
 
 
-  <nav class="mobile-nav">
+<nav class="mobile-nav">
 
-    <button class="selected">
-      🗺️
-      <span>Карта</span>
-    </button>
+  <button
+    id="mobile-map-button"
+    class="selected"
+    type="button"
+  >
+    🗺️
+    <span>Карта</span>
+  </button>
 
-    <button>
-      🏆
-      <span>Рейтинг</span>
-    </button>
+  <button
+    id="mobile-ranking-button"
+    type="button"
+  >
+    🏆
+    <span>Рейтинг</span>
+  </button>
 
-    <button>
-      👤
-      <span>Профиль</span>
-    </button>
+  <button
+    id="mobile-profile-button"
+    type="button"
+  >
+    👤
+    <span>Профиль</span>
+  </button>
 
-  </nav>
+</nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
