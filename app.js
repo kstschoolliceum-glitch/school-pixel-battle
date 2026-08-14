@@ -491,6 +491,8 @@ async function placePixel() {
 
   startCooldown();
 
+  loadClassRanking();
+
 }
 
 placeButton.addEventListener(
@@ -1022,6 +1024,106 @@ showRegister.addEventListener(
   "click",
   openRegister
 );
+async function loadClassRanking() {
+
+  const rankingElement =
+    document.getElementById(
+      "class-ranking"
+    );
+
+
+  if (!rankingElement) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_class_ranking"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "RANKING ERROR:",
+      error
+    );
+
+    rankingElement.innerHTML =
+      "<div><span>Не удалось загрузить рейтинг</span></div>";
+
+    return;
+  }
+
+
+  rankingElement.innerHTML = "";
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    rankingElement.innerHTML =
+      "<div><span>Рейтинг пока пуст</span></div>";
+
+    return;
+  }
+
+
+  data.forEach(
+    (item, index) => {
+
+      const row =
+        document.createElement("div");
+
+
+      let place =
+        `${index + 1}.`;
+
+
+      if (index === 0) {
+        place = "🥇";
+      }
+
+      if (index === 1) {
+        place = "🥈";
+      }
+
+      if (index === 2) {
+        place = "🥉";
+      }
+
+
+      const name =
+        document.createElement("span");
+
+      name.textContent =
+        `${place} ${item.class_name}`;
+
+
+      const score =
+        document.createElement("strong");
+
+      score.textContent =
+        Number(
+          item.pixels_count
+        ).toLocaleString("ru-RU");
+
+
+      row.appendChild(name);
+      row.appendChild(score);
+
+      rankingElement.appendChild(row);
+
+    }
+  );
+
+}
 async function initializeAuth() {
 
   const {
@@ -1036,6 +1138,7 @@ async function initializeAuth() {
     authScreen.classList.add("hidden");
 
     await loadPixels();
+    await loadClassRanking();
 
   } else {
 
@@ -1110,6 +1213,7 @@ loginForm.addEventListener(
     authScreen.classList.add("hidden");
 
     await loadPixels();
+    await loadClassRanking();
 
   }
 );
@@ -1250,6 +1354,8 @@ function subscribeToPixels() {
           colorIndex;
 
         drawMap();
+        
+        loadClassRanking();
       }
     )
     .subscribe((status) => {
