@@ -2284,6 +2284,8 @@ adminButton.addEventListener(
       "admin-view"
     );
 
+    await loadAdminOverview();
+    
   }
 );
 
@@ -2300,5 +2302,98 @@ adminCloseButton.addEventListener(
 
   }
 );
+async function loadAdminOverview() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_admin_overview"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ADMIN OVERVIEW ERROR:",
+      error
+    );
+
+    return;
+  }
+
+
+  if (!data?.success) {
+    return;
+  }
+
+
+  const seasonElement =
+    document.getElementById(
+      "admin-season"
+    );
+
+  const pixelsElement =
+    document.getElementById(
+      "admin-pixels"
+    );
+
+  const playersElement =
+    document.getElementById(
+      "admin-players"
+    );
+
+  const leaderElement =
+    document.getElementById(
+      "admin-leader"
+    );
+
+
+  if (data.active_season) {
+
+    seasonElement.textContent =
+      `Неделя #${data.active_season.number}`;
+
+  } else {
+
+    seasonElement.textContent =
+      "Нет активного";
+
+  }
+
+
+  pixelsElement.textContent =
+    Number(
+      data.pixels ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  playersElement.textContent =
+    Number(
+      data.players ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  if (data.leader) {
+
+    leaderElement.textContent =
+      `${data.leader} · ${Number(
+        data.leader_pixels ?? 0
+      ).toLocaleString("ru-RU")}`;
+
+  } else {
+
+    leaderElement.textContent =
+      "Пока нет";
+
+  }
+
+}
 initializeAuth();
 subscribeToPixels();
