@@ -389,9 +389,9 @@
     </button>
 
     <button
+      id="admin-classes-tab"
       class="admin-tab"
       type="button"
-      disabled
     >
       🏫 Классы
     </button>
@@ -525,6 +525,122 @@
   </div>
 
 </div>
+
+  <div
+  id="admin-classes-content"
+  class="admin-classes-content hidden"
+>
+
+  <div class="admin-section-title">
+    <h2>🏫 Классы</h2>
+    <p>
+      Управление классами School Pixel Battle
+    </p>
+  </div>
+
+
+  <div class="class-create-card">
+
+    <h3>➕ Добавить класс</h3>
+
+    <div class="class-create-form">
+
+      <label>
+        Название
+
+        <input
+          id="new-class-name"
+          type="text"
+          maxlength="10"
+          placeholder="Например: 6А"
+        >
+      </label>
+
+
+      <label>
+        Параллель
+
+        <select id="new-class-grade">
+          <option value="">
+            Выберите
+          </option>
+
+          <option value="1">1 класс</option>
+          <option value="2">2 класс</option>
+          <option value="3">3 класс</option>
+          <option value="4">4 класс</option>
+          <option value="5">5 класс</option>
+          <option value="6">6 класс</option>
+          <option value="7">7 класс</option>
+          <option value="8">8 класс</option>
+          <option value="9">9 класс</option>
+          <option value="10">10 класс</option>
+          <option value="11">11 класс</option>
+        </select>
+      </label>
+
+
+      <button
+        id="create-class-button"
+        type="button"
+      >
+        ДОБАВИТЬ КЛАСС
+      </button>
+
+    </div>
+
+
+    <div
+      id="class-create-message"
+      class="admin-message"
+    ></div>
+
+  </div>
+
+
+  <div class="classes-list-section">
+
+    <div class="admin-section-title">
+      <h2>Список классов</h2>
+
+      <p>
+        Отключённые классы сохраняют историю,
+        но не используются для новых учеников.
+      </p>
+    </div>
+
+
+    <div class="classes-table-wrapper">
+
+      <table class="classes-table">
+
+        <thead>
+          <tr>
+            <th>Класс</th>
+            <th>Параллель</th>
+            <th>Учеников</th>
+            <th>Пикселей всего</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+
+        <tbody id="classes-table-body">
+          <tr>
+            <td colspan="6">
+              Загрузка...
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+  
   <div
   id="admin-invites-content"
   class="admin-invites-content hidden"
