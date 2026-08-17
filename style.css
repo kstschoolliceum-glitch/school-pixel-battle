@@ -1381,3 +1381,144 @@ body.admin-view .sidebar {
   opacity: 0.5;
   cursor: wait;
 }
+/* ==========================================
+   ADMIN CLASSES
+========================================== */
+
+.admin-classes-content.hidden {
+  display: none;
+}
+
+.class-create-card {
+  margin-bottom: 28px;
+  padding: 20px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.class-create-card h3 {
+  margin: 0 0 16px;
+}
+
+.class-create-form {
+  display: grid;
+
+  grid-template-columns:
+    minmax(160px, 1fr)
+    minmax(160px, 1fr)
+    auto;
+
+  gap: 12px;
+
+  align-items: end;
+}
+
+.class-create-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.class-create-form input,
+.class-create-form select {
+  min-height: 44px;
+  padding: 0 12px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  background: #0b1220;
+  color: white;
+
+  outline: none;
+}
+
+#create-class-button {
+  min-height: 44px;
+  padding: 0 18px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #6d28d9;
+  color: white;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.classes-list-section {
+  margin-top: 24px;
+}
+
+.classes-table-wrapper {
+  overflow-x: auto;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.classes-table {
+  width: 100%;
+  min-width: 750px;
+
+  border-collapse: collapse;
+}
+
+.classes-table th,
+.classes-table td {
+  padding: 13px 15px;
+
+  text-align: left;
+
+  border-bottom: 1px solid #243044;
+}
+
+.classes-table th {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.classes-table td {
+  color: white;
+  font-size: 14px;
+}
+
+.class-active {
+  color: #4ade80 !important;
+}
+
+.class-inactive {
+  color: #f87171 !important;
+}
+
+.class-action-button {
+  min-height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: white;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+@media (max-width: 750px) {
+
+  .class-create-form {
+    grid-template-columns: 1fr;
+  }
+
+}
