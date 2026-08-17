@@ -1348,3 +1348,36 @@ body.admin-view .sidebar {
   }
 
 }
+/* ---------- STUDENT ACTIONS ---------- */
+
+.student-action-button {
+  min-height: 34px;
+  padding: 0 10px;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.student-action-button.ban {
+  border: 1px solid #7f1d1d;
+
+  background: #2a1117;
+  color: #fca5a5;
+}
+
+.student-action-button.unban {
+  border: 1px solid #166534;
+
+  background: #102719;
+  color: #86efac;
+}
+
+.student-action-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
