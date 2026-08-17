@@ -3189,7 +3189,7 @@ function renderAdminStudents() {
     const cell =
       document.createElement("td");
 
-    cell.colSpan = 6;
+    cell.colSpan = 7;
     cell.textContent =
       "Ученики не найдены";
 
@@ -3269,6 +3269,122 @@ function renderAdminStudents() {
 
     }
 
+    const actionsCell =
+  document.createElement("td");
+
+
+const banButton =
+  document.createElement("button");
+
+
+banButton.type =
+  "button";
+
+
+banButton.className =
+  student.banned
+    ? "student-action-button unban"
+    : "student-action-button ban";
+
+
+banButton.textContent =
+  student.banned
+    ? "✅ Разблокировать"
+    : "🚫 Заблокировать";
+
+
+banButton.addEventListener(
+  "click",
+  async () => {
+
+    const newBannedState =
+      !student.banned;
+
+
+    /*
+     * Для блокировки просим подтверждение.
+     * Для разблокировки оно не обязательно.
+     */
+
+    if (newBannedState) {
+
+      const confirmed =
+        confirm(
+          `Заблокировать ${student.nickname} (${student.username})?`
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+    }
+
+
+    banButton.disabled = true;
+
+    banButton.textContent =
+      newBannedState
+        ? "БЛОКИРОВКА..."
+        : "РАЗБЛОКИРОВКА...";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "admin_set_student_banned",
+        {
+          p_user_id:
+            student.user_id,
+
+          p_banned:
+            newBannedState
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "BAN USER ERROR:",
+        error
+      );
+
+      alert(
+        "Не удалось изменить статус ученика."
+      );
+
+      banButton.disabled = false;
+
+      renderAdminStudents();
+
+      return;
+    }
+
+
+    console.log(
+      "Статус ученика изменён:",
+      data
+    );
+
+
+    /*
+     * Загружаем список заново с сервера,
+     * а не просто меняем его визуально.
+     */
+
+    await loadAdminStudents();
+
+  }
+);
+
+
+actionsCell.appendChild(
+  banButton
+);
+
 
     row.append(
       username,
@@ -3276,7 +3392,8 @@ function renderAdminStudents() {
       className,
       weekly,
       total,
-      statusCell
+      statusCell,
+      actionsCell
     );
 
 
