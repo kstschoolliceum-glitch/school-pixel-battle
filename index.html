@@ -397,9 +397,9 @@
     </button>
 
     <button
+      id="admin-seasons-tab"
       class="admin-tab"
       type="button"
-      disabled
     >
       📚 Сезоны
     </button>
@@ -640,7 +640,101 @@
   </div>
 
 </div>
-  
+  <div
+  id="admin-seasons-content"
+  class="admin-seasons-content hidden"
+>
+
+  <div class="admin-section-title">
+    <h2>📚 Сезоны</h2>
+    <p>
+      Текущая неделя и история турниров
+    </p>
+  </div>
+
+
+  <!-- ТЕКУЩИЙ СЕЗОН -->
+
+  <div class="admin-current-season">
+
+    <div class="admin-current-season-header">
+
+      <div>
+        <span class="season-status">
+          🟢 Текущий сезон
+        </span>
+
+        <h2 id="admin-current-season-title">
+          Загрузка...
+        </h2>
+
+        <p id="admin-current-season-dates">
+          —
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="season-stats-grid">
+
+      <div class="season-stat-card">
+        <span>⏳ Осталось</span>
+        <strong id="admin-season-time-left">
+          —
+        </strong>
+      </div>
+
+      <div class="season-stat-card">
+        <span>🎨 Пикселей</span>
+        <strong id="admin-season-pixels">
+          0
+        </strong>
+      </div>
+
+      <div class="season-stat-card">
+        <span>👥 Участников</span>
+        <strong id="admin-season-players">
+          0
+        </strong>
+      </div>
+
+      <div class="season-stat-card">
+        <span>🏆 Лидер</span>
+        <strong id="admin-season-leader">
+          —
+        </strong>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ПРОШЕДШИЕ СЕЗОНЫ -->
+
+  <div class="admin-season-history">
+
+    <div class="admin-section-title">
+      <h2>📦 Прошедшие сезоны</h2>
+      <p>
+        Результаты завершённых недель
+      </p>
+    </div>
+
+
+    <div
+      id="admin-season-history-list"
+      class="admin-season-history-list"
+    >
+      <div class="season-history-loading">
+        Загрузка...
+      </div>
+    </div>
+
+  </div>
+
+</div>
   <div
   id="admin-invites-content"
   class="admin-invites-content hidden"
