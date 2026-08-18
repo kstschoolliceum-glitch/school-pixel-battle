@@ -1678,3 +1678,133 @@ body.admin-view .sidebar {
   }
 
 }
+/* ==========================================
+   SEASON MAP VIEWER
+========================================== */
+
+.season-map-viewer {
+  margin-top: 25px;
+  padding: 20px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.season-map-viewer.hidden {
+  display: none;
+}
+
+.season-map-viewer-header {
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.season-map-viewer-header h2 {
+  margin: 0 0 4px;
+}
+
+.season-map-viewer-header p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+#close-season-map-button {
+  min-height: 38px;
+  padding: 0 12px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: white;
+
+  cursor: pointer;
+}
+
+.season-map-content {
+  display: grid;
+
+  grid-template-columns:
+    minmax(300px, 600px)
+    minmax(220px, 1fr);
+
+  gap: 18px;
+}
+
+.season-map-canvas-wrapper {
+  min-height: 550px;
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #0b1220;
+  border-radius: 10px;
+}
+
+#season-map-canvas {
+  width: auto;
+  max-width: 100%;
+  max-height: 70vh;
+
+  background: white;
+
+  image-rendering: pixelated;
+}
+
+.season-map-info {
+  padding: 15px;
+
+  background: #0b1220;
+  border-radius: 10px;
+}
+
+.season-map-info-row {
+  padding: 12px 0;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  border-bottom: 1px solid #243044;
+
+  color: #94a3b8;
+}
+
+.season-map-info-row strong {
+  color: white;
+}
+
+.season-history-map-button {
+  width: 100%;
+  min-height: 40px;
+
+  margin-top: 14px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #6d28d9;
+  color: white;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 750px) {
+
+  .season-map-content {
+    grid-template-columns: 1fr;
+  }
+
+  .season-map-canvas-wrapper {
+    min-height: 430px;
+  }
+
+}
