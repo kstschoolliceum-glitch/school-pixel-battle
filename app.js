@@ -241,8 +241,59 @@ function calculateInitialScale() {
 
 }
 
+function clampOffsets() {
 
+  const containerRect =
+    container.getBoundingClientRect();
+
+  const scaledWidth =
+    MAP_WIDTH * scale;
+
+  const scaledHeight =
+    MAP_HEIGHT * scale;
+
+
+  /*
+   * Оставляем часть карты видимой,
+   * чтобы её невозможно было полностью
+   * потерять за пределами экрана.
+   */
+
+  const minVisible =
+    window.innerWidth <= 650
+      ? 80
+      : 120;
+
+
+  const maxX =
+    containerRect.width / 2 +
+    scaledWidth / 2 -
+    minVisible;
+
+  const maxY =
+    containerRect.height / 2 +
+    scaledHeight / 2 -
+    minVisible;
+
+
+  offsetX =
+    Math.max(
+      -maxX,
+      Math.min(maxX, offsetX)
+    );
+
+
+  offsetY =
+    Math.max(
+      -maxY,
+      Math.min(maxY, offsetY)
+    );
+
+}
 function updateTransform() {
+
+  clampOffsets();
+
 
   canvas.style.width =
     `${MAP_WIDTH * scale}px`;
@@ -671,8 +722,8 @@ container.addEventListener(
     scale *= zoom;
 
     scale = Math.max(
-      0.5,
-      Math.min(scale, 30)
+      0.75,
+      Math.min(scale, 12)
     );
 
     /*
@@ -788,6 +839,12 @@ canvas.addEventListener(
       touchStartScale =
         scale;
 
+      startOffsetX =
+        offsetX;
+
+      startOffsetY =
+        offsetY;
+
       touchStartCenter = {
         x:
           (
@@ -853,34 +910,121 @@ canvas.addEventListener(
 
 
     if (
-      event.touches.length === 2 &&
-      touchStartDistance
-    ) {
+  event.touches.length === 2 &&
+  touchStartDistance
+) {
 
-      const newDistance =
-        getTouchDistance(
-          event.touches[0],
-          event.touches[1]
-        );
+  const touch1 =
+    event.touches[0];
 
-      const ratio =
-        newDistance /
-        touchStartDistance;
+  const touch2 =
+    event.touches[1];
 
-      scale =
+
+  const newDistance =
+    getTouchDistance(
+      touch1,
+      touch2
+    );
+
+
+  const newScale =
+    Math.max(
+      0.75,
+      Math.min(
         touchStartScale *
-        ratio;
+        (
+          newDistance /
+          touchStartDistance
+        ),
+        12
+      )
+    );
 
-      scale = Math.max(
-        0.5,
-        Math.min(scale, 30)
-      );
 
-      updateTransform();
+  /*
+   * Текущий центр двух пальцев.
+   */
 
-      moved = true;
+  const currentCenter = {
 
-    }
+    x:
+      (
+        touch1.clientX +
+        touch2.clientX
+      ) / 2,
+
+    y:
+      (
+        touch1.clientY +
+        touch2.clientY
+      ) / 2
+
+  };
+
+
+  const containerRect =
+    container.getBoundingClientRect();
+
+
+  const oldCenterX =
+    touchStartCenter.x -
+    containerRect.left -
+    containerRect.width / 2;
+
+  const oldCenterY =
+    touchStartCenter.y -
+    containerRect.top -
+    containerRect.height / 2;
+
+
+  const newCenterX =
+    currentCenter.x -
+    containerRect.left -
+    containerRect.width / 2;
+
+  const newCenterY =
+    currentCenter.y -
+    containerRect.top -
+    containerRect.height / 2;
+
+
+  const ratio =
+    newScale /
+    touchStartScale;
+
+
+  /*
+   * Сохраняем точку карты между пальцами
+   * и одновременно разрешаем двигать
+   * центр pinch-жеста.
+   */
+
+  offsetX =
+    newCenterX -
+    (
+      oldCenterX -
+      startOffsetX
+    ) * ratio;
+
+
+  offsetY =
+    newCenterY -
+    (
+      oldCenterY -
+      startOffsetY
+    ) * ratio;
+
+
+  scale =
+    newScale;
+
+
+  updateTransform();
+
+  moved = true;
+
+}
 
   },
   {
