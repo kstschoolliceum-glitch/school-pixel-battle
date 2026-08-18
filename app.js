@@ -4239,14 +4239,40 @@ async function loadAdminSeasonHistory() {
     finished.innerHTML =
       `<span>📅 Завершён</span><strong>${finishedDate}</strong>`;
 
+const mapButton =
+  document.createElement(
+    "button"
+  );
 
+mapButton.type =
+  "button";
+
+mapButton.className =
+  "season-history-map-button";
+
+mapButton.textContent =
+  "🗺️ Посмотреть карту";
+
+
+mapButton.addEventListener(
+  "click",
+  () => {
+
+    openArchivedSeasonMap(
+      season
+    );
+
+  }
+);
+    
     card.append(
       heading,
       title,
       winner,
       pixels,
       players,
-      finished
+      finished,
+      mapButton
     );
 
 
@@ -4313,6 +4339,174 @@ async function openAdminSeasons() {
 adminSeasonsTab.addEventListener(
   "click",
   openAdminSeasons
+);
+async function openArchivedSeasonMap(
+  season
+) {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const viewer =
+    document.getElementById(
+      "season-map-viewer"
+    );
+
+
+  const canvas =
+    document.getElementById(
+      "season-map-canvas"
+    );
+
+
+  const ctx =
+    canvas.getContext(
+      "2d"
+    );
+
+
+  canvas.width =
+    Number(
+      season.map_width ?? 300
+    );
+
+  canvas.height =
+    Number(
+      season.map_height ?? 424
+    );
+
+
+  /*
+   * Начинаем с чистой белой карты.
+   */
+
+  ctx.fillStyle = "#ffffff";
+
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_season_map",
+      {
+        p_season_id:
+          season.season_id
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "SEASON MAP ERROR:",
+      error
+    );
+
+    alert(
+      "Не удалось загрузить карту сезона."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Используем ту же палитру,
+   * что и игровая карта.
+   *
+   * В нашей БД color хранится как цвет.
+   */
+
+  for (const pixel of data) {
+
+    ctx.fillStyle =
+      pixel.color;
+
+    ctx.fillRect(
+      pixel.x,
+      pixel.y,
+      1,
+      1
+    );
+
+  }
+
+
+  document.getElementById(
+    "season-map-viewer-title"
+  ).textContent =
+    `Неделя #${season.season_number}`;
+
+
+  document.getElementById(
+    "season-map-viewer-subtitle"
+  ).textContent =
+    season.title ??
+    "Завершённый сезон";
+
+
+  document.getElementById(
+    "season-map-winner"
+  ).textContent =
+    season.winner_class ?? "—";
+
+
+  document.getElementById(
+    "season-map-pixels"
+  ).textContent =
+    Number(
+      season.total_pixels ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  document.getElementById(
+    "season-map-players"
+  ).textContent =
+    Number(
+      season.total_players ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  viewer.classList.remove(
+    "hidden"
+  );
+
+
+  viewer.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+}
+const closeSeasonMapButton =
+  document.getElementById(
+    "close-season-map-button"
+  );
+
+
+closeSeasonMapButton.addEventListener(
+  "click",
+  () => {
+
+    document
+      .getElementById(
+        "season-map-viewer"
+      )
+      .classList.add(
+        "hidden"
+      );
+
+  }
 );
 initializeAuth();
 subscribeToPixels();
