@@ -1960,83 +1960,150 @@ registerForm.addEventListener(
 
     try {
 
-      const {
-        data,
-        error
-      } =
-        await supabaseClient.functions.invoke(
-          "register-student",
-          {
-            body: {
-              inviteCode,
-              username,
-              nickname,
-              password
-            }
-          }
-        );
-
-
-      if (error) {
-
-        console.error(
-          "REGISTER FUNCTION ERROR:",
-          error
-        );
-
-        registerMessage.textContent =
-          "Ошибка соединения с сервером.";
-
-        return;
+const {
+  data,
+  error
+} =
+  await supabaseClient.functions.invoke(
+    "register-student",
+    {
+      body: {
+        inviteCode,
+        username,
+        nickname,
+        password
       }
+    }
+  );
 
 
-      if (!data?.success) {
+/*
+ * Сообщения ошибок регистрации
+ */
 
-        const messages = {
+const messages = {
 
-          INVALID_INVITE:
-            "Такого кода приглашения нет.",
+  INVALID_INVITE:
+    "Такого кода приглашения нет.",
 
-          INVITE_ALREADY_USED:
-            "Этот код уже использован.",
+  INVITE_ALREADY_USED:
+    "Этот код уже использован.",
 
-          INVITE_EXPIRED:
-            "Срок действия кода закончился.",
+  INVITE_EXPIRED:
+    "Срок действия кода закончился.",
 
-          INVITE_REVOKED:
-            "Этот код был отозван.",
+  INVITE_REVOKED:
+    "Этот код был отозван.",
 
-          USERNAME_TAKEN:
-            "Этот логин уже занят.",
+  USERNAME_TAKEN:
+    "Этот логин уже занят.",
 
-          NICKNAME_TAKEN:
-            "Этот никнейм уже занят.",
+  NICKNAME_TAKEN:
+    "Этот никнейм уже занят.",
 
-          INVALID_USERNAME:
-            "Недопустимый логин.",
+  INVALID_USERNAME:
+    "Недопустимый логин.",
 
-          INVALID_NICKNAME:
-            "Недопустимый никнейм.",
+  INVALID_NICKNAME:
+    "Недопустимый никнейм.",
 
-          PASSWORD_TOO_SHORT:
-            "Пароль слишком короткий."
+  PASSWORD_TOO_SHORT:
+    "Пароль слишком короткий.",
 
-        };
+  CREATE_USER_FAILED:
+    "Не удалось создать аккаунт.",
 
-
-        registerMessage.textContent =
-          messages[data.error] ??
-          "Не удалось зарегистрироваться.";
-
-        return;
-      }
+  REGISTRATION_FAILED:
+    "Не удалось зарегистрироваться."
+};
 
 
-      registerMessage.classList.add(
-        "success"
+/*
+ * Если Edge Function вернула HTTP 4xx/5xx,
+ * Supabase помещает ответ в error.
+ *
+ * Пытаемся получить настоящий JSON-ответ
+ * функции, чтобы не показывать ученику
+ * ложную «ошибку соединения».
+ */
+
+if (error) {
+
+  console.error(
+    "REGISTER FUNCTION ERROR:",
+    error
+  );
+
+
+  let serverErrorCode = null;
+
+
+  try {
+
+    if (
+      error.context &&
+      typeof error.context.json === "function"
+    ) {
+
+      const errorBody =
+        await error.context.json();
+
+
+      serverErrorCode =
+        errorBody?.error ?? null;
+
+
+      console.log(
+        "REGISTER SERVER RESPONSE:",
+        errorBody
       );
 
+    }
+
+  } catch (parseError) {
+
+    console.error(
+      "REGISTER ERROR PARSE:",
+      parseError
+    );
+
+  }
+
+
+  if (serverErrorCode) {
+
+    registerMessage.textContent =
+      messages[serverErrorCode] ??
+      "Не удалось зарегистрироваться.";
+
+  } else {
+
+    registerMessage.textContent =
+      "Ошибка соединения с сервером.";
+
+  }
+
+
+  return;
+}
+
+
+/*
+ * На случай, если функция вернула HTTP 2xx,
+ * но success = false.
+ */
+
+if (!data?.success) {
+
+  registerMessage.textContent =
+    messages[data?.error] ??
+    "Не удалось зарегистрироваться.";
+
+  return;
+}
+registerMessage.classList.add(
+  "success"
+);
       registerMessage.textContent =
         "Аккаунт создан! Сейчас можно войти.";
 
