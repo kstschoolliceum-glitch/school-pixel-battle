@@ -2418,6 +2418,9 @@ const adminInvitesContent =
 
 function openAdminOverview() {
   
+  adminSeasonsContent.classList.add(
+    "hidden"
+  );
   adminClassesContent.classList.add(
     "hidden"
   );
@@ -2449,6 +2452,9 @@ async function openAdminInvites() {
   if (!currentUserIsAdmin) {
     return;
   }
+  adminSeasonsContent.classList.add(
+    "hidden"
+  );
   adminClassesContent.classList.add(
     "hidden"
   );
@@ -3427,7 +3433,9 @@ async function openAdminStudents() {
   if (!currentUserIsAdmin) {
     return;
   }
-
+  adminSeasonsContent.classList.add(
+    "hidden"
+  );
   adminClassesContent.classList.add(
     "hidden"
   );
@@ -3873,7 +3881,9 @@ async function openAdminClasses() {
   if (!currentUserIsAdmin) {
     return;
   }
-
+  adminSeasonsContent.classList.add(
+    "hidden"
+  );
 
   adminOverviewContent.classList.add(
     "hidden"
@@ -3917,6 +3927,392 @@ async function openAdminClasses() {
 adminClassesTab.addEventListener(
   "click",
   openAdminClasses
+);
+const adminSeasonsTab =
+  document.getElementById(
+    "admin-seasons-tab"
+  );
+
+const adminSeasonsContent =
+  document.getElementById(
+    "admin-seasons-content"
+  );
+async function loadAdminCurrentSeason() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_admin_overview"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ADMIN SEASON ERROR:",
+      error
+    );
+
+    return;
+  }
+
+
+  const titleElement =
+    document.getElementById(
+      "admin-current-season-title"
+    );
+
+  const datesElement =
+    document.getElementById(
+      "admin-current-season-dates"
+    );
+
+  const timeElement =
+    document.getElementById(
+      "admin-season-time-left"
+    );
+
+  const pixelsElement =
+    document.getElementById(
+      "admin-season-pixels"
+    );
+
+  const playersElement =
+    document.getElementById(
+      "admin-season-players"
+    );
+
+  const leaderElement =
+    document.getElementById(
+      "admin-season-leader"
+    );
+
+
+  if (!data?.active_season) {
+
+    titleElement.textContent =
+      "Нет активного сезона";
+
+    datesElement.textContent = "—";
+    timeElement.textContent = "—";
+    pixelsElement.textContent = "0";
+    playersElement.textContent = "0";
+    leaderElement.textContent = "—";
+
+    return;
+  }
+
+
+  const season =
+    data.active_season;
+
+
+  titleElement.textContent =
+    season.title ||
+    `Неделя #${season.number}`;
+
+
+  const startDate =
+    new Date(season.starts_at);
+
+  const endDate =
+    new Date(season.ends_at);
+
+
+  datesElement.textContent =
+    `${startDate.toLocaleDateString("ru-RU")} — ${endDate.toLocaleDateString("ru-RU")}`;
+
+
+  let difference =
+    endDate.getTime() -
+    Date.now();
+
+
+  if (difference <= 0) {
+
+    timeElement.textContent =
+      "Завершается...";
+
+  } else {
+
+    const days =
+      Math.floor(
+        difference /
+        (1000 * 60 * 60 * 24)
+      );
+
+
+    difference %=
+      1000 * 60 * 60 * 24;
+
+
+    const hours =
+      Math.floor(
+        difference /
+        (1000 * 60 * 60)
+      );
+
+
+    if (days > 0) {
+
+      timeElement.textContent =
+        `${days} дн. ${hours} ч.`;
+
+    } else {
+
+      const minutes =
+        Math.floor(
+          difference /
+          (1000 * 60)
+        );
+
+      timeElement.textContent =
+        `${hours} ч. ${minutes} мин.`;
+
+    }
+
+  }
+
+
+  pixelsElement.textContent =
+    Number(
+      data.pixels ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  playersElement.textContent =
+    Number(
+      data.players ?? 0
+    ).toLocaleString("ru-RU");
+
+
+  if (data.leader) {
+
+    leaderElement.textContent =
+      `${data.leader} · ${Number(
+        data.leader_pixels ?? 0
+      ).toLocaleString("ru-RU")}`;
+
+  } else {
+
+    leaderElement.textContent =
+      "Пока нет";
+
+  }
+
+}
+async function loadAdminSeasonHistory() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const list =
+    document.getElementById(
+      "admin-season-history-list"
+    );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_season_archive"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "SEASON ARCHIVE ERROR:",
+      error
+    );
+
+    list.innerHTML =
+      '<div class="season-history-loading">Не удалось загрузить архив</div>';
+
+    return;
+  }
+
+
+  list.innerHTML = "";
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    list.innerHTML =
+      '<div class="season-history-loading">Завершённых сезонов пока нет</div>';
+
+    return;
+  }
+
+
+  for (const season of data) {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "season-history-card";
+
+
+    const heading =
+      document.createElement("h3");
+
+    heading.textContent =
+      `Неделя #${season.season_number}`;
+
+
+    const title =
+      document.createElement("div");
+
+    title.className =
+      "season-history-title";
+
+    title.textContent =
+      season.title ?? "Без названия";
+
+
+    const winner =
+      document.createElement("div");
+
+    winner.className =
+      "season-history-row";
+
+    winner.innerHTML =
+      `<span>🏆 Победитель</span><strong>${season.winner_class ?? "—"}</strong>`;
+
+
+    const pixels =
+      document.createElement("div");
+
+    pixels.className =
+      "season-history-row";
+
+    pixels.innerHTML =
+      `<span>🎨 Пикселей</span><strong>${Number(
+        season.total_pixels ?? 0
+      ).toLocaleString("ru-RU")}</strong>`;
+
+
+    const players =
+      document.createElement("div");
+
+    players.className =
+      "season-history-row";
+
+    players.innerHTML =
+      `<span>👥 Участников</span><strong>${Number(
+        season.total_players ?? 0
+      ).toLocaleString("ru-RU")}</strong>`;
+
+
+    const finished =
+      document.createElement("div");
+
+    finished.className =
+      "season-history-row";
+
+
+    const finishedDate =
+      season.finished_at
+        ? new Date(
+            season.finished_at
+          ).toLocaleDateString(
+            "ru-RU"
+          )
+        : "—";
+
+
+    finished.innerHTML =
+      `<span>📅 Завершён</span><strong>${finishedDate}</strong>`;
+
+
+    card.append(
+      heading,
+      title,
+      winner,
+      pixels,
+      players,
+      finished
+    );
+
+
+    list.appendChild(card);
+
+  }
+
+}
+async function openAdminSeasons() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  adminOverviewContent.classList.add(
+    "hidden"
+  );
+
+  adminStudentsContent.classList.add(
+    "hidden"
+  );
+
+  adminInvitesContent.classList.add(
+    "hidden"
+  );
+
+  adminClassesContent.classList.add(
+    "hidden"
+  );
+
+  adminSeasonsContent.classList.remove(
+    "hidden"
+  );
+
+
+  adminOverviewTab.classList.remove(
+    "active"
+  );
+
+  adminStudentsTab.classList.remove(
+    "active"
+  );
+
+  adminInvitesTab.classList.remove(
+    "active"
+  );
+
+  adminClassesTab.classList.remove(
+    "active"
+  );
+
+  adminSeasonsTab.classList.add(
+    "active"
+  );
+
+
+  await loadAdminCurrentSeason();
+  await loadAdminSeasonHistory();
+
+}
+
+
+adminSeasonsTab.addEventListener(
+  "click",
+  openAdminSeasons
 );
 initializeAuth();
 subscribeToPixels();
