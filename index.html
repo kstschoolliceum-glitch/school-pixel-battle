@@ -644,7 +644,68 @@
   id="admin-seasons-content"
   class="admin-seasons-content hidden"
 >
+<div
+  id="season-map-viewer"
+  class="season-map-viewer hidden"
+>
 
+  <div class="season-map-viewer-header">
+
+    <div>
+      <h2 id="season-map-viewer-title">
+        Карта сезона
+      </h2>
+
+      <p id="season-map-viewer-subtitle">
+        Финальное состояние карты
+      </p>
+    </div>
+
+    <button
+      id="close-season-map-button"
+      type="button"
+    >
+      ✕ Закрыть
+    </button>
+
+  </div>
+
+
+  <div class="season-map-content">
+
+    <div class="season-map-canvas-wrapper">
+
+      <canvas
+        id="season-map-canvas"
+        width="300"
+        height="424"
+      ></canvas>
+
+    </div>
+
+
+    <div class="season-map-info">
+
+      <div class="season-map-info-row">
+        <span>🏆 Победитель</span>
+        <strong id="season-map-winner">—</strong>
+      </div>
+
+      <div class="season-map-info-row">
+        <span>🎨 Пикселей</span>
+        <strong id="season-map-pixels">0</strong>
+      </div>
+
+      <div class="season-map-info-row">
+        <span>👥 Участников</span>
+        <strong id="season-map-players">0</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
   <div class="admin-section-title">
     <h2>📚 Сезоны</h2>
     <p>
