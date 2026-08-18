@@ -1808,3 +1808,40 @@ body.admin-view .sidebar {
   }
 
 }
+.season-map-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#download-season-png-button {
+  min-height: 38px;
+  padding: 0 12px;
+
+  border: 1px solid #6d28d9;
+  border-radius: 7px;
+
+  background: #20133d;
+  color: #c4b5fd;
+
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#download-season-png-button:hover {
+  background: #2e1958;
+}
+
+@media (max-width: 650px) {
+
+  .season-map-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  #download-season-png-button,
+  #close-season-map-button {
+    width: 100%;
+  }
+
+}
