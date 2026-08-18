@@ -1522,3 +1522,159 @@ body.admin-view .sidebar {
   }
 
 }
+/* ==========================================
+   ADMIN SEASONS
+========================================== */
+
+.admin-seasons-content.hidden {
+  display: none;
+}
+
+.admin-current-season {
+  margin-bottom: 30px;
+  padding: 20px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.admin-current-season-header {
+  margin-bottom: 18px;
+}
+
+.admin-current-season-header h2 {
+  margin: 8px 0 4px;
+
+  font-size: 25px;
+}
+
+.admin-current-season-header p {
+  margin: 0;
+
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.season-status {
+  color: #4ade80;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.season-stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.season-stat-card {
+  min-height: 100px;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  background: #0b1220;
+  border: 1px solid #273247;
+  border-radius: 10px;
+}
+
+.season-stat-card span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.season-stat-card strong {
+  color: white;
+  font-size: 20px;
+}
+
+
+/* HISTORY */
+
+.admin-season-history {
+  margin-top: 25px;
+}
+
+.admin-season-history-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(260px, 1fr)
+    );
+
+  gap: 14px;
+}
+
+.season-history-card {
+  padding: 18px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.season-history-card h3 {
+  margin: 0 0 4px;
+
+  color: white;
+}
+
+.season-history-title {
+  margin-bottom: 15px;
+
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.season-history-row {
+  padding: 7px 0;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-bottom: 1px solid #243044;
+
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.season-history-row:last-child {
+  border-bottom: 0;
+}
+
+.season-history-row strong {
+  color: white;
+}
+
+.season-history-loading {
+  color: #94a3b8;
+}
+
+
+@media (max-width: 750px) {
+
+  .season-stats-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .season-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
