@@ -4340,6 +4340,7 @@ adminSeasonsTab.addEventListener(
   "click",
   openAdminSeasons
 );
+let openedArchivedSeason = null;
 async function openArchivedSeasonMap(
   season
 ) {
@@ -4347,7 +4348,9 @@ async function openArchivedSeasonMap(
   if (!currentUserIsAdmin) {
     return;
   }
-
+  
+openedArchivedSeason =
+  season;
 
   const viewer =
     document.getElementById(
@@ -4505,6 +4508,89 @@ closeSeasonMapButton.addEventListener(
       .classList.add(
         "hidden"
       );
+
+  }
+);
+const downloadSeasonPngButton =
+  document.getElementById(
+    "download-season-png-button"
+  );
+
+
+downloadSeasonPngButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      !currentUserIsAdmin ||
+      !openedArchivedSeason
+    ) {
+      return;
+    }
+
+
+    const canvas =
+      document.getElementById(
+        "season-map-canvas"
+      );
+
+
+    /*
+     * Создаём PNG именно в исходном
+     * разрешении карты 300×424.
+     */
+
+    canvas.toBlob(
+      blob => {
+
+        if (!blob) {
+
+          alert(
+            "Не удалось создать PNG."
+          );
+
+          return;
+        }
+
+
+        const url =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        const link =
+          document.createElement(
+            "a"
+          );
+
+
+        link.href =
+          url;
+
+
+        link.download =
+          `pixel-battle-week-${openedArchivedSeason.season_number}.png`;
+
+
+        document.body.appendChild(
+          link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        URL.revokeObjectURL(
+          url
+        );
+
+      },
+      "image/png"
+    );
 
   }
 );
