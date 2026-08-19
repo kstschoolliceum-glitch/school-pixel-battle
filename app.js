@@ -3664,7 +3664,7 @@ resetPasswordButton.addEventListener(
       error
     } =
       await supabaseClient.functions.invoke(
-        "smart-endpoint",
+        "admin-reset-password",
         {
           body: {
             userId:
