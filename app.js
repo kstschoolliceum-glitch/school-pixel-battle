@@ -3617,6 +3617,154 @@ actionsCell.appendChild(
   banButton
 );
 
+// ==========================================
+// СБРОС ПАРОЛЯ
+// ==========================================
+
+const resetPasswordButton =
+  document.createElement(
+    "button"
+  );
+
+
+resetPasswordButton.type =
+  "button";
+
+resetPasswordButton.className =
+  "student-action-button reset-password";
+
+resetPasswordButton.textContent =
+  "🔑 Сбросить пароль";
+
+
+resetPasswordButton.addEventListener(
+  "click",
+  async () => {
+
+    const confirmed =
+      confirm(
+        `Сбросить пароль ученика ${student.nickname} (${student.username})?`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    resetPasswordButton.disabled =
+      true;
+
+    resetPasswordButton.textContent =
+      "СБРОС...";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.functions.invoke(
+        "smart-endpoint",
+        {
+          body: {
+            userId:
+              student.user_id
+          }
+        }
+      );
+
+
+    resetPasswordButton.disabled =
+      false;
+
+    resetPasswordButton.textContent =
+      "🔑 Сбросить пароль";
+
+
+    if (error) {
+
+      console.error(
+        "RESET PASSWORD ERROR:",
+        error
+      );
+
+      alert(
+        "Не удалось сбросить пароль."
+      );
+
+      return;
+    }
+
+
+    if (
+      !data?.success ||
+      !data?.temporaryPassword
+    ) {
+
+      console.error(
+        "RESET PASSWORD RESPONSE:",
+        data
+      );
+
+      alert(
+        "Сервер не вернул новый пароль."
+      );
+
+      return;
+    }
+
+
+    const temporaryPassword =
+      data.temporaryPassword;
+
+
+    /*
+     * Показываем пароль администратору.
+     */
+
+    const shouldCopy =
+      confirm(
+        `Пароль ученика ${student.username} изменён.\n\n` +
+        `Новый временный пароль:\n\n` +
+        `${temporaryPassword}\n\n` +
+        `Нажмите OK, чтобы скопировать пароль.`
+      );
+
+
+    if (shouldCopy) {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          temporaryPassword
+        );
+
+        alert(
+          "Пароль скопирован."
+        );
+
+      } catch (copyError) {
+
+        console.error(
+          "PASSWORD COPY ERROR:",
+          copyError
+        );
+
+        alert(
+          `Не удалось скопировать автоматически.\n\nПароль:\n${temporaryPassword}`
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+actionsCell.appendChild(
+  resetPasswordButton
+);
 
     row.append(
       username,
