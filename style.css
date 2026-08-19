@@ -1845,3 +1845,14 @@ body.admin-view .sidebar {
   }
 
 }
+.student-action-button.reset-password {
+  border: 1px solid #854d0e;
+  background: #2a1d0b;
+  color: #fde68a;
+}
+
+.students-table td:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
