@@ -188,8 +188,13 @@ function drawMap() {
 
 /*
  * Показываем выбранную клетку.
- * Двойная рамка хорошо видна
- * на светлых и тёмных пикселях.
+ *
+ * При небольшом масштабе используем
+ * крупный маркер, чтобы выбранное место
+ * было хорошо видно на компьютере.
+ *
+ * При большом увеличении выделяем
+ * уже саму клетку.
  */
 
 if (
@@ -198,35 +203,103 @@ if (
 ) {
 
   /*
-   * Внешняя белая рамка.
+   * МАЛЕНЬКИЙ ZOOM
+   * Крупный маркер выбранного места.
    */
 
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 0.32;
+  if (scale < 5) {
 
-  ctx.strokeRect(
-    selectedX + 0.04,
-    selectedY + 0.04,
-    0.92,
-    0.92
-  );
+    const markerSize =
+      Math.max(
+        3,
+        12 / scale
+      );
+
+    const markerX =
+      selectedX + 0.5;
+
+    const markerY =
+      selectedY + 0.5;
 
 
-  /*
-   * Внутренняя фиолетовая рамка.
-   */
+    /*
+     * Чёрная внешняя рамка.
+     */
 
-  ctx.strokeStyle = "#7c3aed";
-  ctx.lineWidth = 0.18;
+    ctx.strokeStyle =
+      "rgba(0, 0, 0, 0.9)";
 
-  ctx.strokeRect(
-    selectedX + 0.18,
-    selectedY + 0.18,
-    0.64,
-    0.64
-  );
+    ctx.lineWidth =
+      Math.max(
+        0.5,
+        2 / scale
+      );
+
+    ctx.strokeRect(
+      markerX - markerSize / 2,
+      markerY - markerSize / 2,
+      markerSize,
+      markerSize
+    );
+
+
+    /*
+     * Белая внутренняя рамка.
+     */
+
+    ctx.strokeStyle =
+      "#ffffff";
+
+    ctx.lineWidth =
+      Math.max(
+        0.25,
+        1 / scale
+      );
+
+    ctx.strokeRect(
+      markerX - markerSize / 2 + 0.3,
+      markerY - markerSize / 2 + 0.3,
+      markerSize - 0.6,
+      markerSize - 0.6
+    );
+
+  } else {
+
+    /*
+     * БОЛЬШОЙ ZOOM
+     * Выделяем конкретную клетку.
+     */
+
+    ctx.strokeStyle =
+      "#ffffff";
+
+    ctx.lineWidth =
+      0.32;
+
+    ctx.strokeRect(
+      selectedX + 0.04,
+      selectedY + 0.04,
+      0.92,
+      0.92
+    );
+
+
+    ctx.strokeStyle =
+      "#7c3aed";
+
+    ctx.lineWidth =
+      0.18;
+
+    ctx.strokeRect(
+      selectedX + 0.18,
+      selectedY + 0.18,
+      0.64,
+      0.64
+    );
 
   }
+
+}
 }
 
 /* -------------------------
