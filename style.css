@@ -415,15 +415,37 @@ body {
   }
 
   #place-button {
-    width: 100%;
-    min-height: 46px;
+    position: fixed;
+
+  z-index: 110;
+
+  left: 12px;
+  right: 12px;
+  bottom: 76px;
+
+  width: auto;
+  min-width: 0;
+  min-height: 52px;
+
+  padding: 0 18px;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.45);
+    
   }
 
   .cooldown {
-    min-height: 38px;
-    font-size: 12px;
+     display: none;
   }
-
+  
+  body.mobile-ranking-view #place-button,
+  body.mobile-profile-view #place-button,
+  body.admin-view #place-button {
+  display: none;
+  }
+  
   .sidebar {
     display: none;
   }
