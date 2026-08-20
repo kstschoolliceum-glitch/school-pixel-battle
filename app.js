@@ -617,13 +617,49 @@ function updateCooldown() {
 
 function updatePlaceButton() {
 
-  placeButton.disabled =
+  /*
+   * Идёт cooldown.
+   */
+
+  if (cooldownRemaining > 0) {
+
+    placeButton.disabled = true;
+
+    placeButton.textContent =
+      `ПОДОЖДИТЕ ${cooldownRemaining} СЕК.`;
+
+    return;
+  }
+
+
+  /*
+   * Пиксель ещё не выбран.
+   */
+
+  if (
     selectedX === null ||
-    selectedY === null ||
-    cooldownRemaining > 0;
+    selectedY === null
+  ) {
+
+    placeButton.disabled = true;
+
+    placeButton.textContent =
+      "ВЫБЕРИТЕ ПИКСЕЛЬ";
+
+    return;
+  }
+
+
+  /*
+   * Можно ставить пиксель.
+   */
+
+  placeButton.disabled = false;
+
+  placeButton.textContent =
+    "ПОСТАВИТЬ ПИКСЕЛЬ";
 
 }
-
 
 /* -------------------------
    МЫШЬ — ПК
