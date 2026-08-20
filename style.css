@@ -394,13 +394,27 @@ body {
   }
 
   .controls {
-    margin-top: 9px;
+    position: fixed;
+    z-index: 110;
+
+    left: 10px;
+    right: 10px;
+    bottom: 74px;
+
+    margin: 0;
     padding: 10px;
 
     display: flex;
     flex-direction: column;
+    gap: 8px;
 
-    border-radius: 10px;
+    background: rgba(17, 24, 39, 0.96);
+
+    border: 1px solid #273247;
+    border-radius: 14px;
+
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45);
   }
 
   .palette {
@@ -415,35 +429,25 @@ body {
   }
 
   #place-button {
-    position: fixed;
+    position: static;
 
-  z-index: 110;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
 
-  left: 12px;
-  right: 12px;
-  bottom: 76px;
+    padding: 0 18px;
 
-  width: auto;
-  min-width: 0;
-  min-height: 52px;
-
-  padding: 0 18px;
-
-  border-radius: 12px;
-
-  box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.45);
-    
+    border-radius: 10px;
   }
 
   .cooldown {
      display: none;
   }
   
-  body.mobile-ranking-view #place-button,
-  body.mobile-profile-view #place-button,
-  body.admin-view #place-button {
-  display: none;
+  body.mobile-ranking-view .controls,
+  body.mobile-profile-view .controls,
+  body.admin-view .controls {
+    display: none;
   }
   
   .sidebar {
