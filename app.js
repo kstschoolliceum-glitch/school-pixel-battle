@@ -139,38 +139,36 @@ let cooldownTimer = null;
 function drawGrid() {
 
   /*
-   * На маленьком масштабе сетку не показываем:
-   * клетки слишком мелкие.
+   * Сетку показываем только
+   * при достаточно большом увеличении.
    */
 
-  if (scale < 5) {
+  if (scale < 4) {
     return;
   }
 
 
   ctx.save();
 
+
   /*
-   * Тонкая полупрозрачная сетка.
-   * Чем больше zoom, тем немного
-   * заметнее границы клеток.
+   * Полупрозрачные границы клеток.
    */
 
-  const opacity =
-    scale >= 8
-      ? 0.28
-      : 0.18;
-
   ctx.strokeStyle =
-    `rgba(0, 0, 0, ${opacity})`;
+    scale >= 8
+      ? "rgba(0, 0, 0, 0.45)"
+      : "rgba(0, 0, 0, 0.30)";
 
-  ctx.lineWidth = 0.08;
+  ctx.lineWidth = 0.2;
 
   ctx.beginPath();
 
 
   /*
-   * Вертикальные линии.
+   * Смещение на половину пикселя
+   * помогает Canvas рисовать линии
+   * более чётко.
    */
 
   for (
@@ -180,21 +178,17 @@ function drawGrid() {
   ) {
 
     ctx.moveTo(
-      x,
+      x + 0.5,
       0
     );
 
     ctx.lineTo(
-      x,
+      x + 0.5,
       MAP_HEIGHT
     );
 
   }
 
-
-  /*
-   * Горизонтальные линии.
-   */
 
   for (
     let y = 1;
@@ -204,12 +198,12 @@ function drawGrid() {
 
     ctx.moveTo(
       0,
-      y
+      y + 0.5
     );
 
     ctx.lineTo(
       MAP_WIDTH,
-      y
+      y + 0.5
     );
 
   }
