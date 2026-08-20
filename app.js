@@ -265,37 +265,23 @@ if (
 
   } else {
 
-    /*
-     * БОЛЬШОЙ ZOOM
-     * Выделяем конкретную клетку.
-     */
+  /*
+   * БОЛЬШОЙ ZOOM
+   * Простая чёрная рамка выбранной клетки.
+   */
 
-    ctx.strokeStyle =
-      "#ffffff";
+  ctx.strokeStyle =
+    "#000000";
 
-    ctx.lineWidth =
-      0.32;
+  ctx.lineWidth =
+    0.35;
 
-    ctx.strokeRect(
-      selectedX + 0.04,
-      selectedY + 0.04,
-      0.92,
-      0.92
-    );
-
-
-    ctx.strokeStyle =
-      "#7c3aed";
-
-    ctx.lineWidth =
-      0.18;
-
-    ctx.strokeRect(
-      selectedX + 0.18,
-      selectedY + 0.18,
-      0.64,
-      0.64
-    );
+  ctx.strokeRect(
+    selectedX + 0.05,
+    selectedY + 0.05,
+    0.9,
+    0.9
+  );
 
   }
 
