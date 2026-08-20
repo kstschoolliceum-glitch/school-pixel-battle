@@ -136,6 +136,90 @@ let cooldownTimer = null;
 /* -------------------------
    РИСОВАНИЕ КАРТЫ
 ------------------------- */
+function drawGrid() {
+
+  /*
+   * На маленьком масштабе сетку не показываем:
+   * клетки слишком мелкие.
+   */
+
+  if (scale < 5) {
+    return;
+  }
+
+
+  ctx.save();
+
+  /*
+   * Тонкая полупрозрачная сетка.
+   * Чем больше zoom, тем немного
+   * заметнее границы клеток.
+   */
+
+  const opacity =
+    scale >= 8
+      ? 0.28
+      : 0.18;
+
+  ctx.strokeStyle =
+    `rgba(0, 0, 0, ${opacity})`;
+
+  ctx.lineWidth = 0.08;
+
+  ctx.beginPath();
+
+
+  /*
+   * Вертикальные линии.
+   */
+
+  for (
+    let x = 1;
+    x < MAP_WIDTH;
+    x++
+  ) {
+
+    ctx.moveTo(
+      x,
+      0
+    );
+
+    ctx.lineTo(
+      x,
+      MAP_HEIGHT
+    );
+
+  }
+
+
+  /*
+   * Горизонтальные линии.
+   */
+
+  for (
+    let y = 1;
+    y < MAP_HEIGHT;
+    y++
+  ) {
+
+    ctx.moveTo(
+      0,
+      y
+    );
+
+    ctx.lineTo(
+      MAP_WIDTH,
+      y
+    );
+
+  }
+
+
+  ctx.stroke();
+
+  ctx.restore();
+
+}
 
 function drawMap() {
 
@@ -179,7 +263,11 @@ function drawMap() {
     }
 
   }
+  /*
+   * Полупрозрачная сетка при увеличении.
+   */
 
+  drawGrid();
 
   /*
    * Показываем выбранную клетку.
@@ -312,6 +400,13 @@ function updateTransform() {
 
   canvas.style.transform =
     `translate(${offsetX}px, ${offsetY}px)`;
+ /*
+   * Перерисовываем Canvas,
+   * потому что видимость сетки
+   * зависит от масштаба.
+   */
+
+  drawMap();
 
 }
 
