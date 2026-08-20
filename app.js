@@ -62,6 +62,10 @@ const canvas = document.getElementById("pixel-canvas");
 const ctx = canvas.getContext("2d");
 
 const container = document.getElementById("canvas-container");
+const pixelGrid =
+  document.getElementById(
+    "pixel-grid"
+  );
 const placeButton = document.getElementById("place-button");
 const coordinatesText = document.getElementById("coordinates");
 const pixelCountText = document.getElementById("pixel-count");
@@ -305,15 +309,78 @@ function updateTransform() {
   clampOffsets();
 
 
+  const scaledWidth =
+    MAP_WIDTH * scale;
+
+  const scaledHeight =
+    MAP_HEIGHT * scale;
+
+
+  /*
+   * Масштабируем игровую карту.
+   */
+
   canvas.style.width =
-    `${MAP_WIDTH * scale}px`;
+    `${scaledWidth}px`;
 
   canvas.style.height =
-    `${MAP_HEIGHT * scale}px`;
+    `${scaledHeight}px`;
 
   canvas.style.transform =
     `translate(${offsetX}px, ${offsetY}px)`;
 
+
+  /*
+   * Сетка полностью повторяет
+   * размер и положение карты.
+   */
+
+  pixelGrid.style.width =
+    `${scaledWidth}px`;
+
+  pixelGrid.style.height =
+    `${scaledHeight}px`;
+
+  pixelGrid.style.transform =
+    `translate(
+      calc(-50% + ${offsetX}px),
+      calc(-50% + ${offsetY}px)
+    )`;
+
+
+  /*
+   * Показываем сетку только тогда,
+   * когда одна клетка уже достаточно
+   * большая на экране.
+   */
+
+  if (scale >= 5) {
+
+    pixelGrid.style.display =
+      "block";
+
+    pixelGrid.style.backgroundImage = `
+      linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.28) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.28) 1px,
+        transparent 1px
+      )
+    `;
+
+    pixelGrid.style.backgroundSize =
+      `${scale}px ${scale}px`;
+
+  } else {
+
+    pixelGrid.style.display =
+      "none";
+
+  }
 
 }
 
