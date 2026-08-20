@@ -186,27 +186,45 @@ function drawMap() {
   }
 
 
+/*
+ * Показываем выбранную клетку.
+ * Двойная рамка хорошо видна
+ * на светлых и тёмных пикселях.
+ */
+
+if (
+  selectedX !== null &&
+  selectedY !== null
+) {
+
   /*
-   * Показываем выбранную клетку.
-   * Рамка масштабируется вместе с картой.
+   * Внешняя белая рамка.
    */
 
-  if (
-    selectedX !== null &&
-    selectedY !== null
-  ) {
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 0.32;
 
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 0.35;
+  ctx.strokeRect(
+    selectedX + 0.04,
+    selectedY + 0.04,
+    0.92,
+    0.92
+  );
 
-    ctx.strokeRect(
-      selectedX + 0.05,
-      selectedY + 0.05,
-      0.9,
-      0.9
-    );
 
-  }
+  /*
+   * Внутренняя фиолетовая рамка.
+   */
+
+  ctx.strokeStyle = "#7c3aed";
+  ctx.lineWidth = 0.18;
+
+  ctx.strokeRect(
+    selectedX + 0.18,
+    selectedY + 0.18,
+    0.64,
+    0.64
+  );
 
 }
 
