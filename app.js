@@ -136,84 +136,7 @@ let cooldownTimer = null;
 /* -------------------------
    РИСОВАНИЕ КАРТЫ
 ------------------------- */
-function drawGrid() {
 
-  /*
-   * Сетку показываем только
-   * при достаточно большом увеличении.
-   */
-
-  if (scale < 4) {
-    return;
-  }
-
-
-  ctx.save();
-
-
-  /*
-   * Полупрозрачные границы клеток.
-   */
-
-  ctx.strokeStyle =
-    scale >= 8
-      ? "rgba(0, 0, 0, 0.45)"
-      : "rgba(0, 0, 0, 0.30)";
-
-  ctx.lineWidth = 0.2;
-
-  ctx.beginPath();
-
-
-  /*
-   * Смещение на половину пикселя
-   * помогает Canvas рисовать линии
-   * более чётко.
-   */
-
-  for (
-    let x = 1;
-    x < MAP_WIDTH;
-    x++
-  ) {
-
-    ctx.moveTo(
-      x + 0.5,
-      0
-    );
-
-    ctx.lineTo(
-      x + 0.5,
-      MAP_HEIGHT
-    );
-
-  }
-
-
-  for (
-    let y = 1;
-    y < MAP_HEIGHT;
-    y++
-  ) {
-
-    ctx.moveTo(
-      0,
-      y + 0.5
-    );
-
-    ctx.lineTo(
-      MAP_WIDTH,
-      y + 0.5
-    );
-
-  }
-
-
-  ctx.stroke();
-
-  ctx.restore();
-
-}
 
 function drawMap() {
 
@@ -257,11 +180,7 @@ function drawMap() {
     }
 
   }
-  /*
-   * Полупрозрачная сетка при увеличении.
-   */
 
-  drawGrid();
 
   /*
    * Показываем выбранную клетку.
@@ -394,13 +313,7 @@ function updateTransform() {
 
   canvas.style.transform =
     `translate(${offsetX}px, ${offsetY}px)`;
- /*
-   * Перерисовываем Canvas,
-   * потому что видимость сетки
-   * зависит от масштаба.
-   */
 
-  drawMap();
 
 }
 
