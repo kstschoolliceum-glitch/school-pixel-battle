@@ -131,7 +131,7 @@ let pixelCount = 0;
  * Пока cooldown делаем локальным.
  * Когда подключим Supabase, проверка будет серверной.
  */
-const COOLDOWN_SECONDS = 20;
+const COOLDOWN_SECONDS = 10;
 
 let cooldownRemaining = 0;
 let cooldownTimer = null;
