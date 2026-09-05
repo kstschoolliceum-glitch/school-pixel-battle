@@ -2670,11 +2670,62 @@ function createChatMessageElement(item) {
     "chat-message";
 
 
+  const content =
+    document.createElement("span");
+
+  content.className =
+    "chat-message-content";
+
+
   const author =
     document.createElement("strong");
 
+  author.className =
+    "chat-message-author";
+
   author.textContent =
     `${item.nickname} [${item.class_name ?? "—"}]:`;
+
+
+  /*
+   * Цвет зависит от класса.
+   * Один класс всегда получает один цвет.
+   */
+
+  const classColors = [
+    "#f87171",
+    "#fb923c",
+    "#facc15",
+    "#4ade80",
+    "#22d3ee",
+    "#60a5fa",
+    "#a78bfa",
+    "#f472b6"
+  ];
+
+  const className =
+    item.class_name ?? "—";
+
+  let hash = 0;
+
+  for (
+    let i = 0;
+    i < className.length;
+    i++
+  ) {
+
+    hash =
+      className.charCodeAt(i) +
+      ((hash << 5) - hash);
+
+  }
+
+  const colorIndex =
+    Math.abs(hash) %
+    classColors.length;
+
+  author.style.color =
+    classColors[colorIndex];
 
 
   const text =
@@ -2684,9 +2735,42 @@ function createChatMessageElement(item) {
     ` ${item.message}`;
 
 
-  row.append(
+  content.append(
     author,
     text
+  );
+
+
+  /*
+   * Время сообщения.
+   */
+
+  const time =
+    document.createElement("span");
+
+  time.className =
+    "chat-message-time";
+
+
+  if (item.created_at) {
+
+    time.textContent =
+      new Date(
+        item.created_at
+      ).toLocaleTimeString(
+        "ru-RU",
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
+
+  }
+
+
+  row.append(
+    content,
+    time
   );
 
 
