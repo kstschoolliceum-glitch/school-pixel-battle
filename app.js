@@ -2636,6 +2636,207 @@ seasonCheckTimer = null;
 
   }
 );
+/* -------------------------
+   ЧАТ
+------------------------- */
+
+const chatMessages =
+  document.getElementById(
+    "chat-messages"
+  );
+
+const chatForm =
+  document.getElementById(
+    "chat-form"
+  );
+
+const chatInput =
+  document.getElementById(
+    "chat-input"
+  );
+
+const chatSendButton =
+  document.getElementById(
+    "chat-send-button"
+  );
+
+
+function createChatMessageElement(item) {
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "chat-message";
+
+
+  const author =
+    document.createElement("strong");
+
+  author.textContent =
+    `${item.nickname} [${item.class_name ?? "—"}]:`;
+
+
+  const text =
+    document.createElement("span");
+
+  text.textContent =
+    ` ${item.message}`;
+
+
+  row.append(
+    author,
+    text
+  );
+
+
+  return row;
+}
+
+
+async function loadChatMessages() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_chat_messages",
+      {
+        p_limit: 50
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "CHAT LOAD ERROR:",
+      error
+    );
+
+    chatMessages.textContent =
+      "Не удалось загрузить сообщения";
+
+    return;
+  }
+
+
+  chatMessages.innerHTML = "";
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    const empty =
+      document.createElement("div");
+
+    empty.className =
+      "chat-empty";
+
+    empty.textContent =
+      "Сообщений пока нет";
+
+    chatMessages.appendChild(
+      empty
+    );
+
+    return;
+  }
+
+
+  /*
+   * Сервер отдаёт сначала новые.
+   * На экране показываем:
+   * старые сверху → новые снизу.
+   */
+
+  const messages =
+    [...data].reverse();
+
+
+  for (const item of messages) {
+
+    chatMessages.appendChild(
+      createChatMessageElement(item)
+    );
+
+  }
+
+
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+}
+
+
+chatForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+
+    const message =
+      chatInput.value.trim();
+
+
+    if (!message) {
+      return;
+    }
+
+
+    if (message.length > 100) {
+      return;
+    }
+
+
+    chatSendButton.disabled =
+      true;
+
+
+    const {
+      error
+    } =
+      await supabaseClient.rpc(
+        "send_chat_message",
+        {
+          p_message: message
+        }
+      );
+
+
+    chatSendButton.disabled =
+      false;
+
+
+    if (error) {
+
+      console.error(
+        "CHAT SEND ERROR:",
+        error
+      );
+
+      return;
+    }
+
+
+    chatInput.value = "";
+
+
+    await loadChatMessages();
+
+
+    chatInput.focus();
+
+  }
+);
 const mobileMapButton =
   document.getElementById(
     "mobile-map-button"
@@ -2705,6 +2906,8 @@ function setMobileView(view) {
   mobileChatButton.classList.add(
     "selected"
   );
+
+  loadChatMessages();
 
   return;
 }
