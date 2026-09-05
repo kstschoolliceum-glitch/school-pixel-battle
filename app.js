@@ -90,6 +90,16 @@ const pixelOwners =
   new Array(
     MAP_WIDTH * MAP_HEIGHT
   ).fill(null);
+/*
+ * Справочник:
+ * class_id → название класса.
+ *
+ * Нужен для Realtime, потому что
+ * изменение pixels содержит class_id,
+ * но не содержит classes.name.
+ */
+const classNamesById =
+  new Map();
 const COLORS = [
   "#ffffff",
   "#ef4444",
@@ -1843,6 +1853,7 @@ async function checkForSeasonChange() {
   // Убираем старую карту из памяти браузера.
 
   pixels.fill(0);
+  pixelOwners.fill(null);
 
   selectedX = null;
   selectedY = null;
@@ -1995,6 +2006,7 @@ async function initializeAuth() {
     authScreen.classList.add("hidden");
 
     await loadActiveSeason();
+    await loadClassNames();
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
@@ -2074,6 +2086,7 @@ loginForm.addEventListener(
     authScreen.classList.add("hidden");
 
     await loadActiveSeason();
+    await loadClassNames();
     await loadPixels();
     await loadClassRanking();
     await loadMyProfile();
@@ -2082,6 +2095,39 @@ loginForm.addEventListener(
     startSeasonWatcher();
   }
 );
+async function loadClassNames() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("classes")
+      .select("id,name")
+      .eq("is_active", true);
+
+  if (error) {
+
+    console.error(
+      "CLASS NAMES ERROR:",
+      error
+    );
+
+    return;
+  }
+
+  classNamesById.clear();
+
+  for (const item of data ?? []) {
+
+    classNamesById.set(
+      String(item.id),
+      item.name
+    );
+
+  }
+
+}
 async function loadPixels() {
 
 if (!activeSeason) {
@@ -2154,6 +2200,15 @@ const seasonId =
       colorIndex;
     pixelOwners[index] =
       pixel.classes?.name ?? null;
+    if (
+  pixel.class_id &&
+  pixel.classes?.name
+) {
+  classNamesById.set(
+    String(pixel.class_id),
+    pixel.classes.name
+  );
+}
   }
 
 
@@ -2217,6 +2272,12 @@ function subscribeToPixels() {
 
         pixels[index] =
           colorIndex;
+        pixelOwners[index] =
+          pixel.class_id
+            ? classNamesById.get(
+                String(pixel.class_id)
+              ) ?? null
+            : null;
 
         drawMap();
         
