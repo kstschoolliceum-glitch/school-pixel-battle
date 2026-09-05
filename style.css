@@ -461,6 +461,7 @@ body {
   
   body.mobile-ranking-view .controls,
   body.mobile-profile-view .controls,
+  body.mobile-chat-view .controls,
   body.admin-view .controls {
     display: none;
   }
@@ -479,7 +480,7 @@ body {
     bottom: 0;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
 
     background: rgba(12, 17, 28, 0.97);
     border-top: 1px solid var(--border);
@@ -796,6 +797,123 @@ body {
 
 #logout-button:hover {
   background: #3b151d;
+}
+/* ---------- CHAT ---------- */
+
+.chat-section {
+  display: none;
+}
+
+@media (max-width: 650px) {
+
+  body.mobile-chat-view
+  .map-section,
+
+  body.mobile-chat-view
+  .sidebar {
+    display: none;
+  }
+
+  body.mobile-chat-view
+  .chat-section {
+    display: flex;
+  }
+
+  .chat-section {
+    height: calc(100vh - 130px);
+    padding: 10px;
+
+    flex-direction: column;
+
+    background: var(--bg);
+  }
+
+  .chat-header {
+    padding: 8px 4px 12px;
+  }
+
+  .chat-header h2 {
+    margin: 0 0 4px;
+
+    font-size: 18px;
+  }
+
+  .chat-header p {
+    margin: 0;
+
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .chat-messages {
+    min-height: 0;
+    flex: 1;
+
+    padding: 12px;
+
+    overflow-y: auto;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .chat-empty {
+    padding: 30px 10px;
+
+    text-align: center;
+
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .chat-form {
+    margin-top: 10px;
+
+    display: grid;
+    grid-template-columns: 1fr 48px;
+    gap: 8px;
+  }
+
+  #chat-input {
+    min-width: 0;
+    height: 48px;
+    padding: 0 14px;
+
+    border: 1px solid #334155;
+    border-radius: 12px;
+
+    outline: none;
+
+    background: var(--panel);
+    color: white;
+
+    font-size: 14px;
+  }
+
+  #chat-input:focus {
+    border-color: var(--purple-light);
+  }
+
+  #chat-send-button {
+    width: 48px;
+    height: 48px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+
+    color: white;
+    font-size: 18px;
+
+    cursor: pointer;
+  }
+
 }
 /* ---------- MOBILE SCREENS ---------- */
 
