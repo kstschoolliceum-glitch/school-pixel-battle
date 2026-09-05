@@ -871,15 +871,32 @@ body {
   .chat-message {
   padding: 7px 2px;
 
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
   color: #e2e8f0;
   font-size: 14px;
   line-height: 1.4;
+}
+
+.chat-message-content {
+  min-width: 0;
 
   overflow-wrap: anywhere;
 }
 
-.chat-message strong {
-  color: #c4b5fd;
+.chat-message-author {
+  font-weight: 700;
+}
+
+.chat-message-time {
+  flex-shrink: 0;
+
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 400;
 }
   .chat-form {
     flex-shrink: 0;
