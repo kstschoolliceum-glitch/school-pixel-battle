@@ -393,6 +393,56 @@
 </div>
     </aside>
 <section
+  id="chat-section"
+  class="chat-section"
+>
+
+  <div class="chat-header">
+
+    <div>
+      <h2>💬 Общий чат</h2>
+      <p>Общение участников Pixel Battle</p>
+    </div>
+
+  </div>
+
+
+  <div
+    id="chat-messages"
+    class="chat-messages"
+  >
+
+    <div class="chat-empty">
+      Сообщений пока нет
+    </div>
+
+  </div>
+
+
+  <form
+    id="chat-form"
+    class="chat-form"
+  >
+
+    <input
+      id="chat-input"
+      type="text"
+      maxlength="200"
+      autocomplete="off"
+      placeholder="Напишите сообщение..."
+    >
+
+    <button
+      id="chat-send-button"
+      type="submit"
+    >
+      ➤
+    </button>
+
+  </form>
+
+</section>
+<section
   id="admin-section"
   class="admin-section"
 >
@@ -1030,7 +1080,13 @@
     🏆
     <span>Рейтинг</span>
   </button>
-
+<button
+  id="mobile-chat-button"
+  type="button"
+>
+  💬
+  <span>Чат</span>
+</button>
   <button
     id="mobile-profile-button"
     type="button"
