@@ -2645,7 +2645,10 @@ const mobileRankingButton =
   document.getElementById(
     "mobile-ranking-button"
   );
-
+const mobileChatButton =
+  document.getElementById(
+    "mobile-chat-button"
+  );
 const mobileProfileButton =
   document.getElementById(
     "mobile-profile-button"
@@ -2656,6 +2659,7 @@ function setMobileView(view) {
 
   document.body.classList.remove(
     "mobile-ranking-view",
+    "mobile-chat-view",
     "mobile-profile-view"
   );
 
@@ -2667,7 +2671,11 @@ function setMobileView(view) {
   mobileRankingButton.classList.remove(
     "selected"
   );
-
+  
+  mobileChatButton.classList.remove(
+    "selected"
+  );
+  
   mobileProfileButton.classList.remove(
     "selected"
   );
@@ -2688,7 +2696,18 @@ function setMobileView(view) {
     return;
   }
 
+  if (view === "chat") {
 
+  document.body.classList.add(
+    "mobile-chat-view"
+  );
+
+  mobileChatButton.classList.add(
+    "selected"
+  );
+
+  return;
+}
   if (view === "profile") {
 
     document.body.classList.add(
@@ -2726,7 +2745,12 @@ mobileRankingButton.addEventListener(
     setMobileView("ranking");
   }
 );
-
+mobileChatButton.addEventListener(
+  "click",
+  () => {
+    setMobileView("chat");
+  }
+);
 
 mobileProfileButton.addEventListener(
   "click",
