@@ -866,7 +866,19 @@ body {
     color: var(--muted);
     font-size: 13px;
   }
+  .chat-message {
+  padding: 7px 2px;
 
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.chat-message strong {
+  color: #c4b5fd;
+}
   .chat-form {
     margin-top: 10px;
 
