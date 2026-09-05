@@ -2775,7 +2775,42 @@ async function loadChatMessages() {
     chatMessages.scrollHeight;
 }
 
+/* -------------------------
+   REALTIME ЧАТ
+------------------------- */
 
+function subscribeToChat() {
+
+  supabaseClient
+    .channel("school-chat")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "chat_messages"
+      },
+      async () => {
+
+        /*
+         * Новое сообщение появилось.
+         * Перечитываем чат через безопасную RPC.
+         */
+
+        await loadChatMessages();
+
+      }
+    )
+    .subscribe((status) => {
+
+      console.log(
+        "Chat Realtime:",
+        status
+      );
+
+    });
+
+}
 chatForm.addEventListener(
   "submit",
   async (event) => {
@@ -5459,3 +5494,4 @@ downloadSeasonPngButton.addEventListener(
 );
 initializeAuth();
 subscribeToPixels();
+subscribeToChat();
