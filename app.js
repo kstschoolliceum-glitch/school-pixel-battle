@@ -82,7 +82,14 @@ ctx.imageSmoothingEnabled = false;
  * В дальнейшем эти данные будут приходить из Supabase.
  */
 const pixels = new Uint8Array(MAP_WIDTH * MAP_HEIGHT);
-
+/*
+ * Текущий класс-владелец каждой клетки.
+ * null означает свободную клетку.
+ */
+const pixelOwners =
+  new Array(
+    MAP_WIDTH * MAP_HEIGHT
+  ).fill(null);
 const COLORS = [
   "#ffffff",
   "#ef4444",
@@ -544,8 +551,17 @@ function selectPixel(clientX, clientY) {
   selectedX = pixel.x;
   selectedY = pixel.y;
 
+  const index =
+  selectedY * MAP_WIDTH +
+  selectedX;
+
+  const owner =
+  pixelOwners[index];
+
   coordinatesText.textContent =
-    `X: ${selectedX}  Y: ${selectedY}`;
+  owner
+    ? `X: ${selectedX}  Y: ${selectedY} • 🏫 ${owner}`
+    : `X: ${selectedX}  Y: ${selectedY} • Свободная клетка`;
 
   updatePlaceButton();
   drawMap();
@@ -2095,7 +2111,15 @@ const seasonId =
   } =
     await supabaseClient
       .from("pixels")
-      .select("x,y,color")
+      .select(`
+                x,
+                y,
+                color,
+                class_id,
+                classes (
+                name
+                        )
+            `)
       .eq("season_id", seasonId);
 
 
@@ -2111,7 +2135,7 @@ const seasonId =
 
 
   pixels.fill(0);
-
+  pixelOwners.fill(null);
 
   for (const pixel of data) {
 
@@ -2128,7 +2152,8 @@ const seasonId =
 
     pixels[index] =
       colorIndex;
-
+    pixelOwners[index] =
+      pixel.classes?.name ?? null;
   }
 
 
