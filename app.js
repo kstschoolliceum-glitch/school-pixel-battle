@@ -798,7 +798,7 @@ async function placePixel() {
 
   startCooldown();
 
-  loadClassRanking();
+  ;
   loadMyProfile();
 }
 
@@ -1460,7 +1460,7 @@ showRegister.addEventListener(
   "click",
   openRegister
 );
-async function loadClassRanking() {
+async function  {
 
   const rankingElement =
     document.getElementById(
