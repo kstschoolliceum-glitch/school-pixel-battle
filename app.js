@@ -2660,6 +2660,32 @@ const chatSendButton =
     "chat-send-button"
   );
 
+function showChatUnreadDot() {
+
+  const button =
+    document.getElementById(
+      "mobile-chat-button"
+    );
+
+  button.classList.add(
+    "has-unread"
+  );
+
+}
+
+
+function hideChatUnreadDot() {
+
+  const button =
+    document.getElementById(
+      "mobile-chat-button"
+    );
+
+  button.classList.remove(
+    "has-unread"
+  );
+
+}
 
 function createChatMessageElement(item) {
 
@@ -2876,14 +2902,33 @@ function subscribeToChat() {
       },
       async () => {
 
-        /*
-         * Новое сообщение появилось.
-         * Перечитываем чат через безопасную RPC.
-         */
+  const chatIsOpen =
+    document.body.classList.contains(
+      "mobile-chat-view"
+    );
 
-        await loadChatMessages();
 
-      }
+  if (chatIsOpen) {
+
+    /*
+     * Чат сейчас открыт —
+     * сразу показываем сообщение.
+     */
+
+    await loadChatMessages();
+
+  } else {
+
+    /*
+     * Пользователь находится
+     * в другом разделе.
+     */
+
+    showChatUnreadDot();
+
+  }
+
+}
     )
     .subscribe((status) => {
 
@@ -3025,7 +3070,8 @@ function setMobileView(view) {
   mobileChatButton.classList.add(
     "selected"
   );
-
+    
+  hideChatUnreadDot();
   loadChatMessages();
 
   return;
