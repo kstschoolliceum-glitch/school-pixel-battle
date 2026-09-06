@@ -6077,18 +6077,76 @@ downloadSeasonPngButton.addEventListener(
     }
 
 
-    const canvas =
+    const sourceCanvas =
       document.getElementById(
         "season-map-canvas"
       );
 
 
     /*
-     * Создаём PNG именно в исходном
-     * разрешении карты 300×424.
+     * Увеличиваем экспорт в 6 раз.
+     *
+     * Исходная карта:
+     * 300 × 424
+     *
+     * PNG:
+     * 1800 × 2544
      */
 
-    canvas.toBlob(
+    const exportScale = 6;
+
+
+    const exportCanvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    exportCanvas.width =
+      sourceCanvas.width *
+      exportScale;
+
+    exportCanvas.height =
+      sourceCanvas.height *
+      exportScale;
+
+
+    const exportContext =
+      exportCanvas.getContext(
+        "2d"
+      );
+
+
+    /*
+     * КРИТИЧНО:
+     * отключаем сглаживание.
+     *
+     * Каждый игровой пиксель
+     * превращается в чёткий квадрат 6×6.
+     */
+
+    exportContext.imageSmoothingEnabled =
+      false;
+
+
+    exportContext.drawImage(
+      sourceCanvas,
+
+      0,
+      0,
+
+      sourceCanvas.width,
+      sourceCanvas.height,
+
+      0,
+      0,
+
+      exportCanvas.width,
+      exportCanvas.height
+    );
+
+
+    exportCanvas.toBlob(
       blob => {
 
         if (!blob) {
@@ -6137,7 +6195,9 @@ downloadSeasonPngButton.addEventListener(
         );
 
       },
+
       "image/png"
+
     );
 
   }
