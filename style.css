@@ -289,6 +289,42 @@ body {
   text-transform: uppercase;
 }
 
+/* ---------- RANKING TABS ---------- */
+
+.ranking-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+
+  margin-bottom: 14px;
+  padding: 4px;
+
+  background: #0b1220;
+  border: 1px solid #273247;
+  border-radius: 10px;
+}
+
+.ranking-tab {
+  min-height: 36px;
+  padding: 0 8px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.ranking-tab.active {
+  background: #6d28d9;
+  color: white;
+}
+
 .ranking {
   display: flex;
   flex-direction: column;
