@@ -158,7 +158,42 @@ let cooldownTimer = null;
    РИСОВАНИЕ КАРТЫ
 ------------------------- */
 
+function getContrastColor(hexColor) {
 
+  const hex =
+    hexColor.replace("#", "");
+
+  const r =
+    parseInt(hex.substring(0, 2), 16);
+
+  const g =
+    parseInt(hex.substring(2, 4), 16);
+
+  const b =
+    parseInt(hex.substring(4, 6), 16);
+
+
+  /*
+   * Воспринимаемая яркость цвета.
+   */
+
+  const brightness =
+    (
+      r * 299 +
+      g * 587 +
+      b * 114
+    ) / 1000;
+
+
+  /*
+   * На тёмном фоне — белый прицел.
+   * На светлом — чёрный.
+   */
+
+  return brightness < 140
+    ? "#ffffff"
+    : "#000000";
+}
 function drawMap() {
 
   ctx.clearRect(
@@ -218,6 +253,24 @@ if (
   selectedX !== null &&
   selectedY !== null
 ) {
+    const selectedIndex =
+    selectedY * MAP_WIDTH +
+    selectedX;
+
+  const selectedPixelColor =
+    COLORS[
+      pixels[selectedIndex]
+    ] ?? "#ffffff";
+
+  const crosshairColor =
+    getContrastColor(
+      selectedPixelColor
+    );
+
+  const oppositeColor =
+    crosshairColor === "#ffffff"
+      ? "#000000"
+      : "#ffffff";
 
   /*
    * МАЛЕНЬКИЙ ZOOM
@@ -244,7 +297,7 @@ if (
      */
 
     ctx.strokeStyle =
-      "rgba(0, 0, 0, 0.9)";
+      oppositeColor;
 
     ctx.lineWidth =
       Math.max(
@@ -265,7 +318,7 @@ if (
      */
 
     ctx.strokeStyle =
-      "#ffffff";
+      crosshairColor;
 
     ctx.lineWidth =
       Math.max(
@@ -287,18 +340,40 @@ if (
    * Простая чёрная рамка выбранной клетки.
    */
 
-  ctx.strokeStyle =
-    "#000000";
+  /*
+ * Внешний контур.
+ */
 
-  ctx.lineWidth =
-    0.35;
+ctx.strokeStyle =
+  oppositeColor;
 
-  ctx.strokeRect(
-    selectedX + 0.05,
-    selectedY + 0.05,
-    0.9,
-    0.9
-  );
+ctx.lineWidth =
+  0.35;
+
+ctx.strokeRect(
+  selectedX + 0.03,
+  selectedY + 0.03,
+  0.94,
+  0.94
+);
+
+
+/*
+ * Внутренний контрастный контур.
+ */
+
+ctx.strokeStyle =
+  crosshairColor;
+
+ctx.lineWidth =
+  0.18;
+
+ctx.strokeRect(
+  selectedX + 0.15,
+  selectedY + 0.15,
+  0.70,
+  0.70
+);
 
   }
 
