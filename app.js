@@ -798,7 +798,7 @@ async function placePixel() {
 
   startCooldown();
 
-  ;
+  loadClassRanking();
   loadMyProfile();
 }
 
@@ -1460,7 +1460,7 @@ showRegister.addEventListener(
   "click",
   openRegister
 );
-async function  {
+async function loadClassRanking() {
 
   const rankingElement =
     document.getElementById(
@@ -1560,6 +1560,159 @@ async function  {
   );
 
 }
+/* =========================
+   РЕЙТИНГ ТОПА ЧЕТВЕРТИ
+========================= */
+
+async function loadQuarterRanking() {
+
+  const rankingElement =
+    document.getElementById(
+      "class-ranking"
+    );
+
+
+  if (!rankingElement) {
+    return;
+  }
+
+
+  rankingElement.innerHTML =
+    "<div><span>Загрузка рейтинга...</span></div>";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_quarter_ranking"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "QUARTER RANKING ERROR:",
+      error
+    );
+
+    rankingElement.innerHTML =
+      "<div><span>Не удалось загрузить рейтинг</span></div>";
+
+    return;
+  }
+
+
+  rankingElement.innerHTML = "";
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    rankingElement.innerHTML =
+      "<div><span>ТОП четверти пока пуст</span></div>";
+
+    return;
+  }
+
+
+  data.forEach(
+    (item, index) => {
+
+      const row =
+        document.createElement("div");
+
+
+      let place =
+        `${index + 1}.`;
+
+
+      if (index === 0) {
+        place = "🥇";
+      }
+
+      if (index === 1) {
+        place = "🥈";
+      }
+
+      if (index === 2) {
+        place = "🥉";
+      }
+
+
+      const name =
+        document.createElement("span");
+
+      name.textContent =
+        `${place} ${item.class_name}`;
+
+
+      const score =
+        document.createElement("strong");
+
+      score.textContent =
+        `${Number(
+          item.points ?? 0
+        ).toLocaleString("ru-RU")} очк.`;
+
+
+      row.appendChild(name);
+      row.appendChild(score);
+
+      rankingElement.appendChild(row);
+
+    }
+  );
+
+}
+const weeklyRankingTab =
+  document.getElementById(
+    "weekly-ranking-tab"
+  );
+
+const quarterRankingTab =
+  document.getElementById(
+    "quarter-ranking-tab"
+  );
+
+
+weeklyRankingTab.addEventListener(
+  "click",
+  async () => {
+
+    weeklyRankingTab.classList.add(
+      "active"
+    );
+
+    quarterRankingTab.classList.remove(
+      "active"
+    );
+
+    await loadClassRanking();
+
+  }
+);
+
+
+quarterRankingTab.addEventListener(
+  "click",
+  async () => {
+
+    quarterRankingTab.classList.add(
+      "active"
+    );
+
+    weeklyRankingTab.classList.remove(
+      "active"
+    );
+
+    await loadQuarterRanking();
+
+  }
+);
 async function loadMyProfile() {
 
   const {
