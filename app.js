@@ -55,6 +55,7 @@ const loginError =
   document.getElementById("login-error");
 
 let currentUser = null;
+let onlinePresenceChannel = null;
 const MAP_WIDTH = 300;
 const MAP_HEIGHT = 424;
 
@@ -2218,6 +2219,88 @@ async function checkAdminStatus() {
 
 
   return currentUserIsAdmin;
+
+}
+async function startOnlinePresence() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  if (onlinePresenceChannel) {
+
+    await supabaseClient.removeChannel(
+      onlinePresenceChannel
+    );
+
+    onlinePresenceChannel = null;
+  }
+
+
+  onlinePresenceChannel =
+    supabaseClient.channel(
+      "pixel-battle-online",
+      {
+        config: {
+          presence: {
+            key: currentUser.id
+          }
+        }
+      }
+    );
+
+
+  onlinePresenceChannel.on(
+    "presence",
+    {
+      event: "sync"
+    },
+    () => {
+
+      const state =
+        onlinePresenceChannel.presenceState();
+
+
+      const onlineCount =
+        Object.keys(state).length;
+
+
+      const counter =
+        document.getElementById(
+          "online-users-count"
+        );
+
+
+      if (counter) {
+
+        counter.textContent =
+          onlineCount.toLocaleString(
+            "ru-RU"
+          );
+
+      }
+
+    }
+  );
+
+
+  onlinePresenceChannel.subscribe(
+    async (status) => {
+
+      if (status !== "SUBSCRIBED") {
+        return;
+      }
+
+
+      await onlinePresenceChannel.track({
+        user_id: currentUser.id,
+        online_at:
+          new Date().toISOString()
+      });
+
+    }
+  );
 
 }
 async function initializeAuth() {
