@@ -2323,6 +2323,8 @@ async function initializeAuth() {
     await loadMyProfile();
     await checkAdminStatus();
 
+    await startOnlinePresence();
+
     startSeasonWatcher();
   } else {
 
@@ -2402,6 +2404,8 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await checkAdminStatus();
+
+    await startOnlinePresence();
 
     startSeasonWatcher();
   }
@@ -2919,7 +2923,14 @@ logoutButton.addEventListener(
       return;
     }
 
+    if (onlinePresenceChannel) {
 
+  await supabaseClient.removeChannel(
+    onlinePresenceChannel
+  );
+
+  onlinePresenceChannel = null;
+}
     currentUser = null;
 
     currentUserIsAdmin = false;
