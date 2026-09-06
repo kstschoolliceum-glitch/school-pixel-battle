@@ -5211,6 +5211,203 @@ async function loadAdminCurrentSeason() {
   }
 
 }
+async function loadAdminQuarterCompetition() {
+
+  if (!currentUserIsAdmin) {
+    return;
+  }
+
+
+  const statusElement =
+    document.getElementById(
+      "admin-quarter-status"
+    );
+
+  const titleElement =
+    document.getElementById(
+      "admin-quarter-title"
+    );
+
+  const detailsElement =
+    document.getElementById(
+      "admin-quarter-details"
+    );
+
+  const startButton =
+    document.getElementById(
+      "admin-quarter-start-button"
+    );
+
+  const finishButton =
+    document.getElementById(
+      "admin-quarter-finish-button"
+    );
+
+  const messageElement =
+    document.getElementById(
+      "admin-quarter-message"
+    );
+
+
+  messageElement.textContent = "";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_quarter_competition_status"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "QUARTER STATUS ERROR:",
+      error
+    );
+
+    statusElement.textContent =
+      "🔴 Ошибка";
+
+    detailsElement.textContent =
+      "Не удалось загрузить состояние.";
+
+    return;
+  }
+
+
+  if (!data?.exists) {
+
+    statusElement.textContent =
+      "⚪ Не запущен";
+
+    titleElement.textContent =
+      "ТОП четверти";
+
+    detailsElement.textContent =
+      "Недель пока не учтено.";
+
+    startButton.classList.remove(
+      "hidden"
+    );
+
+    finishButton.classList.add(
+      "hidden"
+    );
+
+    return;
+  }
+
+
+  const started =
+    new Date(
+      data.started_at
+    ).toLocaleDateString(
+      "ru-RU"
+    );
+
+
+  statusElement.textContent =
+    "🟢 Активен";
+
+  titleElement.textContent =
+    data.title ?? "ТОП четверти";
+
+  detailsElement.textContent =
+    `Начат: ${started} • Учтено недель: ${Number(
+      data.weeks_count ?? 0
+    )}`;
+
+
+  startButton.classList.add(
+    "hidden"
+  );
+
+  finishButton.classList.remove(
+    "hidden"
+  );
+
+}
+const adminQuarterStartButton =
+  document.getElementById(
+    "admin-quarter-start-button"
+  );
+
+
+adminQuarterStartButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!currentUserIsAdmin) {
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        "Начать новый ТОП четверти?\n\nЗавершённые с этого момента недели будут учитываться в общем рейтинге."
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    adminQuarterStartButton.disabled =
+      true;
+
+    adminQuarterStartButton.textContent =
+      "ЗАПУСК...";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "start_quarter_competition",
+        {
+          p_title: "ТОП четверти"
+        }
+      );
+
+
+    adminQuarterStartButton.disabled =
+      false;
+
+    adminQuarterStartButton.textContent =
+      "▶ НАЧАТЬ ТОП ЧЕТВЕРТИ";
+
+
+    if (error) {
+
+      console.error(
+        "START QUARTER ERROR:",
+        error
+      );
+
+      document.getElementById(
+        "admin-quarter-message"
+      ).textContent =
+        "Не удалось запустить ТОП четверти.";
+
+      return;
+    }
+
+
+    console.log(
+      "ТОП четверти запущен:",
+      data
+    );
+
+
+    await loadAdminQuarterCompetition();
+
+  }
+);
 async function loadAdminSeasonHistory() {
 
   if (!currentUserIsAdmin) {
@@ -5434,6 +5631,7 @@ async function openAdminSeasons() {
 
 
   await loadAdminCurrentSeason();
+  await loadAdminQuarterCompetition();
   await loadAdminSeasonHistory();
 
 }
