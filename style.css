@@ -773,6 +773,42 @@ body {
   border-color: #8b5cf6;
 }
 
+#register-username-fields,
+#register-password-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+#register-form.easy-registration
+#register-username-fields,
+
+#register-form.easy-registration
+#register-password-fields {
+  display: none;
+}
+
+
+#register-form.easy-registration
+#register-invite {
+  display: none;
+}
+
+
+.easy-invite-label {
+  padding: 11px 12px;
+
+  background: #0d1f18;
+  border: 1px solid #166534;
+  border-radius: 9px;
+
+  color: #86efac;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
 #register-invite.invite-from-link {
   color: #86efac;
 
