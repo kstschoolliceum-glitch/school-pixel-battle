@@ -1503,6 +1503,59 @@ function applyInviteFromUrl() {
     "invite-from-link"
   );
 
+  registerForm.classList.add(
+  "easy-registration"
+);
+
+
+/*
+ * В быстрой регистрации
+ * логин и пароль создаст сервер.
+ */
+
+registerUsername.required =
+  false;
+
+registerPassword.required =
+  false;
+
+registerPasswordRepeat.required =
+  false;
+
+
+/*
+ * Вместо кода показываем
+ * понятную надпись.
+ */
+
+let easyLabel =
+  document.getElementById(
+    "easy-invite-label"
+  );
+
+
+if (!easyLabel) {
+
+  easyLabel =
+    document.createElement(
+      "div"
+    );
+
+  easyLabel.id =
+    "easy-invite-label";
+
+  easyLabel.className =
+    "easy-invite-label";
+
+  easyLabel.textContent =
+    "✓ Приглашение принято";
+
+
+  registerForm.prepend(
+    easyLabel
+  );
+}
+
 
   /*
    * Ставим курсор сразу в никнейм.
@@ -2706,8 +2759,14 @@ registerForm.addEventListener(
     const passwordRepeat =
       registerPasswordRepeat.value;
 
+    const easyRegistration =
+      registerForm.classList.contains(
+        "easy-registration"
+      );
+
 
     if (
+      !easyRegistration &&
       !/^[a-z0-9_]{3,20}$/.test(username)
     ) {
 
@@ -2730,7 +2789,10 @@ registerForm.addEventListener(
     }
 
 
-    if (password.length < 8) {
+    if (
+      !easyRegistration &&
+      password.length < 8
+    ) {
 
       registerMessage.textContent =
         "Пароль должен содержать минимум 8 символов.";
@@ -2739,7 +2801,10 @@ registerForm.addEventListener(
     }
 
 
-    if (password !== passwordRepeat) {
+    if (
+      !easyRegistration &&
+      password !== passwordRepeat
+    ) {
 
       registerMessage.textContent =
         "Пароли не совпадают.";
@@ -2767,14 +2832,20 @@ const {
   await supabaseClient.functions.invoke(
     "register-student",
     {
-      body: {
-        inviteCode,
-        username,
-        nickname,
-        password
-      }
-    }
-  );
+      body: easyRegistration
+        ? {
+            inviteCode,
+            nickname,
+            easy: true
+          }
+        : {
+            inviteCode,
+            username,
+            nickname,
+            password
+          }
+          }
+      );
 
 
 /*
