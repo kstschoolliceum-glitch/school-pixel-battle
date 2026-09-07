@@ -12,7 +12,20 @@ const supabaseClient =
 
 const authScreen =
   document.getElementById("auth-screen");
+const telegramPopup =
+  document.getElementById(
+    "telegram-popup"
+  );
 
+const telegramJoinButton =
+  document.getElementById(
+    "telegram-join-button"
+  );
+
+const telegramLaterButton =
+  document.getElementById(
+    "telegram-later-button"
+  );
 const loginForm =
   document.getElementById("login-form");
 
@@ -2420,6 +2433,93 @@ async function startOnlinePresence() {
   );
 
 }
+function getLocalDateKey() {
+
+  const now =
+    new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(2, "0");
+
+
+  return `${year}-${month}-${day}`;
+}
+
+
+function showTelegramPopupOnceToday() {
+
+  if (!telegramPopup) {
+    return;
+  }
+
+
+  const today =
+    getLocalDateKey();
+
+
+  const lastShown =
+    localStorage.getItem(
+      "pixelBattleTelegramPopupDate"
+    );
+
+
+  /*
+   * Сегодня уже показывали.
+   */
+
+  if (lastShown === today) {
+    return;
+  }
+
+
+  /*
+   * Сразу запоминаем сегодняшний день.
+   * Даже если ученик просто обновит страницу,
+   * второй раз окно сегодня не появится.
+   */
+
+  localStorage.setItem(
+    "pixelBattleTelegramPopupDate",
+    today
+  );
+
+
+  telegramPopup.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+function closeTelegramPopup() {
+
+  telegramPopup?.classList.add(
+    "hidden"
+  );
+
+}
+
+
+telegramLaterButton?.addEventListener(
+  "click",
+  closeTelegramPopup
+);
+
+
+telegramJoinButton?.addEventListener(
+  "click",
+  closeTelegramPopup
+);
 async function initializeAuth() {
 
   const {
@@ -2443,6 +2543,7 @@ async function initializeAuth() {
     await startOnlinePresence();
 
     startSeasonWatcher();
+    showTelegramPopupOnceToday();
   } else {
 
     authScreen.classList.remove("hidden");
@@ -2525,6 +2626,7 @@ loginForm.addEventListener(
     await startOnlinePresence();
 
     startSeasonWatcher();
+    showTelegramPopupOnceToday();
   }
 );
 async function loadClassNames() {
@@ -3387,6 +3489,8 @@ easyStartButton.addEventListener(
     await startOnlinePresence();
 
     startSeasonWatcher();
+
+    showTelegramPopupOnceToday();
 
 
     easyStartButton.disabled =
