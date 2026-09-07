@@ -773,6 +773,15 @@ body {
   border-color: #8b5cf6;
 }
 
+#register-invite.invite-from-link {
+  color: #86efac;
+
+  background: #0d1f18;
+  border-color: #166534;
+
+  cursor: default;
+}
+
 #register-form button {
   height: 48px;
 
