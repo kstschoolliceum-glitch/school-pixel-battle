@@ -1652,19 +1652,74 @@ body.admin-view .sidebar {
 }
 
 
-.generated-invite-code {
-  padding: 10px;
+.generated-invite-card {
+  padding: 14px;
 
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 
   background: #0b1220;
   border: 1px solid #273247;
-  border-radius: 7px;
+  border-radius: 10px;
+}
+
+
+.generated-invite-qr {
+  width: 166px;
+  height: 166px;
+
+  padding: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: white;
+  border-radius: 8px;
+}
+
+
+.generated-invite-qr img,
+.generated-invite-qr canvas {
+  display: block;
+
+  width: 150px !important;
+  height: 150px !important;
+}
+
+
+.generated-invite-code {
+  color: #ffffff;
 
   font-family: monospace;
   font-size: 14px;
 
   user-select: all;
+}
+
+
+.generated-invite-copy {
+  min-height: 34px;
+  padding: 0 12px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: #cbd5e1;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.generated-invite-copy:hover {
+  border-color: #8b5cf6;
+  color: white;
 }
 
 
