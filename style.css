@@ -596,6 +596,114 @@ body {
     color: #a78bfa;
   }
 }
+/* ---------- TELEGRAM POPUP ---------- */
+
+.telegram-popup {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(3, 7, 18, 0.78);
+
+  backdrop-filter: blur(5px);
+}
+
+
+.telegram-popup.hidden {
+  display: none;
+}
+
+
+.telegram-popup-card {
+  width: min(360px, 100%);
+  padding: 28px 24px;
+
+  text-align: center;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 18px;
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.55);
+}
+
+
+.telegram-popup-icon {
+  margin-bottom: 10px;
+
+  font-size: 40px;
+}
+
+
+.telegram-popup-card h2 {
+  margin: 0 0 10px;
+
+  color: white;
+  font-size: 20px;
+}
+
+
+.telegram-popup-card p {
+  margin: 0 0 20px;
+
+  color: #94a3b8;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+#telegram-join-button {
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+
+  background: linear-gradient(
+    135deg,
+    #0284c7,
+    #0ea5e9
+  );
+
+  border-radius: 9px;
+
+  color: white;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+
+#telegram-later-button {
+  width: 100%;
+  min-height: 42px;
+
+  margin-top: 9px;
+
+  border: 0;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+
+#telegram-later-button:hover {
+  color: white;
+}
 /* ---------- AUTH ---------- */
 
 #auth-screen {
