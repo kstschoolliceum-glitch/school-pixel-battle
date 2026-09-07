@@ -4515,26 +4515,154 @@ generateInvitesButton.addEventListener(
 
 
     for (
-      const code
-      of lastGeneratedInvites
-    ) {
+  const code
+  of lastGeneratedInvites
+) {
 
-      const element =
-        document.createElement(
-          "div"
+  /*
+   * Полная ссылка приглашения.
+   */
+
+  const inviteUrl =
+    `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`;
+
+
+  /*
+   * Карточка приглашения.
+   */
+
+  const card =
+    document.createElement(
+      "div"
+    );
+
+  card.className =
+    "generated-invite-card";
+
+
+  /*
+   * QR.
+   */
+
+  const qrContainer =
+    document.createElement(
+      "div"
+    );
+
+  qrContainer.className =
+    "generated-invite-qr";
+
+
+  /*
+   * Текстовый код под QR.
+   */
+
+  const codeElement =
+    document.createElement(
+      "strong"
+    );
+
+  codeElement.className =
+    "generated-invite-code";
+
+  codeElement.textContent =
+    code;
+
+
+  /*
+   * Кнопка копирования ссылки.
+   */
+
+  const copyButton =
+    document.createElement(
+      "button"
+    );
+
+  copyButton.type =
+    "button";
+
+  copyButton.className =
+    "generated-invite-copy";
+
+  copyButton.textContent =
+    "📋 Ссылка";
+
+
+  copyButton.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          inviteUrl
         );
 
-      element.className =
-        "generated-invite-code";
+        copyButton.textContent =
+          "✓ Скопировано";
 
-      element.textContent =
-        code;
 
-      resultList.appendChild(
-        element
-      );
+        setTimeout(
+          () => {
+
+            copyButton.textContent =
+              "📋 Ссылка";
+
+          },
+          1200
+        );
+
+      } catch (error) {
+
+        console.error(
+          "COPY INVITE URL ERROR:",
+          error
+        );
+
+      }
 
     }
+  );
+
+
+  /*
+   * Собираем карточку.
+   */
+
+  card.appendChild(
+    qrContainer
+  );
+
+  card.appendChild(
+    codeElement
+  );
+
+  card.appendChild(
+    copyButton
+  );
+
+  resultList.appendChild(
+    card
+  );
+
+
+  /*
+   * Генерируем QR уже после того,
+   * как контейнер создан.
+   */
+
+  new QRCode(
+    qrContainer,
+    {
+      text: inviteUrl,
+      width: 150,
+      height: 150,
+      correctLevel:
+        QRCode.CorrectLevel.M
+    }
+  );
+
+}
 
 
     document.getElementById(
@@ -4570,10 +4698,14 @@ copyInvitesButton.addEventListener(
 
 
     const text =
-      lastGeneratedInvites.join(
-        "\n"
-      );
-
+  lastGeneratedInvites
+    .map(
+      code =>
+        `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`
+    )
+    .join(
+      "\n"
+    );
 
     try {
 
