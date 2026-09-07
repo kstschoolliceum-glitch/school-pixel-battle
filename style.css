@@ -855,6 +855,169 @@ body {
 .auth-message.success {
   color: #4ade80;
 }
+
+/* ---------- EASY REGISTRATION SUCCESS ---------- */
+
+.easy-register-success {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  margin-top: 22px;
+}
+
+
+.easy-register-success.hidden {
+  display: none;
+}
+
+
+.easy-success-icon {
+  font-size: 38px;
+}
+
+
+.easy-register-success h2 {
+  margin: 0;
+
+  color: #ffffff;
+  font-size: 20px;
+}
+
+
+.easy-success-nickname {
+  margin: 0;
+
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+
+.easy-success-nickname strong {
+  color: #c4b5fd;
+}
+
+
+.easy-credentials {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin-top: 4px;
+}
+
+
+.easy-credential {
+  padding: 12px;
+
+  text-align: left;
+
+  background: #0b1220;
+  border: 1px solid #273247;
+  border-radius: 10px;
+}
+
+
+.easy-credential > span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+
+.easy-credential-value {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+
+.easy-credential-value strong {
+  flex: 1;
+
+  color: #ffffff;
+
+  font-family: monospace;
+  font-size: 16px;
+
+  overflow-wrap: anywhere;
+}
+
+
+.easy-credential-value input {
+  min-width: 0;
+  flex: 1;
+
+  height: 36px;
+  padding: 0;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+  color: #ffffff;
+
+  font-family: monospace;
+  font-size: 16px;
+}
+
+
+.easy-credential-value button {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+
+.easy-save-warning {
+  margin: 2px 0 0 !important;
+  padding: 10px;
+
+  background: #2a2110;
+  border: 1px solid #713f12;
+  border-radius: 9px;
+
+  color: #fde68a !important;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+#easy-start-button {
+  width: 100%;
+  height: 48px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+
+  color: white;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
 /* ---------- PROFILE ---------- */
 
 .profile-info {
