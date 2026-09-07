@@ -1449,7 +1449,68 @@ function openRegister() {
   registerMessage.textContent = "";
 
 }
+function applyInviteFromUrl() {
 
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const inviteCode =
+    params.get("invite");
+
+
+  if (!inviteCode) {
+    return;
+  }
+
+
+  const cleanCode =
+    inviteCode
+      .trim()
+      .toUpperCase();
+
+
+  if (!cleanCode) {
+    return;
+  }
+
+
+  /*
+   * Подставляем код автоматически.
+   */
+
+  registerInvite.value =
+    cleanCode;
+
+
+  /*
+   * Сразу открываем регистрацию.
+   */
+
+  openRegister();
+
+
+  /*
+   * Код пришёл из персональной ссылки,
+   * поэтому ребёнку его вводить уже
+   * не требуется.
+   */
+
+  registerInvite.readOnly = true;
+
+  registerInvite.classList.add(
+    "invite-from-link"
+  );
+
+
+  /*
+   * Ставим курсор сразу в никнейм.
+   */
+
+  registerNickname.focus();
+
+}
 
 showLogin.addEventListener(
   "click",
@@ -1461,6 +1522,9 @@ showRegister.addEventListener(
   "click",
   openRegister
 );
+
+applyInviteFromUrl();
+
 async function loadClassRanking() {
 
   const rankingElement =
