@@ -2972,38 +2972,148 @@ if (!data?.success) {
 
   return;
 }
-registerMessage.classList.add(
-  "success"
-);
-      registerMessage.textContent =
-        "Аккаунт создан! Сейчас можно войти.";
+if (easyRegistration) {
+
+  /*
+   * Быстрая регистрация.
+   *
+   * Сервер вернул автоматически
+   * созданные логин и пароль.
+   */
+
+  const generatedUsername =
+    data.username;
+
+  const generatedPassword =
+    data.password;
 
 
-      /*
-       * Запоминаем логин и переключаем
-       * пользователя на форму входа.
-       */
+  if (
+    !generatedUsername ||
+    !generatedPassword
+  ) {
+
+    registerMessage.textContent =
+      "Аккаунт создан, но не удалось получить данные для входа.";
+
+    return;
+  }
+
+
+  /*
+   * Скрываем форму регистрации.
+   */
+
+  registerForm.classList.add(
+    "hidden"
+  );
+
+
+  /*
+   * Скрываем вкладки Вход / Регистрация,
+   * чтобы ученик сначала сохранил данные.
+   */
+
+  const authTabs =
+    document.querySelector(
+      ".auth-tabs"
+    );
+
+  if (authTabs) {
+
+    authTabs.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  /*
+   * Заполняем экран результата.
+   */
+
+  document.getElementById(
+    "easy-success-nickname"
+  ).textContent =
+    nickname;
+
+
+  document.getElementById(
+    "easy-success-username"
+  ).textContent =
+    generatedUsername;
+
+
+  document.getElementById(
+    "easy-success-password"
+  ).value =
+    generatedPassword;
+
+
+  /*
+   * Показываем карточку.
+   */
+
+  document.getElementById(
+    "easy-register-success"
+  ).classList.remove(
+    "hidden"
+  );
+
+
+  /*
+   * Сохраняем данные только
+   * в памяти текущей страницы.
+   *
+   * В localStorage пароль НЕ кладём.
+   */
+
+  window.easyRegistrationCredentials = {
+    username:
+      generatedUsername,
+
+    password:
+      generatedPassword
+  };
+
+
+} else {
+
+  /*
+   * Обычная старая регистрация
+   * работает как раньше.
+   */
+
+  registerMessage.classList.add(
+    "success"
+  );
+
+  registerMessage.textContent =
+    "Аккаунт создан! Сейчас можно войти.";
+
+
+  loginUsername.value =
+    username;
+
+
+  registerForm.reset();
+
+
+  setTimeout(
+    () => {
+
+      openLogin();
 
       loginUsername.value =
         username;
 
-      registerForm.reset();
+      loginPassword.focus();
 
+    },
+    1200
+  );
 
-      setTimeout(
-        () => {
-
-          openLogin();
-
-          loginUsername.value =
-            username;
-
-          loginPassword.focus();
-
-        },
-        1200
-      );
-
+}
 
     } catch (error) {
 
@@ -3020,6 +3130,270 @@ registerMessage.classList.add(
         "СОЗДАТЬ АККАУНТ";
 
     }
+
+  }
+);
+const easyPasswordInput =
+  document.getElementById(
+    "easy-success-password"
+  );
+
+
+const toggleEasyPassword =
+  document.getElementById(
+    "toggle-easy-password"
+  );
+
+
+toggleEasyPassword.addEventListener(
+  "click",
+  () => {
+
+    const passwordVisible =
+      easyPasswordInput.type ===
+      "text";
+
+
+    easyPasswordInput.type =
+      passwordVisible
+        ? "password"
+        : "text";
+
+
+    toggleEasyPassword.textContent =
+      passwordVisible
+        ? "👁"
+        : "🙈";
+
+  }
+);
+const copyEasyUsername =
+  document.getElementById(
+    "copy-easy-username"
+  );
+
+
+const copyEasyPassword =
+  document.getElementById(
+    "copy-easy-password"
+  );
+
+
+copyEasyUsername.addEventListener(
+  "click",
+  async () => {
+
+    const username =
+      document.getElementById(
+        "easy-success-username"
+      ).textContent;
+
+
+    await navigator.clipboard.writeText(
+      username
+    );
+
+
+    copyEasyUsername.textContent =
+      "✓";
+
+
+    setTimeout(
+      () => {
+
+        copyEasyUsername.textContent =
+          "📋";
+
+      },
+      1200
+    );
+
+  }
+);
+
+
+copyEasyPassword.addEventListener(
+  "click",
+  async () => {
+
+    const password =
+      easyPasswordInput.value;
+
+
+    await navigator.clipboard.writeText(
+      password
+    );
+
+
+    copyEasyPassword.textContent =
+      "✓";
+
+
+    setTimeout(
+      () => {
+
+        copyEasyPassword.textContent =
+          "📋";
+
+      },
+      1200
+    );
+
+  }
+);
+const easyStartButton =
+  document.getElementById(
+    "easy-start-button"
+  );
+
+
+easyStartButton.addEventListener(
+  "click",
+  async () => {
+
+    /*
+     * Получаем логин и пароль,
+     * которые сервер создал
+     * при easy-регистрации.
+     */
+
+    const credentials =
+      window.easyRegistrationCredentials;
+
+
+    if (
+      !credentials ||
+      !credentials.username ||
+      !credentials.password
+    ) {
+
+      alert(
+        "Не удалось получить данные аккаунта."
+      );
+
+      return;
+    }
+
+
+    easyStartButton.disabled =
+      true;
+
+    easyStartButton.textContent =
+      "ВХОДИМ...";
+
+
+    const username =
+      credentials.username;
+
+    const password =
+      credentials.password;
+
+
+    /*
+     * Как и при обычном входе,
+     * превращаем логин во внутренний email.
+     */
+
+    const email =
+      `${username}@pixel.local`;
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .signInWithPassword({
+          email,
+          password
+        });
+
+
+    if (error) {
+
+      console.error(
+        "EASY LOGIN ERROR:",
+        error
+      );
+
+
+      alert(
+        "Аккаунт создан, но автоматически войти не удалось. Сохрани логин и пароль и войди обычным способом."
+      );
+
+
+      easyStartButton.disabled =
+        false;
+
+      easyStartButton.textContent =
+        "🎮 НАЧАТЬ ИГРАТЬ";
+
+      return;
+    }
+
+
+    /*
+     * Вход выполнен.
+     */
+
+    currentUser =
+      data.user;
+
+
+    /*
+     * Пароль больше не нужен.
+     * Удаляем его из памяти страницы.
+     */
+
+    window.easyRegistrationCredentials =
+      null;
+
+
+    /*
+     * Убираем пароль из поля
+     * карточки результата.
+     */
+
+    easyPasswordInput.value =
+      "";
+
+
+    /*
+     * Скрываем экран авторизации.
+     */
+
+    authScreen.classList.add(
+      "hidden"
+    );
+
+
+    /*
+     * Загружаем игру точно так же,
+     * как после обычного входа.
+     */
+
+    await loadActiveSeason();
+
+    await loadClassNames();
+
+    await loadPixels();
+
+    await loadClassRanking();
+
+    await loadMyProfile();
+
+    await checkAdminStatus();
+
+    await startOnlinePresence();
+
+    startSeasonWatcher();
+
+
+    easyStartButton.disabled =
+      false;
+
+    easyStartButton.textContent =
+      "🎮 НАЧАТЬ ИГРАТЬ";
 
   }
 );
