@@ -7172,32 +7172,90 @@ openedArchivedSeason =
   );
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "get_season_map",
-      {
-        p_season_id:
-          season.season_id
-      }
-    );
+  /*
+   * Supabase ограничивает количество строк
+   * в одном ответе, поэтому архивную карту
+   * тоже загружаем страницами.
+   */
+
+  const PAGE_SIZE = 1000;
+
+  let from = 0;
+
+  const allArchivedPixels = [];
 
 
-  if (error) {
+  while (true) {
 
-    console.error(
-      "SEASON MAP ERROR:",
+    const {
+      data,
       error
+    } =
+      await supabaseClient
+        .rpc(
+          "get_season_map",
+          {
+            p_season_id:
+              season.season_id
+          }
+        )
+        .order(
+          "y",
+          {
+            ascending: true
+          }
+        )
+        .order(
+          "x",
+          {
+            ascending: true
+          }
+        )
+        .range(
+          from,
+          from + PAGE_SIZE - 1
+        );
+
+
+    if (error) {
+
+      console.error(
+        "SEASON MAP ERROR:",
+        error
+      );
+
+      alert(
+        "Не удалось загрузить карту сезона."
+      );
+
+      return;
+    }
+
+
+    const page =
+      data ?? [];
+
+
+    allArchivedPixels.push(
+      ...page
     );
 
-    alert(
-      "Не удалось загрузить карту сезона."
-    );
 
-    return;
+    if (
+      page.length < PAGE_SIZE
+    ) {
+      break;
+    }
+
+
+    from += PAGE_SIZE;
+
   }
+
+
+  console.log(
+    `Архивная карта загружена полностью: ${allArchivedPixels.length} пикселей`
+  );
 
 
   /*
@@ -7207,7 +7265,7 @@ openedArchivedSeason =
    * В нашей БД color хранится как цвет.
    */
 
-  for (const pixel of data) {
+  for (const pixel of allArchivedPixels) {
 
     ctx.fillStyle =
       pixel.color;
