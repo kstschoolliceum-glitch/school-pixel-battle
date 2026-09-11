@@ -6,7 +6,7 @@
 
   <title>School Pixel Battle</title>
 
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 
 <body>
@@ -937,18 +937,31 @@
         Финальное состояние карты
       </p>
     </div>
-    <button
-      id="download-season-png-button"
-      type="button"
-    >
-      🖼️ Скачать PNG
-    </button>
-    <button
-      id="close-season-map-button"
-      type="button"
-    >
-      ✕ Закрыть
-    </button>
+
+    <div class="season-map-actions">
+
+      <button
+        id="season-timelapse-button"
+        type="button"
+      >
+        ▶ Таймлапс
+      </button>
+
+      <button
+        id="download-season-png-button"
+        type="button"
+      >
+        🖼️ Скачать PNG
+      </button>
+
+      <button
+        id="close-season-map-button"
+        type="button"
+      >
+        ✕ Закрыть
+      </button>
+
+    </div>
 
   </div>
 
@@ -981,6 +994,71 @@
       <div class="season-map-info-row">
         <span>👥 Участников</span>
         <strong id="season-map-players">0</strong>
+      </div>
+
+
+      <div
+        id="season-timelapse-controls"
+        class="season-timelapse-controls hidden"
+      >
+
+        <div class="season-timelapse-status">
+          <span>Ход таймлапса</span>
+          <strong id="season-timelapse-counter">
+            0 / 0
+          </strong>
+        </div>
+
+        <div
+          id="season-timelapse-time"
+          class="season-timelapse-time"
+        >
+          —
+        </div>
+
+        <input
+          id="season-timelapse-progress"
+          type="range"
+          min="0"
+          max="0"
+          value="0"
+        >
+
+        <div class="season-timelapse-buttons">
+
+          <button
+            id="season-timelapse-play-button"
+            type="button"
+          >
+            ⏸ Пауза
+          </button>
+
+          <button
+            id="season-timelapse-restart-button"
+            type="button"
+          >
+            ↻ Сначала
+          </button>
+
+          <button
+            id="season-timelapse-final-button"
+            type="button"
+          >
+            ⏹ Финальная карта
+          </button>
+
+        </div>
+
+        <label class="season-timelapse-speed">
+          Скорость
+
+          <select id="season-timelapse-speed">
+            <option value="1">×1</option>
+            <option value="5" selected>×5</option>
+            <option value="20">×20</option>
+          </select>
+        </label>
+
       </div>
 
     </div>
@@ -1349,7 +1427,7 @@
   <script
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 
 </body>
 </html>
