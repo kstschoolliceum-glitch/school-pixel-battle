@@ -812,7 +812,7 @@ async function placePixel() {
 
   startCooldown();
 
-  loadClassRanking();
+  scheduleRankingRefresh();
   loadMyProfile();
 }
 
@@ -1799,6 +1799,84 @@ async function loadQuarterRanking() {
   );
 
 }
+
+/*
+ * Realtime-события пикселей могут приходить
+ * много раз в секунду.
+ *
+ * Карту рисуем сразу, а недельный рейтинг
+ * запрашиваем не чаще одного раза в 7 секунд.
+ */
+
+const RANKING_REFRESH_DELAY = 7000;
+
+let rankingRefreshTimer = null;
+let rankingRefreshInProgress = false;
+
+
+function scheduleRankingRefresh() {
+
+  if (
+    !currentUser ||
+    rankingRefreshTimer
+  ) {
+    return;
+  }
+
+
+  rankingRefreshTimer =
+    setTimeout(
+      async () => {
+
+        rankingRefreshTimer = null;
+
+
+        /*
+         * Если открыт ТОП четверти,
+         * недельный рейтинг сейчас не нужен.
+         */
+
+        if (
+          !weeklyRankingTab.classList.contains(
+            "active"
+          )
+        ) {
+          return;
+        }
+
+
+        /*
+         * Не запускаем второй запрос,
+         * пока предыдущий ещё выполняется.
+         */
+
+        if (rankingRefreshInProgress) {
+
+          scheduleRankingRefresh();
+
+          return;
+        }
+
+
+        rankingRefreshInProgress = true;
+
+
+        try {
+
+          await loadClassRanking();
+
+        } finally {
+
+          rankingRefreshInProgress = false;
+
+        }
+
+      },
+      RANKING_REFRESH_DELAY
+    );
+
+}
+
 const weeklyRankingTab =
   document.getElementById(
     "weekly-ranking-tab"
@@ -2910,7 +2988,7 @@ function subscribeToPixels() {
 
         drawMap();
         
-        loadClassRanking();
+        scheduleRankingRefresh();
       }
     )
     .subscribe((status) => {
