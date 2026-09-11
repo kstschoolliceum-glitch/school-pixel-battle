@@ -6962,6 +6962,143 @@ adminQuarterStartButton.addEventListener(
 
   }
 );
+const adminQuarterFinishButton =
+  document.getElementById(
+    "admin-quarter-finish-button"
+  );
+
+
+adminQuarterFinishButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!currentUserIsAdmin) {
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        "Завершить текущий ТОП четверти?\n\nБудут зафиксированы окончательные места, очки и победитель."
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const finalConfirmed =
+      confirm(
+        "Подтвердите ещё раз.\n\nПосле завершения результаты ТОПа изменить через админ-панель будет нельзя."
+      );
+
+
+    if (!finalConfirmed) {
+      return;
+    }
+
+
+    const messageElement =
+      document.getElementById(
+        "admin-quarter-message"
+      );
+
+
+    adminQuarterFinishButton.disabled =
+      true;
+
+    adminQuarterFinishButton.textContent =
+      "ЗАВЕРШЕНИЕ...";
+
+    messageElement.classList.remove(
+      "success"
+    );
+
+    messageElement.textContent = "";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "finish_quarter_competition"
+      );
+
+
+    if (error) {
+
+      console.error(
+        "FINISH QUARTER ERROR:",
+        error
+      );
+
+
+      adminQuarterFinishButton.disabled =
+        false;
+
+      adminQuarterFinishButton.textContent =
+        "🏁 ЗАВЕРШИТЬ ТОП ЧЕТВЕРТИ";
+
+
+      if (
+        error.message?.includes(
+          "QUARTER_HAS_NO_SEASONS"
+        )
+      ) {
+
+        messageElement.textContent =
+          "Нельзя завершить ТОП без учтённых недель.";
+
+      } else if (
+        error.message?.includes(
+          "QUARTER_HAS_UNFINISHED_SEASONS"
+        )
+      ) {
+
+        messageElement.textContent =
+          "В ТОПе есть незавершённая неделя.";
+
+      } else if (
+        error.message?.includes(
+          "ACTIVE_QUARTER_NOT_FOUND"
+        )
+      ) {
+
+        messageElement.textContent =
+          "Активный ТОП четверти не найден.";
+
+      } else {
+
+        messageElement.textContent =
+          "Не удалось завершить ТОП четверти.";
+
+      }
+
+      return;
+    }
+
+
+    await loadAdminQuarterCompetition();
+
+
+    messageElement.classList.add(
+      "success"
+    );
+
+    messageElement.textContent =
+      `ТОП четверти завершён. Победитель: ${data?.winner_class_name ?? "—"}.`;
+
+
+    alert(
+      `ТОП четверти завершён!\n\nПобедитель: ${data?.winner_class_name ?? "—"}\nУчтено недель: ${Number(data?.weeks_count ?? 0)}`
+    );
+
+  }
+);
+
+
 async function loadAdminSeasonHistory() {
 
   if (!currentUserIsAdmin) {
