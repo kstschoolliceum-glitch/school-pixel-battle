@@ -2632,3 +2632,28 @@ body.admin-view .sidebar {
   }
 
 }
+
+.season-timelapse-export-status {
+  min-height: 20px;
+  margin-top: 10px;
+
+  color: #67e8f9;
+  font-size: 13px;
+}
+
+#season-timelapse-webm-button {
+  border-color: #0e7490;
+  background: #083344;
+  color: #a5f3fc;
+}
+
+#season-timelapse-gif-button {
+  border-color: #7c3aed;
+  background: #2e1065;
+  color: #ddd6fe;
+}
+
+.season-timelapse-buttons button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
