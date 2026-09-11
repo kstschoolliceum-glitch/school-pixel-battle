@@ -2512,3 +2512,123 @@ body.admin-view .sidebar {
   flex-wrap: wrap;
   gap: 7px;
 }
+
+/* ==========================================
+   SEASON TIMELAPSE
+========================================== */
+
+#season-timelapse-button {
+  min-height: 38px;
+  padding: 0 12px;
+
+  border: 1px solid #0891b2;
+  border-radius: 7px;
+
+  background: #083344;
+  color: #a5f3fc;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#season-timelapse-button:hover {
+  background: #164e63;
+}
+
+#season-timelapse-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.season-timelapse-controls {
+  margin-top: 18px;
+  padding-top: 16px;
+
+  border-top: 1px solid #243044;
+}
+
+.season-timelapse-controls.hidden {
+  display: none;
+}
+
+.season-timelapse-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  color: #94a3b8;
+}
+
+.season-timelapse-status strong {
+  color: white;
+}
+
+.season-timelapse-time {
+  min-height: 20px;
+  margin-top: 7px;
+
+  color: #67e8f9;
+  font-size: 13px;
+}
+
+#season-timelapse-progress {
+  width: 100%;
+  margin: 14px 0;
+
+  accent-color: #06b6d4;
+  cursor: pointer;
+}
+
+.season-timelapse-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.season-timelapse-buttons button {
+  min-height: 38px;
+  padding: 7px 10px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #182132;
+  color: white;
+
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#season-timelapse-final-button {
+  grid-column: 1 / -1;
+}
+
+.season-timelapse-speed {
+  margin-top: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  color: #94a3b8;
+}
+
+#season-timelapse-speed {
+  min-height: 36px;
+  padding: 0 10px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  background: #111827;
+  color: white;
+}
+
+@media (max-width: 650px) {
+
+  #season-timelapse-button {
+    width: 100%;
+  }
+
+}
