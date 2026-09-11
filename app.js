@@ -7398,9 +7398,9 @@ const seasonTimelapseGifButton =
     "season-timelapse-gif-button"
   );
 
-const seasonTimelExportStatus =
+const seasonTimelapseExportStatus =
   document.getElementById(
-       "-t-lapse-exportExportStatus"
+    "season-timelapse-export-status"
   );
 
 let seasonTimelapseExporting = false;
