@@ -6,7 +6,7 @@
 
   <title>School Pixel Battle</title>
 
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 
 <body>
@@ -1047,7 +1047,26 @@
             ⏹ Финальная карта
           </button>
 
+          <button
+            id="season-timelapse-webm-button"
+            type="button"
+          >
+            ⬇ WebM
+          </button>
+
+          <button
+            id="season-timelapse-gif-button"
+            type="button"
+          >
+            ⬇ GIF
+          </button>
+
         </div>
+
+        <div
+          id="season-timelapse-export-status"
+          class="season-timelapse-export-status"
+        ></div>
 
         <label class="season-timelapse-speed">
           Скорость
@@ -1427,7 +1446,8 @@
   <script
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
-  <script src="app.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
+  <script src="app.js?v=21"></script>
 
 </body>
 </html>
