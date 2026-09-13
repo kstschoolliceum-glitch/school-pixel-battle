@@ -2726,3 +2726,27 @@ body.admin-view .sidebar {
   opacity: 0.65;
   cursor: wait;
 }
+
+
+#notification-test-button {
+  min-height: 40px;
+  padding: 8px 12px;
+
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+
+  background: #2e1065;
+  color: #ddd6fe;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#notification-test-button.hidden {
+  display: none;
+}
+
+#notification-test-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
