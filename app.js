@@ -4071,7 +4071,7 @@ chatForm.addEventListener(
     }
 
 
-    if (message.length > 100) {
+    if (message.length > 200) {
       return;
     }
 
