@@ -4390,6 +4390,163 @@ async function loadAdminOverview() {
   }
 
 }
+const broadcastPushTitle =
+  document.getElementById(
+    "broadcast-push-title"
+  );
+
+const broadcastPushBody =
+  document.getElementById(
+    "broadcast-push-body"
+  );
+
+const broadcastPushButton =
+  document.getElementById(
+    "broadcast-push-button"
+  );
+
+const broadcastPushMessage =
+  document.getElementById(
+    "broadcast-push-message"
+  );
+
+
+broadcastPushButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!currentUserIsAdmin) {
+
+      broadcastPushMessage.textContent =
+        "Недостаточно прав.";
+
+      return;
+
+    }
+
+
+    const title =
+      broadcastPushTitle.value.trim();
+
+    const body =
+      broadcastPushBody.value.trim();
+
+
+    broadcastPushMessage.classList.remove(
+      "success"
+    );
+
+
+    if (!title || !body) {
+
+      broadcastPushMessage.textContent =
+        "Заполните заголовок и текст.";
+
+      return;
+
+    }
+
+
+    const confirmed =
+      confirm(
+        `Отправить всем уведомление?\n\n${title}\n${body}`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const originalText =
+      broadcastPushButton.textContent;
+
+
+    broadcastPushButton.disabled =
+      true;
+
+    broadcastPushButton.textContent =
+      "ОТПРАВКА...";
+
+    broadcastPushMessage.textContent =
+      "Рассылка выполняется...";
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.functions.invoke(
+          "send-broadcast-push",
+          {
+            body: {
+              title,
+              body
+            }
+          }
+        );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      if (
+        !data?.success
+      ) {
+        throw new Error(
+          data?.error ||
+          "BROADCAST_FAILED"
+        );
+      }
+
+
+      const sent =
+        Number(data.sent || 0);
+
+      const failed =
+        Number(data.failed || 0);
+
+      const removed =
+        Number(data.removed || 0);
+
+
+      broadcastPushMessage.textContent =
+        `Отправлено: ${sent}. Ошибок: ${failed}. Удалено старых подписок: ${removed}.`;
+
+      broadcastPushMessage.classList.add(
+        "success"
+      );
+
+      broadcastPushBody.value = "";
+
+    } catch (error) {
+
+      console.error(
+        "BROADCAST PUSH ERROR:",
+        error
+      );
+
+      broadcastPushMessage.textContent =
+        "Рассылка не выполнена. Проверьте Edge Function send-broadcast-push.";
+
+    } finally {
+
+      broadcastPushButton.disabled =
+        false;
+
+      broadcastPushButton.textContent =
+        originalText;
+
+    }
+
+  }
+);
+
+
 const adminOverviewTab =
   document.getElementById(
     "admin-overview-tab"
