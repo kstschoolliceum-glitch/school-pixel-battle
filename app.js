@@ -4,6 +4,9 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_SictxwPd578IRmRLeoDzBw_7kEG-Y8-";
 
+const VAPID_PUBLIC_KEY =
+  "BELSLl6jn7EmkjgDJ87dNCcqTSZGAO4KAJfRdj4VzZd-ibs7SROjc76hUx3MZT8_MwAHybW2hVol_qUmJ78FEzk";
+
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
@@ -2617,6 +2620,8 @@ async function initializeAuth() {
     await loadClassRanking();
     await loadMyProfile();
     await checkAdminStatus();
+    await updatePushNotificationStatus();
+    await updatePushNotificationStatus();
 
     await startOnlinePresence();
 
@@ -3658,6 +3663,8 @@ easyStartButton.addEventListener(
     await loadMyProfile();
 
     await checkAdminStatus();
+
+    await updatePushNotificationStatus();
 
     await startOnlinePresence();
 
@@ -9011,6 +9018,458 @@ downloadSeasonPngButton.addEventListener(
 
   }
 );
+const notificationStatus =
+  document.getElementById(
+    "notification-status"
+  );
+
+const notificationToggleButton =
+  document.getElementById(
+    "notification-toggle-button"
+  );
+
+let currentPushSubscription = null;
+
+
+function base64UrlToUint8Array(
+  base64Url
+) {
+
+  const padding =
+    "=".repeat(
+      (
+        4 -
+        base64Url.length % 4
+      ) % 4
+    );
+
+  const base64 =
+    (
+      base64Url +
+      padding
+    )
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData =
+    atob(base64);
+
+  const output =
+    new Uint8Array(
+      rawData.length
+    );
+
+
+  for (
+    let index = 0;
+    index < rawData.length;
+    index++
+  ) {
+
+    output[index] =
+      rawData.charCodeAt(
+        index
+      );
+
+  }
+
+
+  return output;
+
+}
+
+
+function setNotificationStatus(
+  text,
+  type = ""
+) {
+
+  notificationStatus.textContent =
+    text;
+
+  notificationStatus.classList.remove(
+    "enabled",
+    "warning",
+    "error"
+  );
+
+
+  if (type) {
+
+    notificationStatus.classList.add(
+      type
+    );
+
+  }
+
+}
+
+
+function isIosDevice() {
+
+  return /iPad|iPhone|iPod/.test(
+    navigator.userAgent
+  );
+
+}
+
+
+function isStandaloneApp() {
+
+  return (
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches ||
+    window.navigator.standalone === true
+  );
+
+}
+
+
+async function updatePushNotificationStatus() {
+
+  if (
+    !("serviceWorker" in navigator) ||
+    !("PushManager" in window) ||
+    !("Notification" in window)
+  ) {
+
+    setNotificationStatus(
+      "Этот браузер не поддерживает push-уведомления.",
+      "error"
+    );
+
+    notificationToggleButton.disabled =
+      true;
+
+    return;
+
+  }
+
+
+  if (
+    isIosDevice() &&
+    !isStandaloneApp()
+  ) {
+
+    setNotificationStatus(
+      "На iPhone сначала добавьте сайт на экран «Домой».",
+      "warning"
+    );
+
+    notificationToggleButton.textContent =
+      "КАК УСТАНОВИТЬ";
+
+    notificationToggleButton.disabled =
+      false;
+
+    return;
+
+  }
+
+
+  try {
+
+    const registration =
+      await navigator.serviceWorker.ready;
+
+
+    currentPushSubscription =
+      await registration.pushManager
+        .getSubscription();
+
+
+    if (
+      Notification.permission ===
+      "denied"
+    ) {
+
+      setNotificationStatus(
+        "Уведомления запрещены в настройках браузера.",
+        "error"
+      );
+
+      notificationToggleButton.textContent =
+        "УВЕДОМЛЕНИЯ ЗАПРЕЩЕНЫ";
+
+      notificationToggleButton.disabled =
+        true;
+
+      return;
+
+    }
+
+
+    if (currentPushSubscription) {
+
+      setNotificationStatus(
+        "Уведомления включены на этом устройстве.",
+        "enabled"
+      );
+
+      notificationToggleButton.textContent =
+        "🔕 ОТКЛЮЧИТЬ УВЕДОМЛЕНИЯ";
+
+      notificationToggleButton.classList.add(
+        "enabled"
+      );
+
+    } else {
+
+      setNotificationStatus(
+        "Включите, чтобы узнавать о событиях и итогах.",
+        "warning"
+      );
+
+      notificationToggleButton.textContent =
+        "🔔 ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ";
+
+      notificationToggleButton.classList.remove(
+        "enabled"
+      );
+
+    }
+
+
+    notificationToggleButton.disabled =
+      false;
+
+  } catch (error) {
+
+    console.error(
+      "PUSH STATUS ERROR:",
+      error
+    );
+
+    setNotificationStatus(
+      "Не удалось проверить уведомления.",
+      "error"
+    );
+
+  }
+
+}
+
+
+async function enablePushNotifications() {
+
+  notificationToggleButton.disabled =
+    true;
+
+  setNotificationStatus(
+    "Подключение уведомлений..."
+  );
+
+
+  try {
+
+    const permission =
+      await Notification.requestPermission();
+
+
+    if (permission !== "granted") {
+
+      setNotificationStatus(
+        "Разрешение не предоставлено.",
+        "warning"
+      );
+
+      await updatePushNotificationStatus();
+
+      return;
+
+    }
+
+
+    const registration =
+      await navigator.serviceWorker.ready;
+
+
+    const subscription =
+      await registration.pushManager
+        .subscribe({
+          userVisibleOnly: true,
+
+          applicationServerKey:
+            base64UrlToUint8Array(
+              VAPID_PUBLIC_KEY
+            )
+        });
+
+
+    const subscriptionJson =
+      subscription.toJSON();
+
+
+    const {
+      error
+    } =
+      await supabaseClient.rpc(
+        "save_push_subscription",
+        {
+          p_endpoint:
+            subscription.endpoint,
+
+          p_p256dh:
+            subscriptionJson.keys?.p256dh,
+
+          p_auth_key:
+            subscriptionJson.keys?.auth,
+
+          p_user_agent:
+            navigator.userAgent
+        }
+      );
+
+
+    if (error) {
+
+      await subscription.unsubscribe();
+
+      throw error;
+
+    }
+
+
+    currentPushSubscription =
+      subscription;
+
+
+    await updatePushNotificationStatus();
+
+  } catch (error) {
+
+    console.error(
+      "ENABLE PUSH ERROR:",
+      error
+    );
+
+    setNotificationStatus(
+      "Не удалось включить уведомления.",
+      "error"
+    );
+
+    notificationToggleButton.disabled =
+      false;
+
+  }
+
+}
+
+
+async function disablePushNotifications() {
+
+  if (!currentPushSubscription) {
+
+    await updatePushNotificationStatus();
+
+    return;
+
+  }
+
+
+  notificationToggleButton.disabled =
+    true;
+
+  setNotificationStatus(
+    "Отключение уведомлений..."
+  );
+
+
+  try {
+
+    const endpoint =
+      currentPushSubscription.endpoint;
+
+
+    const {
+      error
+    } =
+      await supabaseClient.rpc(
+        "delete_push_subscription",
+        {
+          p_endpoint: endpoint
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    await currentPushSubscription
+      .unsubscribe();
+
+
+    currentPushSubscription = null;
+
+
+    await updatePushNotificationStatus();
+
+  } catch (error) {
+
+    console.error(
+      "DISABLE PUSH ERROR:",
+      error
+    );
+
+    setNotificationStatus(
+      "Не удалось отключить уведомления.",
+      "error"
+    );
+
+    notificationToggleButton.disabled =
+      false;
+
+  }
+
+}
+
+
+notificationToggleButton.addEventListener(
+  "click",
+  async () => {
+
+    if (
+      isIosDevice() &&
+      !isStandaloneApp()
+    ) {
+
+      alert(
+        "На iPhone откройте меню «Поделиться», выберите «На экран Домой», затем запустите Pixel Battle с нового значка."
+      );
+
+      return;
+
+    }
+
+
+    if (currentPushSubscription) {
+
+      const confirmed =
+        confirm(
+          "Отключить уведомления Pixel Battle на этом устройстве?"
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      await disablePushNotifications();
+
+    } else {
+
+      await enablePushNotifications();
+
+    }
+
+  }
+);
+
+
 function registerNotificationServiceWorker() {
 
   if (
