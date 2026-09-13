@@ -9011,6 +9011,57 @@ downloadSeasonPngButton.addEventListener(
 
   }
 );
+function registerNotificationServiceWorker() {
+
+  if (
+    !("serviceWorker" in navigator)
+  ) {
+
+    console.log(
+      "Service Worker не поддерживается."
+    );
+
+    return;
+  }
+
+
+  window.addEventListener(
+    "load",
+    async () => {
+
+      try {
+
+        const registration =
+          await navigator.serviceWorker.register(
+            "./sw.js",
+            {
+              scope: "./"
+            }
+          );
+
+
+        console.log(
+          "Service Worker зарегистрирован:",
+          registration.scope
+        );
+
+      } catch (error) {
+
+        console.error(
+          "SERVICE WORKER ERROR:",
+          error
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+registerNotificationServiceWorker();
+
 initializeAuth();
 subscribeToPixels();
 subscribeToChat();
