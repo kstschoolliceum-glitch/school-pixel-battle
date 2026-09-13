@@ -4530,8 +4530,51 @@ broadcastPushButton.addEventListener(
         error
       );
 
+
+      let errorDetails =
+        error?.message ||
+        "UNKNOWN_ERROR";
+
+
+      if (error?.context) {
+
+        const httpStatus =
+          error.context.status;
+
+        try {
+
+          const responseBody =
+            await error.context.json();
+
+          errorDetails =
+            responseBody?.error ||
+            responseBody?.message ||
+            JSON.stringify(
+              responseBody
+            );
+
+        } catch (responseError) {
+
+          console.error(
+            "BROADCAST ERROR RESPONSE:",
+            responseError
+          );
+
+        }
+
+
+        if (httpStatus) {
+
+          errorDetails =
+            `HTTP ${httpStatus}: ${errorDetails}`;
+
+        }
+
+      }
+
+
       broadcastPushMessage.textContent =
-        "Рассылка не выполнена. Проверьте Edge Function send-broadcast-push.";
+        `Рассылка не выполнена: ${errorDetails}`;
 
     } finally {
 
