@@ -29,6 +29,26 @@ const telegramLaterButton =
   document.getElementById(
     "telegram-later-button"
   );
+
+const pushPermissionPopup =
+  document.getElementById(
+    "push-permission-popup"
+  );
+
+const pushPermissionPopupText =
+  document.getElementById(
+    "push-permission-popup-text"
+  );
+
+const pushPermissionEnableButton =
+  document.getElementById(
+    "push-permission-enable-button"
+  );
+
+const pushPermissionLaterButton =
+  document.getElementById(
+    "push-permission-later-button"
+  );
 const loginForm =
   document.getElementById("login-form");
 
@@ -2647,10 +2667,105 @@ function showTelegramPopupOnceToday() {
 }
 
 
+async function showPushPermissionPromptIfNeeded() {
+
+  if (
+    !currentUser ||
+    !pushPermissionPopup
+  ) {
+    return;
+  }
+
+
+  if (
+    !("serviceWorker" in navigator) ||
+    !("PushManager" in window) ||
+    !("Notification" in window)
+  ) {
+    return;
+  }
+
+
+  if (
+    Notification.permission ===
+    "denied"
+  ) {
+    return;
+  }
+
+
+  try {
+
+    const registration =
+      await navigator.serviceWorker.ready;
+
+    currentPushSubscription =
+      await registration.pushManager
+        .getSubscription();
+
+
+    if (currentPushSubscription) {
+      return;
+    }
+
+
+    if (
+      isIosDevice() &&
+      !isStandaloneApp()
+    ) {
+
+      pushPermissionPopupText.textContent =
+        "На iPhone добавь Pixel Battle на экран «Домой», чтобы включить уведомления о сезонах.";
+
+      pushPermissionEnableButton.textContent =
+        "КАК ВКЛЮЧИТЬ";
+
+    } else {
+
+      pushPermissionPopupText.textContent =
+        "Включи уведомления, чтобы узнать о начале нового сезона и последних часах перед его завершением.";
+
+      pushPermissionEnableButton.textContent =
+        "🔔 ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ";
+
+    }
+
+
+    pushPermissionPopup.classList.remove(
+      "hidden"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "PUSH PROMPT CHECK ERROR:",
+      error
+    );
+
+  }
+
+}
+
+
+function closePushPermissionPopup() {
+
+  pushPermissionPopup?.classList.add(
+    "hidden"
+  );
+
+}
+
+
 function closeTelegramPopup() {
 
   telegramPopup?.classList.add(
     "hidden"
+  );
+
+
+  setTimeout(
+    showPushPermissionPromptIfNeeded,
+    250
   );
 
 }
@@ -2665,6 +2780,60 @@ telegramLaterButton?.addEventListener(
 telegramJoinButton?.addEventListener(
   "click",
   closeTelegramPopup
+);
+
+
+pushPermissionLaterButton?.addEventListener(
+  "click",
+  closePushPermissionPopup
+);
+
+
+pushPermissionEnableButton?.addEventListener(
+  "click",
+  async () => {
+
+    if (
+      isIosDevice() &&
+      !isStandaloneApp()
+    ) {
+
+      alert(
+        "Откройте меню «Поделиться», выберите «На экран Домой», затем запустите Pixel Battle с нового значка."
+      );
+
+      closePushPermissionPopup();
+
+      return;
+
+    }
+
+
+    pushPermissionEnableButton.disabled =
+      true;
+
+    pushPermissionEnableButton.textContent =
+      "ПОДКЛЮЧЕНИЕ...";
+
+
+    await enablePushNotifications();
+
+
+    if (currentPushSubscription) {
+
+      closePushPermissionPopup();
+
+    } else {
+
+      pushPermissionEnableButton.disabled =
+        false;
+
+      pushPermissionEnableButton.textContent =
+        "🔔 ПОПРОБОВАТЬ СНОВА";
+
+    }
+
+  }
 );
 async function initializeAuth() {
 
