@@ -2750,3 +2750,73 @@ body.admin-view .sidebar {
   opacity: 0.65;
   cursor: wait;
 }
+
+
+/* ==========================================
+   ADMIN PUSH BROADCAST
+========================================== */
+
+.admin-broadcast-card {
+  grid-column: 1 / -1;
+  padding: 18px;
+
+  display: grid;
+  gap: 14px;
+
+  background: #111827;
+  border: 1px solid #273247;
+  border-radius: 14px;
+}
+
+.admin-broadcast-card .admin-section-title {
+  margin-bottom: 0;
+}
+
+.admin-broadcast-card label {
+  display: grid;
+  gap: 7px;
+
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.admin-broadcast-card input,
+.admin-broadcast-card textarea {
+  width: 100%;
+  padding: 11px 12px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  outline: none;
+  resize: vertical;
+
+  background: #0b1220;
+  color: white;
+
+  font: inherit;
+}
+
+.admin-broadcast-card input:focus,
+.admin-broadcast-card textarea:focus {
+  border-color: #8b5cf6;
+}
+
+#broadcast-push-button {
+  min-height: 44px;
+  padding: 8px 14px;
+
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+
+  background: #2e1065;
+  color: #ddd6fe;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#broadcast-push-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
