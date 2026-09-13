@@ -75,6 +75,39 @@ let onlinePresenceChannel = null;
 const MAP_WIDTH = 300;
 const MAP_HEIGHT = 424;
 
+const SCHOOL_LOGO_DECORATION = {
+  x: 130,
+  y: 25,
+  width: 101,
+  height: 101
+};
+
+const schoolLogoDecoration =
+  new Image();
+
+schoolLogoDecoration.decoding =
+  "async";
+
+schoolLogoDecoration.src =
+  "./school-logo-pixel.svg?v=1";
+
+schoolLogoDecoration.addEventListener(
+  "load",
+  () => {
+    drawMap();
+  }
+);
+
+schoolLogoDecoration.addEventListener(
+  "error",
+  error => {
+    console.error(
+      "SCHOOL LOGO LOAD ERROR:",
+      error
+    );
+  }
+);
+
 const canvas = document.getElementById("pixel-canvas");
 const ctx = canvas.getContext("2d");
 
@@ -229,6 +262,38 @@ function drawMap() {
     MAP_HEIGHT
   );
 
+
+  /*
+   * Декоративный школьный логотип.
+   *
+   * Он рисуется под игровыми пикселями,
+   * не хранится в БД и не влияет
+   * на рейтинг классов.
+   */
+
+  if (
+    schoolLogoDecoration.complete &&
+    schoolLogoDecoration.naturalWidth > 0
+  ) {
+
+    ctx.imageSmoothingEnabled =
+      false;
+
+    ctx.drawImage(
+      schoolLogoDecoration,
+      SCHOOL_LOGO_DECORATION.x,
+      SCHOOL_LOGO_DECORATION.y,
+      SCHOOL_LOGO_DECORATION.width,
+      SCHOOL_LOGO_DECORATION.height
+    );
+
+  }
+
+
+  /*
+   * Игровые пиксели рисуются поверх
+   * декоративного изображения.
+   */
 
   for (let y = 0; y < MAP_HEIGHT; y++) {
 
