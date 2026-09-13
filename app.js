@@ -9028,6 +9028,11 @@ const notificationToggleButton =
     "notification-toggle-button"
   );
 
+const notificationTestButton =
+  document.getElementById(
+    "notification-test-button"
+  );
+
 let currentPushSubscription = null;
 
 
@@ -9142,6 +9147,10 @@ async function updatePushNotificationStatus() {
     notificationToggleButton.disabled =
       true;
 
+    notificationTestButton.classList.add(
+      "hidden"
+    );
+
     return;
 
   }
@@ -9162,6 +9171,10 @@ async function updatePushNotificationStatus() {
 
     notificationToggleButton.disabled =
       false;
+
+    notificationTestButton.classList.add(
+      "hidden"
+    );
 
     return;
 
@@ -9195,6 +9208,10 @@ async function updatePushNotificationStatus() {
       notificationToggleButton.disabled =
         true;
 
+      notificationTestButton.classList.add(
+        "hidden"
+      );
+
       return;
 
     }
@@ -9214,6 +9231,10 @@ async function updatePushNotificationStatus() {
         "enabled"
       );
 
+      notificationTestButton.classList.remove(
+        "hidden"
+      );
+
     } else {
 
       setNotificationStatus(
@@ -9226,6 +9247,10 @@ async function updatePushNotificationStatus() {
 
       notificationToggleButton.classList.remove(
         "enabled"
+      );
+
+      notificationTestButton.classList.add(
+        "hidden"
       );
 
     }
@@ -9425,6 +9450,103 @@ async function disablePushNotifications() {
   }
 
 }
+
+
+notificationTestButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!currentPushSubscription) {
+
+      alert(
+        "Сначала включите уведомления на этом устройстве."
+      );
+
+      await updatePushNotificationStatus();
+
+      return;
+
+    }
+
+
+    const originalText =
+      notificationTestButton.textContent;
+
+
+    notificationTestButton.disabled =
+      true;
+
+    notificationTestButton.textContent =
+      "ОТПРАВКА...";
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.functions.invoke(
+          "send-test-push",
+          {
+            body: {}
+          }
+        );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+
+      const sentCount =
+        Number(data?.sent || 0);
+
+      const failedCount =
+        Number(data?.failed || 0);
+
+
+      if (sentCount < 1) {
+
+        throw new Error(
+          "Уведомление не отправлено. Проверьте подписку и журналы Edge Function."
+        );
+
+      }
+
+
+      alert(
+        `Тестовое уведомление отправлено: ${sentCount}. Ошибок: ${failedCount}.`
+      );
+
+    } catch (error) {
+
+      console.error(
+        "TEST PUSH ERROR:",
+        error
+      );
+
+      alert(
+        "Не удалось отправить тестовое уведомление. Проверьте Edge Function send-test-push и её журналы."
+      );
+
+    } finally {
+
+      notificationTestButton.disabled =
+        false;
+
+      notificationTestButton.textContent =
+        originalText;
+
+    }
+
+  }
+);
 
 
 notificationToggleButton.addEventListener(
