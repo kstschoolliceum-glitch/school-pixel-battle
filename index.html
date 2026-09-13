@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 
 <body>
@@ -59,6 +59,46 @@
   </div>
 
 </div>
+
+<div
+  id="push-permission-popup"
+  class="telegram-popup hidden"
+>
+
+  <div class="telegram-popup-card">
+
+    <div class="telegram-popup-icon">
+      🔔
+    </div>
+
+    <h2>
+      Не пропускай события
+    </h2>
+
+    <p id="push-permission-popup-text">
+      Включи уведомления, чтобы узнать
+      о начале нового сезона и последних
+      часах перед его завершением.
+    </p>
+
+    <button
+      id="push-permission-enable-button"
+      type="button"
+    >
+      🔔 ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ
+    </button>
+
+    <button
+      id="push-permission-later-button"
+      type="button"
+    >
+      Не сейчас
+    </button>
+
+  </div>
+
+</div>
+
 <div id="auth-screen">
   <div class="auth-card">
 
@@ -1528,7 +1568,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=29"></script>
+  <script src="app.js?v=30"></script>
 
 </body>
 </html>
