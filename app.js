@@ -2621,7 +2621,6 @@ async function initializeAuth() {
     await loadMyProfile();
     await checkAdminStatus();
     await updatePushNotificationStatus();
-    await updatePushNotificationStatus();
 
     await startOnlinePresence();
 
@@ -2705,6 +2704,7 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await checkAdminStatus();
+    await updatePushNotificationStatus();
 
     await startOnlinePresence();
 
