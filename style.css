@@ -2657,3 +2657,72 @@ body.admin-view .sidebar {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* ==========================================
+   PUSH NOTIFICATIONS
+========================================== */
+
+.notification-settings {
+  margin-top: 14px;
+  padding: 13px;
+
+  display: grid;
+  gap: 11px;
+
+  border: 1px solid #334155;
+  border-radius: 10px;
+
+  background: #0b1220;
+}
+
+.notification-settings-text {
+  display: grid;
+  gap: 5px;
+}
+
+.notification-settings-text strong {
+  color: white;
+}
+
+#notification-status {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#notification-status.enabled {
+  color: #86efac;
+}
+
+#notification-status.warning {
+  color: #fde68a;
+}
+
+#notification-status.error {
+  color: #fca5a5;
+}
+
+#notification-toggle-button {
+  min-height: 40px;
+  padding: 8px 12px;
+
+  border: 1px solid #0891b2;
+  border-radius: 8px;
+
+  background: #083344;
+  color: #a5f3fc;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#notification-toggle-button.enabled {
+  border-color: #475569;
+  background: #182132;
+  color: #cbd5e1;
+}
+
+#notification-toggle-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
