@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
 </head>
 
 <body>
@@ -753,6 +753,51 @@
       </strong>
     </div>
 
+    <div class="admin-broadcast-card">
+
+      <div class="admin-section-title">
+        <h2>🔔 Уведомление всем</h2>
+        <p>
+          Отправка на все устройства с включёнными уведомлениями
+        </p>
+      </div>
+
+      <label>
+        Заголовок
+
+        <input
+          id="broadcast-push-title"
+          type="text"
+          maxlength="60"
+          value="School Pixel Battle"
+        >
+      </label>
+
+      <label>
+        Текст уведомления
+
+        <textarea
+          id="broadcast-push-body"
+          maxlength="180"
+          rows="3"
+          placeholder="Например: До конца недели осталось 30 минут!"
+        ></textarea>
+      </label>
+
+      <button
+        id="broadcast-push-button"
+        type="button"
+      >
+        🔔 ОТПРАВИТЬ ВСЕМ
+      </button>
+
+      <div
+        id="broadcast-push-message"
+        class="admin-message"
+      ></div>
+
+    </div>
+
   </div>
 <div
   id="admin-students-content"
@@ -1483,7 +1528,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=25"></script>
+  <script src="app.js?v=26"></script>
 
 </body>
 </html>
