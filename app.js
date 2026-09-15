@@ -10017,7 +10017,7 @@ registerNotificationServiceWorker();
 
 /* Daily creative quests. Cosmetic, device-local progress; no database writes. */
 const pixelQuest = (() => {
-  const themes = ['Космический кот', 'Робот-помощник', 'Герой твоего класса', 'Пиксельный дракон', 'Остров мечты', 'Смайлик с характером', 'Школьный талисман', 'Подводный мир', 'Город будущего', 'Супергерой', 'Необычный питомец', 'Космический корабль', 'Волшебный лес', 'Любимая игра'];
+  const themes = ['Космический кот', 'Робот-помощник', 'Герой твоего класса', 'Пиксельный дракон', 'Остров мечты', 'Смайлик с характером', 'Школьный талисман', 'Подводный мир', 'Город будущего', 'Супергерой', 'Необычный питомец', 'Космический корабль', 'Волшебный лес', 'Любимая игра', 'Секретная база'];
   const CELL_GOAL = 100;
   const COLOR_GOAL = 6;
   const badges = ['🌱', '🎨', '🚀', '🐉', '💎', '👑'];
@@ -10044,8 +10044,49 @@ const pixelQuest = (() => {
     try { localStorage.setItem(key, JSON.stringify(state)); }
     catch (_) { storageAvailable = false; }
   }
+  function renderCollection() {
+    const host = document.getElementById('quest-profile-collection');
+    if (!host) return;
+    host.replaceChildren();
+    const heading = document.createElement('h3');
+    heading.textContent = '🏅 Мои значки квестов';
+    const summary = document.createElement('p');
+    summary.textContent = 'Выполнено дней: ' + state.completed.length;
+    const grid = document.createElement('div');
+    grid.className = 'pq-badge-grid';
+    const names = ['Первый шаг', 'Художник', 'На орбите', 'Сила дракона', 'Алмазный мастер', 'Корона творчества'];
+    badges.forEach((icon, index) => {
+      const item = document.createElement('div');
+      const earned = state.completed.length > index;
+      item.className = 'pq-badge' + (earned ? ' pq-earned' : '');
+      const symbol = document.createElement('span');
+      symbol.textContent = earned ? icon : '🔒';
+      const label = document.createElement('strong');
+      label.textContent = names[index];
+      const caption = document.createElement('small');
+      caption.textContent = earned ? 'Получен · ' + state.completed[index].split('-').reverse().join('.') : 'За ' + (index + 1) + ' выполненных дней';
+      item.append(symbol, label, caption);
+      grid.append(item);
+    });
+    const history = document.createElement('details');
+    const historyTitle = document.createElement('summary');
+    historyTitle.textContent = 'Все выполненные дни · ' + state.completed.length;
+    history.append(historyTitle);
+    const dates = document.createElement('div');
+    dates.className = 'pq-badge-history';
+    state.completed.slice().reverse().forEach(date => {
+      const row = document.createElement('p');
+      row.textContent = '🏅 ' + date.split('-').reverse().join('.') + ' — квест выполнен';
+      dates.append(row);
+    });
+    history.append(dates);
+    const note = document.createElement('small');
+    note.textContent = storageAvailable ? 'Значки сохраняются в этом браузере для твоего аккаунта. На другом устройстве коллекция отдельная. Пропуски дней не отнимают награды.' : 'Сохранение недоступно: коллекция останется только до закрытия страницы.';
+    host.append(heading, summary, grid, history, note);
+  }
   function render() {
     if (!sync() || !panel) return;
+    renderCollection();
     const n = state.cells.length, c = state.colors.length;
     const done = state.completed.includes(state.day);
     const theme = themes[Math.floor(Date.parse(state.day) / 86400000) % themes.length];
@@ -10064,7 +10105,7 @@ const pixelQuest = (() => {
     const result = document.createElement('p'); result.className = 'pq-result';
     result.textContent = done ? '✨ Квест выполнен! Значок дня в коллекции.' : 'Собери все три цели и получи значок дня.';
     const collection = document.createElement('p');
-    collection.textContent = 'Коллекция · ' + state.completed.length + ' дней: ' + badges.slice(0, Math.min(badges.length, state.completed.length)).join(' ') + (state.completed.length > 6 ? ' +' + (state.completed.length - 6) : '');
+    collection.textContent = '🏅 Коллекция в разделе «Профиль» · выполнено дней: ' + state.completed.length;
     const note = document.createElement('small');
     note.textContent = storageAvailable ? 'Коллекция сохранена в этом браузере для твоего аккаунта. Значки не дают очков рейтинга. Пропуск дня ничего не отнимает.' : 'Браузер не разрешает сохранение: прогресс доступен только до закрытия страницы.';
     panel.append(hint, result, collection, note);
@@ -10074,7 +10115,12 @@ const pixelQuest = (() => {
     if (dialog) return;
     const style = document.createElement('style');
     style.textContent = '.map-header{gap:8px}.map-header .map-title{flex-shrink:0;gap:8px}.map-header #coordinates{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pq-launch{flex-shrink:0;white-space:nowrap;margin:0;padding:6px 8px;min-height:32px;border:1px solid #a78bfa;border-radius:12px;background:#27144c;color:#fff;font:600 12px/1.2 system-ui,sans-serif;cursor:pointer}.pq-dialog{width:min(480px,calc(100vw - 32px));max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #a78bfa;border-radius:22px;background:#101827;color:#f1f5f9;box-shadow:0 24px 90px #0009}.pq-dialog::backdrop{background:#000a}.pq-dialog h2{margin:0 0 18px}.pq-dialog h3{color:#c4b5fd}.pq-dialog p{font-size:15px;line-height:1.6}.pq-dialog small{display:block;color:#b6c3d5;line-height:1.5}.pq-goal{margin:16px 0}.pq-goal span{display:block;margin-bottom:7px}.pq-goal progress{width:100%;height:12px;accent-color:#a78bfa}.pq-result{color:#86efac;font-weight:bold}.pq-close{float:right;background:transparent;border:0;color:#fff;font-size:26px;cursor:pointer;min-width:44px;min-height:44px}';
+    style.textContent += '.pq-profile{margin:18px 0;padding:16px;border:1px solid #534275;border-radius:16px;background:#17152b}.pq-profile h3{margin:0 0 12px;color:#ddd6fe}.pq-profile p{margin:10px 0}.pq-profile small{display:block;color:#aebbd0;line-height:1.5}.pq-badge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.pq-badge{padding:12px 6px;border:1px solid #374151;border-radius:12px;text-align:center;color:#9ca3af}.pq-badge>span{display:block;font-size:28px;margin-bottom:6px}.pq-badge strong{display:block;font-size:12px;overflow-wrap:anywhere}.pq-earned{background:#30204c;border-color:#9d79d0;color:#fff}.pq-badge small{font-size:11px;margin-top:6px}.pq-profile details{margin:14px 0}.pq-profile summary{cursor:pointer}.pq-badge-history{max-height:180px;overflow:auto;font-size:13px}';
     document.head.append(style);
+    const collectionHost = document.createElement('section');
+    collectionHost.id = 'quest-profile-collection';
+    collectionHost.className = 'pq-profile';
+    document.querySelector('#profile-panel .profile-stats').after(collectionHost);
     launcher = document.createElement('button'); launcher.type = 'button'; launcher.className = 'pq-launch'; launcher.textContent = '🎨 Квест дня';
     document.getElementById('online-users').after(launcher);
     launcher.setAttribute('aria-label', 'Открыть квест дня');
