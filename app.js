@@ -10018,6 +10018,8 @@ registerNotificationServiceWorker();
 /* Daily creative quests. Cosmetic, device-local progress; no database writes. */
 const pixelQuest = (() => {
   const themes = ['Космический кот', 'Робот-помощник', 'Герой твоего класса', 'Пиксельный дракон', 'Остров мечты', 'Смайлик с характером', 'Школьный талисман', 'Подводный мир', 'Город будущего', 'Супергерой', 'Необычный питомец', 'Космический корабль', 'Волшебный лес', 'Любимая игра'];
+  const CELL_GOAL = 100;
+  const COLOR_GOAL = 6;
   const badges = ['🌱', '🎨', '🚀', '🐉', '💎', '👑'];
   let state, key, dialog, panel, launcher;
   let storageAvailable = true;
@@ -10045,9 +10047,9 @@ const pixelQuest = (() => {
   function render() {
     if (!sync() || !panel) return;
     const n = state.cells.length, c = state.colors.length;
-    const done = n >= 15 && c >= 3;
+    const done = state.completed.includes(state.day);
     const theme = themes[Math.floor(Date.parse(state.day) / 86400000) % themes.length];
-    const goals = [['Первый штрих', Math.min(n, 1), 1], ['Палитра художника', Math.min(c, 3), 3], ['Маленький шедевр', Math.min(n, 15), 15]];
+    const goals = [['Разминка', Math.min(n, 10), 10], ['Палитра художника', Math.min(c, COLOR_GOAL), COLOR_GOAL], ['Пиксельный мастер', Math.min(n, CELL_GOAL), CELL_GOAL]];
     panel.replaceChildren();
     const title = document.createElement('h3'); title.textContent = 'Сегодня: ' + theme;
     const intro = document.createElement('p'); intro.textContent = 'Придумай маленький рисунок на общей карте. Тема — для вдохновения: рисуй и свои идеи. Выбери свободное место и береги рисунки других.';
@@ -10058,7 +10060,7 @@ const pixelQuest = (() => {
       const bar = document.createElement('progress'); bar.max = max; bar.value = value; bar.setAttribute('aria-label', name);
       row.append(label, bar); panel.append(row);
     });
-    const hint = document.createElement('p'); hint.textContent = 'Цели: 15 разных клеток и 3 цвета. Засчитываются успешные ходы после обновления, каждый день с 00:00 по Казахстану.';
+    const hint = document.createElement('p'); hint.textContent = 'Цели: 10 разных клеток для разминки, 6 цветов и 100 разных клеток. Засчитываются успешные ходы после обновления, каждый день с 00:00 по Казахстану.';
     const result = document.createElement('p'); result.className = 'pq-result';
     result.textContent = done ? '✨ Квест выполнен! Значок дня в коллекции.' : 'Собери все три цели и получи значок дня.';
     const collection = document.createElement('p');
@@ -10066,15 +10068,16 @@ const pixelQuest = (() => {
     const note = document.createElement('small');
     note.textContent = storageAvailable ? 'Коллекция сохранена в этом браузере для твоего аккаунта. Значки не дают очков рейтинга. Пропуск дня ничего не отнимает.' : 'Браузер не разрешает сохранение: прогресс доступен только до закрытия страницы.';
     panel.append(hint, result, collection, note);
-    launcher.textContent = done ? '✨ Квест выполнен' : '🎨 Квест дня · ' + Math.min(n, 15) + '/15';
+    launcher.textContent = done ? '✨ Квест ✓' : '🎨 Квест · ' + Math.min(n, CELL_GOAL) + '/' + CELL_GOAL;
   }
   function mount() {
     if (dialog) return;
     const style = document.createElement('style');
-    style.textContent = '.pq-launch{margin:6px 0;padding:9px 14px;border:1px solid #a78bfa;border-radius:12px;background:#27144c;color:#fff;font:inherit;cursor:pointer}.pq-dialog{width:min(480px,calc(100vw - 32px));max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #a78bfa;border-radius:22px;background:#101827;color:#f1f5f9;box-shadow:0 24px 90px #0009}.pq-dialog::backdrop{background:#000a}.pq-dialog h2{margin:0 0 18px}.pq-dialog h3{color:#c4b5fd}.pq-dialog p{font-size:15px;line-height:1.6}.pq-dialog small{display:block;color:#b6c3d5;line-height:1.5}.pq-goal{margin:16px 0}.pq-goal span{display:block;margin-bottom:7px}.pq-goal progress{width:100%;height:12px;accent-color:#a78bfa}.pq-result{color:#86efac;font-weight:bold}.pq-close{float:right;background:transparent;border:0;color:#fff;font-size:26px;cursor:pointer;min-width:44px;min-height:44px}';
+    style.textContent = '.map-header{gap:8px}.map-header .map-title{flex-shrink:0;gap:8px}.map-header #coordinates{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pq-launch{flex-shrink:0;white-space:nowrap;margin:0;padding:6px 8px;min-height:32px;border:1px solid #a78bfa;border-radius:12px;background:#27144c;color:#fff;font:600 12px/1.2 system-ui,sans-serif;cursor:pointer}.pq-dialog{width:min(480px,calc(100vw - 32px));max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #a78bfa;border-radius:22px;background:#101827;color:#f1f5f9;box-shadow:0 24px 90px #0009}.pq-dialog::backdrop{background:#000a}.pq-dialog h2{margin:0 0 18px}.pq-dialog h3{color:#c4b5fd}.pq-dialog p{font-size:15px;line-height:1.6}.pq-dialog small{display:block;color:#b6c3d5;line-height:1.5}.pq-goal{margin:16px 0}.pq-goal span{display:block;margin-bottom:7px}.pq-goal progress{width:100%;height:12px;accent-color:#a78bfa}.pq-result{color:#86efac;font-weight:bold}.pq-close{float:right;background:transparent;border:0;color:#fff;font-size:26px;cursor:pointer;min-width:44px;min-height:44px}';
     document.head.append(style);
     launcher = document.createElement('button'); launcher.type = 'button'; launcher.className = 'pq-launch'; launcher.textContent = '🎨 Квест дня';
-    document.getElementById('canvas-container').before(launcher);
+    document.getElementById('online-users').after(launcher);
+    launcher.setAttribute('aria-label', 'Открыть квест дня');
     dialog = document.createElement('dialog'); dialog.className = 'pq-dialog'; dialog.setAttribute('aria-labelledby', 'pq-title');
     const close = document.createElement('button'); close.className = 'pq-close'; close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', 'Закрыть квест'); close.onclick = () => dialog.close();
     const heading = document.createElement('h2'); heading.id = 'pq-title'; heading.textContent = '🎨 Пиксельный квест';
@@ -10085,9 +10088,9 @@ const pixelQuest = (() => {
   function record(data, userId) {
     if (!currentUser || currentUser.id !== userId || !sync()) return;
     const cell = data.x + ':' + data.y;
-    if (state.cells.length < 15 && !state.cells.includes(cell)) state.cells.push(cell);
-    if (state.colors.length < 3 && !state.colors.includes(data.color)) state.colors.push(data.color);
-    if (state.cells.length >= 15 && state.colors.length >= 3 && !state.completed.includes(state.day)) state.completed.push(state.day);
+    if (state.cells.length < CELL_GOAL && !state.cells.includes(cell)) state.cells.push(cell);
+    if (state.colors.length < COLOR_GOAL && !state.colors.includes(data.color)) state.colors.push(data.color);
+    if (state.cells.length >= CELL_GOAL && state.colors.length >= COLOR_GOAL && !state.completed.includes(state.day)) state.completed.push(state.day);
     save(); render();
   }
   mount();
