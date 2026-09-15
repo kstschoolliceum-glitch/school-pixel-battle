@@ -1948,6 +1948,7 @@ quarterRankingTab.addEventListener(
   }
 );
 async function loadMyProfile() {
+  const profileUserId = currentUser?.id;
   try { pixelQuest.render(); } catch (_) {}
 
   const {
@@ -1978,8 +1979,10 @@ async function loadMyProfile() {
   }
 
 
+  if (!currentUser || currentUser.id !== profileUserId) return;
   const profile =
     data[0];
+  try { pixelQuest.setProfile(profile, profileUserId); } catch (error) { console.warn("Quest profile unavailable", error); }
 
 
   document.getElementById(
@@ -10022,6 +10025,8 @@ const pixelQuest = (() => {
   const COLOR_GOAL = 6;
   const badges = ['🌱', '🎨', '🚀', '🐉', '💎', '👑'];
   let state, key, dialog, panel, launcher;
+  let playerProfile = null, profileOwner = null;
+  const worlds = ['в ледяном мире', 'среди вулканов', 'на облачном острове', 'в неоновом городе', 'на морском дне', 'в пустынном оазисе', 'на далёкой планете', 'в зачарованном замке'];
   let storageAvailable = true;
   const day = () => new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
   function sync() {
@@ -10029,6 +10034,7 @@ const pixelQuest = (() => {
     const nextKey = 'spb-quest-v1:' + currentUser.id;
     if (key !== nextKey) {
       key = nextKey;
+      storageAvailable = true;
       state = { day: '', cells: [], colors: [], completed: [] };
       try {
         const saved = JSON.parse(localStorage.getItem(key));
@@ -10043,6 +10049,79 @@ const pixelQuest = (() => {
   function save() {
     try { localStorage.setItem(key, JSON.stringify(state)); }
     catch (_) { storageAvailable = false; }
+  }
+  // Same ordered class roster and Kazakhstan day produce the same brief on every device.
+  function classBrief(date, className) {
+    if (!className) return null;
+    const names = [...new Set([...classNamesById.values(), className])].sort((a, b) => a.localeCompare(b, 'ru', { numeric: true }));
+    const index = names.indexOf(className);
+    const cycleDay = Math.floor(Date.parse(date) / 86400000) % themes.length;
+    const theme = themes[(cycleDay + index) % themes.length];
+    const worldIndex = Math.floor(index / themes.length);
+    const world = worlds[worldIndex % worlds.length];
+    return theme + ' ' + world + (worldIndex >= worlds.length ? ' · символ класса ' + className : '');
+  }
+  function setProfile(profile, userId) {
+    if (!currentUser || currentUser.id !== userId) return;
+    playerProfile = profile;
+    profileOwner = userId;
+    render();
+  }
+  function renderCareer() {
+    const host = document.getElementById('quest-profile-career');
+    if (!host) return;
+    host.replaceChildren();
+    if (profileOwner !== currentUser?.id || !playerProfile) {
+      const pending = document.createElement('p');
+      pending.textContent = 'Загружаем достижения…';
+      host.append(pending);
+      return;
+    }
+    const total = Math.max(0, Number(playerProfile.total_pixels) || 0);
+    const weekly = Math.max(0, Number(playerProfile.weekly_pixels) || 0);
+    const levels = [
+      [0, '🌱', 'Новичок'], [100, '✏️', 'Скетчер'], [300, '🎨', 'Художник'],
+      [700, '🧩', 'Пиксельный мастер'], [1500, '🚀', 'Создатель миров'],
+      [3000, '🐉', 'Архитектор легенд'], [6000, '💎', 'Алмазный творец'],
+      [10000, '👑', 'Легенда Pixel Battle']
+    ];
+    const level = levels.reduce((found, entry, index) => total >= entry[0] ? index : found, 0);
+    const title = document.createElement('h3');
+    title.textContent = levels[level][1] + ' ' + levels[level][2];
+    const caption = document.createElement('p');
+    caption.textContent = 'Уровень ' + (level + 1) + ' · ' + total.toLocaleString('ru-RU') + ' ходов за всё время';
+    const bar = document.createElement('progress');
+    bar.className = 'pq-career-progress';
+    bar.setAttribute('aria-label', 'Прогресс до следующего уровня');
+    const next = levels[level + 1];
+    bar.max = next ? next[0] - levels[level][0] : 1;
+    bar.value = next ? total - levels[level][0] : 1;
+    const goal = document.createElement('p');
+    goal.textContent = next ? 'До уровня «' + next[2] + '». Осталось ходов: ' + (next[0] - total).toLocaleString('ru-RU') : 'Все уровни открыты. Создавай новые шедевры!';
+    const roadmap = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Все 8 уровней';
+    roadmap.append(summary);
+    levels.forEach(([threshold, icon, name]) => {
+      const row = document.createElement('p');
+      row.textContent = (total >= threshold ? '✓ ' : '🔒 ') + icon + ' ' + name + ' · ' + threshold.toLocaleString('ru-RU');
+      roadmap.append(row);
+    });
+    const weekTitle = document.createElement('h3');
+    weekTitle.textContent = '🗺️ Экспедиция недели';
+    const weekText = document.createElement('p');
+    weekText.textContent = weekly.toLocaleString('ru-RU') + ' ходов в текущем сезоне. Три рубежа:';
+    const stages = document.createElement('div');
+    stages.className = 'pq-week-stages';
+    [[100, '🥉 Старт'], [300, '🥈 Разгон'], [700, '🥇 Прорыв']].forEach(([target, name]) => {
+      const stage = document.createElement('div');
+      stage.className = 'pq-badge' + (weekly >= target ? ' pq-earned' : '');
+      stage.textContent = name + ' · ' + Math.min(weekly, target) + '/' + target + (weekly >= target ? ' ✓' : '');
+      stages.append(stage);
+    });
+    const note = document.createElement('small');
+    note.textContent = 'Уровень рассчитан по статистике аккаунта и доступен на других устройствах. Экспедиция начинается заново с новым сезоном. Это личные достижения — очков рейтинга они не добавляют.';
+    host.append(title, caption, bar, goal, roadmap, weekTitle, weekText, stages, note);
   }
   function renderCollection() {
     const host = document.getElementById('quest-profile-collection');
@@ -10087,14 +10166,20 @@ const pixelQuest = (() => {
   function render() {
     if (!sync() || !panel) return;
     renderCollection();
+    renderCareer();
     const n = state.cells.length, c = state.colors.length;
     const done = state.completed.includes(state.day);
-    const theme = themes[Math.floor(Date.parse(state.day) / 86400000) % themes.length];
+    const className = profileOwner === currentUser.id ? playerProfile?.class_name : null;
+    const theme = classBrief(state.day, className);
     const goals = [['Разминка', Math.min(n, 10), 10], ['Палитра художника', Math.min(c, COLOR_GOAL), COLOR_GOAL], ['Пиксельный мастер', Math.min(n, CELL_GOAL), CELL_GOAL]];
     panel.replaceChildren();
-    const title = document.createElement('h3'); title.textContent = 'Сегодня: ' + theme;
-    const intro = document.createElement('p'); intro.textContent = 'Придумай маленький рисунок на общей карте. Тема — для вдохновения: рисуй и свои идеи. Выбери свободное место и береги рисунки других.';
+    const title = document.createElement('h3'); title.textContent = theme ? className + ' · ' + theme : 'Загружаем тему твоего класса…';
+    const intro = document.createElement('p'); intro.textContent = 'У твоего класса общий сюжет дня! Договоритесь в чате о месте и деталях рисунка. Прогресс целей — личный. Тема для вдохновения: можно рисовать свои идеи. Берегите работы других.';
     panel.append(title, intro);
+    const nextTheme = document.createElement('small');
+    const tomorrow = new Date(Date.parse(state.day) + 86400000).toISOString().slice(0, 10);
+    nextTheme.textContent = className ? 'Завтра: ' + classBrief(tomorrow, className) : 'Тема появится после загрузки профиля.';
+    panel.append(nextTheme);
     goals.forEach(([name, value, max]) => {
       const row = document.createElement('div'); row.className = 'pq-goal';
       const label = document.createElement('span'); label.textContent = (value === max ? '✓ ' : '') + name + ' · ' + value + '/' + max;
@@ -10116,7 +10201,12 @@ const pixelQuest = (() => {
     const style = document.createElement('style');
     style.textContent = '.map-header{gap:8px}.map-header .map-title{flex-shrink:0;gap:8px}.map-header #coordinates{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pq-launch{flex-shrink:0;white-space:nowrap;margin:0;padding:6px 8px;min-height:32px;border:1px solid #a78bfa;border-radius:12px;background:#27144c;color:#fff;font:600 12px/1.2 system-ui,sans-serif;cursor:pointer}.pq-dialog{width:min(480px,calc(100vw - 32px));max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #a78bfa;border-radius:22px;background:#101827;color:#f1f5f9;box-shadow:0 24px 90px #0009}.pq-dialog::backdrop{background:#000a}.pq-dialog h2{margin:0 0 18px}.pq-dialog h3{color:#c4b5fd}.pq-dialog p{font-size:15px;line-height:1.6}.pq-dialog small{display:block;color:#b6c3d5;line-height:1.5}.pq-goal{margin:16px 0}.pq-goal span{display:block;margin-bottom:7px}.pq-goal progress{width:100%;height:12px;accent-color:#a78bfa}.pq-result{color:#86efac;font-weight:bold}.pq-close{float:right;background:transparent;border:0;color:#fff;font-size:26px;cursor:pointer;min-width:44px;min-height:44px}';
     style.textContent += '.pq-profile{margin:18px 0;padding:16px;border:1px solid #534275;border-radius:16px;background:#17152b}.pq-profile h3{margin:0 0 12px;color:#ddd6fe}.pq-profile p{margin:10px 0}.pq-profile small{display:block;color:#aebbd0;line-height:1.5}.pq-badge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.pq-badge{padding:12px 6px;border:1px solid #374151;border-radius:12px;text-align:center;color:#9ca3af}.pq-badge>span{display:block;font-size:28px;margin-bottom:6px}.pq-badge strong{display:block;font-size:12px;overflow-wrap:anywhere}.pq-earned{background:#30204c;border-color:#9d79d0;color:#fff}.pq-badge small{font-size:11px;margin-top:6px}.pq-profile details{margin:14px 0}.pq-profile summary{cursor:pointer}.pq-badge-history{max-height:180px;overflow:auto;font-size:13px}';
+    style.textContent += '.pq-career-progress{width:100%;height:14px;accent-color:#a78bfa}.pq-week-stages{display:grid;gap:8px;margin:12px 0}.pq-profile details+h3{margin-top:20px}';
     document.head.append(style);
+    const careerHost = document.createElement('section');
+    careerHost.id = 'quest-profile-career';
+    careerHost.className = 'pq-profile';
+    document.querySelector('#profile-panel .profile-stats').after(careerHost);
     const collectionHost = document.createElement('section');
     collectionHost.id = 'quest-profile-collection';
     collectionHost.className = 'pq-profile';
@@ -10140,7 +10230,7 @@ const pixelQuest = (() => {
     save(); render();
   }
   mount();
-  return { record, render };
+  return { record, render, setProfile };
 })();
 
 initializeAuth();
