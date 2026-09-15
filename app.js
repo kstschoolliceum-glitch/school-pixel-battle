@@ -10020,13 +10020,13 @@ registerNotificationServiceWorker();
 
 /* Daily creative quests. Cosmetic, device-local progress; no database writes. */
 const pixelQuest = (() => {
-  const themes = ['Космический кот', 'Робот-помощник', 'Герой твоего класса', 'Пиксельный дракон', 'Остров мечты', 'Смайлик с характером', 'Школьный талисман', 'Подводный мир', 'Город будущего', 'Супергерой', 'Необычный питомец', 'Космический корабль', 'Волшебный лес', 'Любимая игра', 'Секретная база'];
+  const QUEST_CYCLE_DAYS = 15;
+  const themes = ["Крипер из Minecraft","Стив из Minecraft","Алмазный меч из Minecraft","Эндермен из Minecraft","Покебол","Пикачу","Соник","Супергриб из Mario","Кирби","Персонаж Among Us","Губка Боб","Патрик Стар","Шрек","Кот в сапогах","Нян Кэт","Гаст из Minecraft","Аксолотль из Minecraft","Верстак из Minecraft","Сундук из Minecraft","Чармандер","Бульбазавр","Сквиртл","Марио","Луиджи","Звезда из Mario","Гарфилд","Том из «Тома и Джерри»","Джерри","Доге — собака из мема","Pop Cat","Пчела из Minecraft","Блок травы из Minecraft","Кровать из Minecraft","Золотое яблоко из Minecraft","Иви","Джигглипафф","Тейлз","Наклз","Пакман","Привидение из Pac-Man","Миньон","Стич","Беззубик","Кот за клавиатурой","Капибара","Овца из Minecraft","Тотем бессмертия из Minecraft","Факел из Minecraft","Динамит TNT из Minecraft","Мяут","Снорлакс","Йоши","ВАЛЛ-И","ЕВА из «ВАЛЛ-И»","Бэймакс","Винни-Пух","Винни-Пух в смокинге","Ждун","Гравити Фолз: Билл Шифр","Гравити Фолз: Пухля"];
   const CELL_GOAL = 100;
   const COLOR_GOAL = 6;
   const badges = ['🌱', '🎨', '🚀', '🐉', '💎', '👑'];
   let state, key, dialog, panel, launcher;
   let playerProfile = null, profileOwner = null;
-  const worlds = ['в ледяном мире', 'среди вулканов', 'на облачном острове', 'в неоновом городе', 'на морском дне', 'в пустынном оазисе', 'на далёкой планете', 'в зачарованном замке'];
   let storageAvailable = true;
   const day = () => new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
   function sync() {
@@ -10055,11 +10055,11 @@ const pixelQuest = (() => {
     if (!className) return null;
     const names = [...new Set([...classNamesById.values(), className])].sort((a, b) => a.localeCompare(b, 'ru', { numeric: true }));
     const index = names.indexOf(className);
-    const cycleDay = Math.floor(Date.parse(date) / 86400000) % themes.length;
-    const theme = themes[(cycleDay + index) % themes.length];
-    const worldIndex = Math.floor(index / themes.length);
-    const world = worlds[worldIndex % worlds.length];
-    return theme + ' ' + world + (worldIndex >= worlds.length ? ' · символ класса ' + className : '');
+    const cycleDay = Math.floor(Date.parse(date) / 86400000) % QUEST_CYCLE_DAYS;
+    // Each group of 15 classes uses its own bank of concrete subjects.
+    const bankStart = Math.floor(index / QUEST_CYCLE_DAYS) * QUEST_CYCLE_DAYS;
+    const themeIndex = bankStart + (cycleDay + index % QUEST_CYCLE_DAYS) % QUEST_CYCLE_DAYS;
+    return themes[themeIndex % themes.length];
   }
   function setProfile(profile, userId) {
     if (!currentUser || currentUser.id !== userId) return;
