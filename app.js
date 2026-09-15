@@ -726,7 +726,7 @@ async function placePixel() {
 
 
   placeButton.disabled = true;
-
+  const placingUserId = currentUser.id;
 
   const {
     data,
@@ -822,6 +822,8 @@ async function placePixel() {
   pixels[index] =
     colorIndex;
 
+
+  try { pixelQuest.record(data, placingUserId); } catch (error) { console.warn("Quest progress unavailable", error); }
 
   pixelCount++;
 
@@ -1946,6 +1948,7 @@ quarterRankingTab.addEventListener(
   }
 );
 async function loadMyProfile() {
+  try { pixelQuest.render(); } catch (_) {}
 
   const {
     data,
@@ -10012,6 +10015,86 @@ function registerNotificationServiceWorker() {
 
 registerNotificationServiceWorker();
 
+/* Daily creative quests. Cosmetic, device-local progress; no database writes. */
+const pixelQuest = (() => {
+  const themes = ['Космический кот', 'Робот-помощник', 'Герой твоего класса', 'Пиксельный дракон', 'Остров мечты', 'Смайлик с характером', 'Школьный талисман', 'Подводный мир', 'Город будущего', 'Супергерой', 'Необычный питомец', 'Космический корабль', 'Волшебный лес', 'Любимая игра'];
+  const badges = ['🌱', '🎨', '🚀', '🐉', '💎', '👑'];
+  let state, key, dialog, panel, launcher;
+  let storageAvailable = true;
+  const day = () => new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
+  function sync() {
+    if (!currentUser) return false;
+    const nextKey = 'spb-quest-v1:' + currentUser.id;
+    if (key !== nextKey) {
+      key = nextKey;
+      state = { day: '', cells: [], colors: [], completed: [] };
+      try {
+        const saved = JSON.parse(localStorage.getItem(key));
+        if (saved && typeof saved.day === 'string' && Array.isArray(saved.cells) && Array.isArray(saved.colors) && Array.isArray(saved.completed)) state = saved;
+      } catch (_) { storageAvailable = false; }
+    }
+    if (state.day !== day()) {
+      state.day = day(); state.cells = []; state.colors = [];
+    }
+    return true;
+  }
+  function save() {
+    try { localStorage.setItem(key, JSON.stringify(state)); }
+    catch (_) { storageAvailable = false; }
+  }
+  function render() {
+    if (!sync() || !panel) return;
+    const n = state.cells.length, c = state.colors.length;
+    const done = n >= 15 && c >= 3;
+    const theme = themes[Math.floor(Date.parse(state.day) / 86400000) % themes.length];
+    const goals = [['Первый штрих', Math.min(n, 1), 1], ['Палитра художника', Math.min(c, 3), 3], ['Маленький шедевр', Math.min(n, 15), 15]];
+    panel.replaceChildren();
+    const title = document.createElement('h3'); title.textContent = 'Сегодня: ' + theme;
+    const intro = document.createElement('p'); intro.textContent = 'Придумай маленький рисунок на общей карте. Тема — для вдохновения: рисуй и свои идеи. Выбери свободное место и береги рисунки других.';
+    panel.append(title, intro);
+    goals.forEach(([name, value, max]) => {
+      const row = document.createElement('div'); row.className = 'pq-goal';
+      const label = document.createElement('span'); label.textContent = (value === max ? '✓ ' : '') + name + ' · ' + value + '/' + max;
+      const bar = document.createElement('progress'); bar.max = max; bar.value = value; bar.setAttribute('aria-label', name);
+      row.append(label, bar); panel.append(row);
+    });
+    const hint = document.createElement('p'); hint.textContent = 'Цели: 15 разных клеток и 3 цвета. Засчитываются успешные ходы после обновления, каждый день с 00:00 по Казахстану.';
+    const result = document.createElement('p'); result.className = 'pq-result';
+    result.textContent = done ? '✨ Квест выполнен! Значок дня в коллекции.' : 'Собери все три цели и получи значок дня.';
+    const collection = document.createElement('p');
+    collection.textContent = 'Коллекция · ' + state.completed.length + ' дней: ' + badges.slice(0, Math.min(badges.length, state.completed.length)).join(' ') + (state.completed.length > 6 ? ' +' + (state.completed.length - 6) : '');
+    const note = document.createElement('small');
+    note.textContent = storageAvailable ? 'Коллекция сохранена в этом браузере для твоего аккаунта. Значки не дают очков рейтинга. Пропуск дня ничего не отнимает.' : 'Браузер не разрешает сохранение: прогресс доступен только до закрытия страницы.';
+    panel.append(hint, result, collection, note);
+    launcher.textContent = done ? '✨ Квест выполнен' : '🎨 Квест дня · ' + Math.min(n, 15) + '/15';
+  }
+  function mount() {
+    if (dialog) return;
+    const style = document.createElement('style');
+    style.textContent = '.pq-launch{margin:6px 0;padding:9px 14px;border:1px solid #a78bfa;border-radius:12px;background:#27144c;color:#fff;font:inherit;cursor:pointer}.pq-dialog{width:min(480px,calc(100vw - 32px));max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #a78bfa;border-radius:22px;background:#101827;color:#f1f5f9;box-shadow:0 24px 90px #0009}.pq-dialog::backdrop{background:#000a}.pq-dialog h2{margin:0 0 18px}.pq-dialog h3{color:#c4b5fd}.pq-dialog p{font-size:15px;line-height:1.6}.pq-dialog small{display:block;color:#b6c3d5;line-height:1.5}.pq-goal{margin:16px 0}.pq-goal span{display:block;margin-bottom:7px}.pq-goal progress{width:100%;height:12px;accent-color:#a78bfa}.pq-result{color:#86efac;font-weight:bold}.pq-close{float:right;background:transparent;border:0;color:#fff;font-size:26px;cursor:pointer;min-width:44px;min-height:44px}';
+    document.head.append(style);
+    launcher = document.createElement('button'); launcher.type = 'button'; launcher.className = 'pq-launch'; launcher.textContent = '🎨 Квест дня';
+    document.getElementById('canvas-container').before(launcher);
+    dialog = document.createElement('dialog'); dialog.className = 'pq-dialog'; dialog.setAttribute('aria-labelledby', 'pq-title');
+    const close = document.createElement('button'); close.className = 'pq-close'; close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', 'Закрыть квест'); close.onclick = () => dialog.close();
+    const heading = document.createElement('h2'); heading.id = 'pq-title'; heading.textContent = '🎨 Пиксельный квест';
+    panel = document.createElement('div'); dialog.append(close, heading, panel); document.body.append(dialog);
+    launcher.onclick = () => { render(); if (currentUser) dialog.showModal(); };
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+  }
+  function record(data, userId) {
+    if (!currentUser || currentUser.id !== userId || !sync()) return;
+    const cell = data.x + ':' + data.y;
+    if (state.cells.length < 15 && !state.cells.includes(cell)) state.cells.push(cell);
+    if (state.colors.length < 3 && !state.colors.includes(data.color)) state.colors.push(data.color);
+    if (state.cells.length >= 15 && state.colors.length >= 3 && !state.completed.includes(state.day)) state.completed.push(state.day);
+    save(); render();
+  }
+  mount();
+  return { record, render };
+})();
+
 initializeAuth();
 subscribeToPixels();
 subscribeToChat();
+
