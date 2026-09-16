@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 
 <body>
@@ -365,6 +365,16 @@
       онлайн
     </span>
 
+    <button
+      id="daily-tasks-button"
+      class="daily-tasks-button"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="daily-tasks-dialog"
+    >
+      📋 Задания
+    </button>
+
   </span>
 
   <span id="coordinates">
@@ -598,6 +608,21 @@
       </p>
 
     </div>
+
+    <section
+      id="daily-tasks-profile"
+      class="daily-profile-card"
+      aria-live="polite"
+    >
+      <p>Загружаем ежедневные задания…</p>
+    </section>
+
+    <section
+      id="player-career-profile"
+      class="daily-profile-card"
+    >
+      <p>Загружаем достижения…</p>
+    </section>
 
     <div class="notification-settings">
 
@@ -1528,6 +1553,28 @@
   </main>
 
 
+<dialog
+  id="daily-tasks-dialog"
+  class="daily-tasks-dialog"
+  aria-labelledby="daily-tasks-title"
+>
+  <button
+    id="daily-tasks-close"
+    class="daily-tasks-close"
+    type="button"
+    aria-label="Закрыть ежедневные задания"
+  >
+    ×
+  </button>
+
+  <h2 id="daily-tasks-title">📋 Задания дня</h2>
+
+  <div id="daily-tasks-dialog-content" aria-live="polite">
+    <p>Загружаем задания…</p>
+  </div>
+</dialog>
+
+
 <nav class="mobile-nav">
 
   <button
@@ -1568,8 +1615,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=36"></script>
+  <script src="app.js?v=37"></script>
 
 </body>
 </html>
-
