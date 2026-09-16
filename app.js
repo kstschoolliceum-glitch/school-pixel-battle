@@ -10524,7 +10524,7 @@ const dailyTasks = (() => {
       timer.className = "daily-boost-timer";
       timer.textContent = `АКТИВНА · ${formatDuration(secondsUntil(status.boost_until))}`;
       const text = document.createElement("p");
-      text.textContent = "Сейчас пиксели можно ставить раз в 2 секунды.";
+      text.textContent = "Сейчас пиксели можно ставить раз в 1 секунду.";
       reward.append(heading, timer, text);
     } else if (state === "used") {
       const text = document.createElement("p");
@@ -10536,7 +10536,7 @@ const dailyTasks = (() => {
       reward.append(heading, text);
     } else {
       const text = document.createElement("p");
-      text.textContent = "Выполни все 3 задания, чтобы открыть ускорение: 1 пиксель раз в 2 секунды в течение 10 минут.";
+      text.textContent = "Выполни все 3 задания, чтобы открыть ускорение: 1 пиксель каждую секунду в течение 10 минут.";
       reward.append(heading, text);
     }
 
@@ -10735,7 +10735,7 @@ const dailyTasks = (() => {
       return;
     }
 
-    message = "Турбокисть включена: 2 секунды между пикселями в течение 10 минут!";
+    message = "Турбокисть включена: 1 пиксель каждую секунду в течение 10 минут!";
     messageIsError = false;
     await load();
   }
