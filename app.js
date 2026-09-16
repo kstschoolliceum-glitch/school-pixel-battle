@@ -10383,7 +10383,7 @@ const dailyTasks = (() => {
 
     if (state === "ready") {
       const text = document.createElement("p");
-      text.textContent = "Все задания выполнены. Забери бонус в профиль, когда будешь готов.";
+      text.textContent = "Все задания выполнены. Забери бонус до 00:00 — после обновления заданий награда дня исчезнет.";
       reward.append(heading, text, makeActionButton("🎁 ЗАБРАТЬ ТУРБОКИСТЬ", "claim"));
     } else if (state === "claimed") {
       const text = document.createElement("p");
