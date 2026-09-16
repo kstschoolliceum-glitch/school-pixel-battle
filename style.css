@@ -3070,6 +3070,113 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   box-shadow: 3px 3px 0 #070b15;
 }
 
+.admin-online-users {
+  margin: 16px 0;
+  padding: 14px;
+  border: 2px solid #3f8c72;
+  border-radius: 2px;
+  background: #102521;
+  box-shadow: 3px 3px 0 #070b15;
+}
+
+.admin-online-users.hidden {
+  display: none;
+}
+
+.admin-online-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #31584f;
+  font-family: "Courier New", monospace;
+}
+
+.admin-online-header strong {
+  color: #b5ffe4;
+  font-size: 15px;
+}
+
+.admin-online-header span {
+  min-width: 30px;
+  padding: 4px 7px;
+  border: 1px solid #57b794;
+  background: #173d34;
+  color: #a7ffdf;
+  text-align: center;
+  font-weight: 900;
+}
+
+.admin-online-list {
+  display: grid;
+  gap: 7px;
+  max-height: 260px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.admin-online-list > p {
+  margin: 6px 0;
+  color: #aebbd0;
+  font-size: 13px;
+}
+
+.admin-online-list > p.admin-online-error {
+  color: #fda4af;
+}
+
+.admin-online-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #304f49;
+  background: #132d29;
+}
+
+.admin-online-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  background: #35e99e;
+  box-shadow: 2px 2px 0 #0b3c2b;
+}
+
+.admin-online-identity {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-online-identity strong,
+.admin-online-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-online-identity strong {
+  color: #eefdf8;
+  font-size: 13px;
+}
+
+.admin-online-identity span {
+  margin-top: 2px;
+  color: #8fb8ab;
+  font-size: 11px;
+}
+
+.admin-online-you {
+  flex: 0 0 auto;
+  padding: 3px 5px;
+  border: 1px solid #8c70ca;
+  color: #d8c9ff;
+  font: 800 10px/1 "Courier New", monospace;
+}
+
 .daily-profile-card h3 {
   margin: 0 0 10px;
   color: #ddd0ff;
