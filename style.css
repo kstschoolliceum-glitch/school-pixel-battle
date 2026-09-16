@@ -2993,3 +2993,315 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 #login-form input,#register-form input {border-radius:0;border-color:#435779;}
 #login-form button,#register-form button {border:2px solid #b799ff;background:#7040c6;}
 .telegram-popup-card {box-shadow:4px 0 #425577,-4px 0 #425577,0 4px #425577,0 -4px #425577,8px 8px 0 #060a14;}
+
+/* ---------- DAILY TASKS ---------- */
+
+.daily-tasks-button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #b99bff;
+  border-radius: 0;
+  background: #342259;
+  color: #f7f1ff;
+  box-shadow: 2px 2px 0 #070b15;
+  font: 800 12px/1.15 "Courier New", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.daily-tasks-button:hover {
+  background: #4b3176;
+}
+
+.daily-tasks-button.reward-ready {
+  border-color: #ffe071;
+  background: #624910;
+  color: #fff3b2;
+}
+
+.daily-tasks-button.boost-active {
+  border-color: #76f5c5;
+  background: #123f37;
+  color: #a7ffe0;
+}
+
+.daily-tasks-dialog {
+  width: min(560px, calc(100vw - 28px));
+  max-height: min(86dvh, 760px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 2px solid #8c70ca;
+  border-radius: 2px;
+  background: #10192b;
+  color: #f4f7ff;
+  box-shadow: 7px 7px 0 #050912;
+}
+
+.daily-tasks-dialog::backdrop {
+  background: #030916cf;
+  backdrop-filter: blur(2px);
+}
+
+.daily-tasks-dialog h2 {
+  margin: 0 48px 18px 0;
+  font: 900 22px/1.2 "Courier New", monospace;
+}
+
+.daily-tasks-close {
+  float: right;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #586a89;
+  border-radius: 0;
+  background: #18243a;
+  color: white;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.daily-profile-card {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #475c7c;
+  border-radius: 2px;
+  background: #111a2c;
+  box-shadow: 3px 3px 0 #070b15;
+}
+
+.daily-profile-card h3 {
+  margin: 0 0 10px;
+  color: #ddd0ff;
+  font: 800 16px/1.25 "Courier New", monospace;
+}
+
+.daily-profile-card p,
+.daily-tasks-dialog p {
+  line-height: 1.45;
+}
+
+.daily-profile-card small,
+.daily-tasks-dialog small {
+  display: block;
+  color: #aebbd0;
+  line-height: 1.45;
+}
+
+.daily-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  color: #f5efff;
+  font-family: "Courier New", monospace;
+}
+
+.daily-heading strong {
+  font-size: 17px;
+}
+
+.daily-heading span {
+  color: #9facc1;
+  font-size: 12px;
+}
+
+.daily-intro {
+  margin: 6px 0 14px;
+  color: #aebbd0;
+  font-size: 13px;
+}
+
+.daily-task-card {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #3e506d;
+  border-left: 4px solid #8266c1;
+  background: #162137;
+}
+
+.daily-task-card.completed {
+  border-color: #3e886f;
+  border-left-color: #76f5c5;
+  background: #122c2a;
+}
+
+.daily-task-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.daily-task-top strong {
+  color: #f4efff;
+  font-size: 14px;
+}
+
+.daily-task-top span {
+  flex: 0 0 auto;
+  color: #cbb9f5;
+  font: 800 13px/1.2 "Courier New", monospace;
+}
+
+.daily-task-card p {
+  margin: 7px 0 9px;
+  color: #b8c4d7;
+  font-size: 13px;
+}
+
+.daily-task-card progress,
+.career-progress {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid #53637f;
+  border-radius: 0;
+  background: #080f1d;
+  accent-color: #8f72d2;
+}
+
+.daily-task-card.completed progress,
+.daily-reward.active progress {
+  accent-color: #76f5c5;
+}
+
+.daily-task-palette {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.daily-task-palette span {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #dce6f7;
+  box-shadow: 2px 2px 0 #060a14;
+}
+
+.daily-reward {
+  margin-top: 16px;
+  padding: 14px;
+  border: 2px solid #7256b4;
+  background: #21183d;
+  box-shadow: 3px 3px 0 #070b15;
+}
+
+.daily-reward.active {
+  border-color: #76f5c5;
+  background: #12312e;
+}
+
+.daily-reward p {
+  margin: 8px 0 12px;
+  color: #c6d2e4;
+  font-size: 13px;
+}
+
+.daily-reward-button {
+  width: 100%;
+  min-height: 42px;
+  margin-bottom: 12px;
+  border: 2px solid #d4bdff;
+  border-radius: 0;
+  background: #7044bd;
+  color: white;
+  box-shadow: 0 3px 0 #321e5c;
+  font: 900 13px/1.2 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.daily-reward-button.activate {
+  border-color: #8dffd7;
+  background: #18755e;
+  box-shadow: 0 3px 0 #0c3d32;
+}
+
+.daily-reward-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.daily-boost-timer {
+  display: block;
+  margin: 10px 0;
+  color: #91ffda;
+  font: 900 22px/1.2 "Courier New", monospace;
+}
+
+.daily-message {
+  margin: 12px 0;
+  padding: 9px;
+  border-left: 3px solid #76f5c5;
+  background: #102d29;
+  color: #a6f8db;
+  font-size: 13px;
+}
+
+.daily-message.error {
+  border-left-color: #fb7185;
+  background: #34151d;
+  color: #fecdd3;
+}
+
+.career-progress {
+  accent-color: #76f5c5;
+}
+
+.career-stages {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 12px;
+}
+
+.career-stages span {
+  padding: 8px;
+  border: 1px solid #3d4d68;
+  color: #8491a7;
+  font-size: 12px;
+}
+
+.career-stages span.earned {
+  border-color: #8b71c8;
+  background: #292143;
+  color: #f3ecff;
+}
+
+.chat-message.system {
+  border-left: 3px solid #76f5c5;
+  background: #102927;
+}
+
+.chat-message.system .chat-message-content {
+  color: #c9fbea;
+}
+
+@media (max-width: 650px) {
+  .map-title {
+    gap: 7px;
+  }
+
+  .daily-tasks-button {
+    min-height: 29px;
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+
+  .daily-tasks-dialog {
+    width: calc(100vw - 18px);
+    max-height: 88dvh;
+    padding: 18px 15px;
+  }
+
+  .daily-tasks-dialog h2 {
+    font-size: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-tasks-button,
+  .daily-reward-button {
+    transition: none;
+  }
+}
