@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
 </head>
 
 <body>
@@ -608,6 +608,21 @@
       </p>
 
     </div>
+
+    <section
+      id="admin-online-users"
+      class="admin-online-users hidden"
+      aria-live="polite"
+    >
+      <div class="admin-online-header">
+        <strong>🟢 Кто сейчас онлайн</strong>
+        <span id="admin-online-count">0</span>
+      </div>
+
+      <div id="admin-online-list" class="admin-online-list">
+        <p>Загружаем список…</p>
+      </div>
+    </section>
 
     <section
       id="daily-tasks-profile"
@@ -1615,7 +1630,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=39"></script>
 
 </body>
 </html>
