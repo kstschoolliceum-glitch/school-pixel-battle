@@ -10655,7 +10655,7 @@ const dailyTasks = (() => {
           : `📋 ${count}/3`;
       button.setAttribute("aria-label", `Открыть задания дня. Выполнено ${count} из 3`);
     }
-    if (dialogContent) renderTaskList(dialogContent, false);
+    if (dialogContent) renderTaskList(dialogContent, true);
     if (profileHost) renderTaskList(profileHost, true);
     renderCareer();
   }
