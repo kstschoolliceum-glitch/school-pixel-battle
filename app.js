@@ -10791,3 +10791,64 @@ const dailyTasks = (() => {
 initializeAuth();
 subscribeToPixels();
 subscribeToChat();
+
+
+// ---------- BACKGROUND MUSIC ----------
+
+(() => {
+  const audio = document.getElementById("background-music");
+  const button = document.getElementById("music-toggle");
+
+  if (!audio || !button) return;
+
+  const storageKey = "pixelBattleMusicEnabled";
+  audio.volume = 0.35;
+
+  function isEnabled() {
+    return localStorage.getItem(storageKey) === "true";
+  }
+
+  function updateButton() {
+    const playing = !audio.paused;
+    button.classList.toggle("is-playing", playing);
+    button.setAttribute("aria-pressed", String(playing));
+    button.innerHTML = playing
+      ? '<span aria-hidden="true">🔊</span><span class="music-toggle-label">Музыка</span>'
+      : '<span aria-hidden="true">🔇</span><span class="music-toggle-label">Музыка</span>';
+    button.title = playing
+      ? "Выключить музыку — REDFXRD — BASS KING"
+      : "Включить музыку — REDFXRD — BASS KING";
+  }
+
+  async function startMusic() {
+    try {
+      await audio.play();
+      localStorage.setItem(storageKey, "true");
+    } catch (error) {
+      console.warn("Браузер ожидает нажатия пользователя для запуска музыки.");
+    }
+    updateButton();
+  }
+
+  button.addEventListener("click", async () => {
+    if (audio.paused) {
+      await startMusic();
+      return;
+    }
+
+    audio.pause();
+    localStorage.setItem(storageKey, "false");
+    updateButton();
+  });
+
+  audio.addEventListener("play", updateButton);
+  audio.addEventListener("pause", updateButton);
+
+  if (isEnabled()) {
+    document.addEventListener("pointerdown", event => {
+      if (!button.contains(event.target) && audio.paused) startMusic();
+    }, { once: true });
+  }
+
+  updateButton();
+})();
