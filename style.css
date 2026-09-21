@@ -3560,3 +3560,261 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     min-height: 42px;
   }
 }
+
+
+/* ---------- ADMIN PROMO CODES ---------- */
+
+.admin-promos-content {
+  padding: 24px;
+}
+
+.admin-promo-create-card {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid #34415a;
+  border-left: 5px solid #8b5cf6;
+  background:
+    linear-gradient(135deg, rgba(139, 92, 246, 0.12), transparent 48%),
+    #101827;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.22);
+}
+
+.admin-promo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-promo-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-promo-grid input,
+.admin-promo-grid select {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid #465574;
+  border-radius: 8px;
+  background: #090f1b;
+  color: #ffffff;
+  font: inherit;
+}
+
+.admin-promo-grid input:focus,
+.admin-promo-grid select:focus {
+  outline: 2px solid rgba(139, 92, 246, 0.42);
+  border-color: #a78bfa;
+}
+
+.admin-promo-grid small {
+  color: #7f8da6;
+  font-weight: 500;
+}
+
+.admin-promo-code-field {
+  grid-column: 1 / -1;
+}
+
+.admin-promo-code-input {
+  display: flex;
+  gap: 9px;
+}
+
+.admin-promo-code-input input {
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-promo-code-input button,
+#admin-promo-submit,
+#admin-promo-copy,
+.admin-promo-actions button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid #a78bfa;
+  border-radius: 8px;
+  background: #6d28d9;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#admin-promo-submit {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.admin-promo-code-input button:hover,
+#admin-promo-submit:hover,
+#admin-promo-copy:hover,
+.admin-promo-actions button:hover {
+  background: #7c3aed;
+}
+
+.admin-promo-code-input button:disabled,
+#admin-promo-submit:disabled,
+#admin-promo-copy:disabled,
+.admin-promo-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-promo-created {
+  margin-top: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.admin-promo-created div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-promo-created span {
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-promo-created strong {
+  color: #ffffff;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  word-break: break-all;
+}
+
+.admin-promo-list-title {
+  margin-top: 28px;
+}
+
+.admin-promo-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-promo-item {
+  padding: 15px;
+  border: 1px solid #34415a;
+  background: #101827;
+}
+
+.admin-promo-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-promo-item-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-promo-item-header strong {
+  color: #ffffff;
+}
+
+.admin-promo-item-header div span {
+  color: #a78bfa;
+  font-family: monospace;
+}
+
+.admin-promo-status {
+  padding: 5px 8px;
+  border: 1px solid currentColor;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-promo-status.active {
+  color: #86efac;
+}
+
+.admin-promo-status.used {
+  color: #93c5fd;
+}
+
+.admin-promo-status.expired {
+  color: #94a3b8;
+}
+
+.admin-promo-status.disabled {
+  color: #fca5a5;
+}
+
+.admin-promo-details {
+  margin-top: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-promo-details span {
+  padding: 6px 8px;
+  border: 1px solid #2f3b52;
+  background: #0a111e;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.admin-promo-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-promo-actions button {
+  min-height: 34px;
+  padding: 7px 11px;
+  background: transparent;
+}
+
+.admin-promo-empty {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed #3c4962;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.admin-promo-empty.error {
+  color: #fca5a5;
+}
+
+@media (max-width: 700px) {
+  .admin-promos-content {
+    padding: 14px;
+  }
+
+  .admin-promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-promo-code-field {
+    grid-column: auto;
+  }
+
+  .admin-promo-code-input,
+  .admin-promo-created {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
