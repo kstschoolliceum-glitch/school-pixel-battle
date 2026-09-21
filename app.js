@@ -10793,6 +10793,159 @@ subscribeToPixels();
 subscribeToChat();
 
 
+// ---------- PROMO CODES ----------
+
+const promoCodes = (() => {
+  const form = document.getElementById("promo-code-form");
+  const input = document.getElementById("promo-code-input");
+  const button = document.getElementById("promo-code-submit");
+  const statusElement = document.getElementById("promo-code-status");
+  const messageElement = document.getElementById("promo-code-message");
+
+  if (!form || !input || !button || !statusElement || !messageElement) {
+    return { load() {} };
+  }
+
+  let activeUntil = 0;
+  let lastUserId = null;
+  let loading = false;
+
+  function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const rest = seconds % 60;
+
+    return [
+      hours > 0 ? String(hours).padStart(2, "0") : null,
+      String(minutes).padStart(2, "0"),
+      String(rest).padStart(2, "0")
+    ].filter(Boolean).join(":");
+  }
+
+  function renderStatus() {
+    const remaining = Math.max(0, Math.ceil((activeUntil - Date.now()) / 1000));
+
+    if (remaining > 0) {
+      statusElement.classList.add("active");
+      statusElement.textContent =
+        `⚡ Пиксельный час активен · ${formatDuration(remaining)} · 1 пиксель/сек`;
+      input.disabled = true;
+      button.disabled = true;
+      button.textContent = "БОНУС АКТИВЕН";
+      return;
+    }
+
+    activeUntil = 0;
+    statusElement.classList.remove("active");
+    statusElement.textContent = "Введи одноразовый код и получи указанный бонус.";
+    input.disabled = false;
+    button.disabled = false;
+    button.textContent = "АКТИВИРОВАТЬ";
+  }
+
+  function showMessage(text, isError = false) {
+    messageElement.textContent = text;
+    messageElement.classList.toggle("error", isError);
+  }
+
+  async function load() {
+    if (!currentUser || loading) {
+      if (!currentUser) {
+        activeUntil = 0;
+        showMessage("");
+        renderStatus();
+      }
+      return;
+    }
+
+    loading = true;
+    const { data, error } = await supabaseClient.rpc("get_my_promo_status");
+    loading = false;
+
+    if (error) {
+      console.error("PROMO STATUS ERROR:", error);
+      showMessage("Промокоды пока недоступны.", true);
+      return;
+    }
+
+    activeUntil = data?.active && data?.benefit_until
+      ? Date.parse(data.benefit_until)
+      : 0;
+    renderStatus();
+  }
+
+  function reasonMessage(reason) {
+    const messages = {
+      INVALID_CODE: "Такого промокода нет. Проверь символы и попробуй снова.",
+      CODE_INACTIVE: "Этот промокод отключён.",
+      CODE_EXPIRED: "Срок действия промокода закончился.",
+      CODE_ALREADY_USED: "Этот одноразовый промокод уже использован.",
+      PROMO_ALREADY_ACTIVE: "У тебя уже действует бонус от промокода.",
+      ALREADY_REDEEMED: "Ты уже использовал этот промокод."
+    };
+
+    return messages[reason] || "Не удалось активировать промокод.";
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    if (!currentUser || button.disabled) return;
+
+    const code = input.value.trim();
+    if (code.length < 6) {
+      showMessage("Введи промокод полностью.", true);
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "ПРОВЕРЯЕМ…";
+    showMessage("");
+
+    const { data, error } = await supabaseClient.rpc(
+      "redeem_promo_code",
+      { p_code: code }
+    );
+
+    if (error) {
+      console.error("PROMO REDEEM ERROR:", error);
+      showMessage("Не удалось проверить промокод. Попробуй ещё раз.", true);
+      renderStatus();
+      return;
+    }
+
+    if (!data?.success) {
+      showMessage(reasonMessage(data?.reason), true);
+      renderStatus();
+      return;
+    }
+
+    activeUntil = Date.parse(data.benefit_until);
+    input.value = "";
+    showMessage("Промокод принят! Пиксельный час начался.", false);
+
+    cooldownRemaining = 0;
+    clearInterval(cooldownTimer);
+    updateCooldown();
+    renderStatus();
+  });
+
+  setInterval(() => {
+    const userId = currentUser?.id || null;
+
+    if (userId !== lastUserId) {
+      lastUserId = userId;
+      load();
+    }
+
+    renderStatus();
+  }, 1000);
+
+  renderStatus();
+  return { load };
+})();
+
 // ---------- BACKGROUND MUSIC ----------
 
 (() => {
