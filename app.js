@@ -10801,11 +10801,40 @@ subscribeToChat();
 
   if (!audio || !button) return;
 
-  const storageKey = "pixelBattleMusicEnabled";
+  const enabledStorageKey = "pixelBattleMusicEnabled";
+  const positionStorageKey = "pixelBattleMusicPosition";
+  let lastSavedSecond = -1;
+
   audio.volume = 0.35;
 
   function isEnabled() {
-    return localStorage.getItem(storageKey) === "true";
+    return localStorage.getItem(enabledStorageKey) === "true";
+  }
+
+  function savePosition() {
+    if (!Number.isFinite(audio.currentTime)) return;
+
+    const currentSecond = Math.floor(audio.currentTime);
+    if (currentSecond === lastSavedSecond) return;
+
+    lastSavedSecond = currentSecond;
+    localStorage.setItem(positionStorageKey, String(audio.currentTime));
+  }
+
+  function restorePosition() {
+    const savedPosition = Number(localStorage.getItem(positionStorageKey));
+    if (!Number.isFinite(savedPosition) || savedPosition < 0) return;
+
+    const restoredPosition = Number.isFinite(audio.duration) && audio.duration > 0
+      ? savedPosition % audio.duration
+      : savedPosition;
+
+    try {
+      audio.currentTime = restoredPosition;
+      lastSavedSecond = Math.floor(restoredPosition);
+    } catch (error) {
+      console.warn("Не удалось восстановить позицию музыки.");
+    }
   }
 
   function updateButton() {
@@ -10823,7 +10852,7 @@ subscribeToChat();
   async function startMusic() {
     try {
       await audio.play();
-      localStorage.setItem(storageKey, "true");
+      localStorage.setItem(enabledStorageKey, "true");
     } catch (error) {
       console.warn("Браузер ожидает нажатия пользователя для запуска музыки.");
     }
@@ -10836,13 +10865,20 @@ subscribeToChat();
       return;
     }
 
+    savePosition();
     audio.pause();
-    localStorage.setItem(storageKey, "false");
+    localStorage.setItem(enabledStorageKey, "false");
     updateButton();
   });
 
+  audio.addEventListener("loadedmetadata", restorePosition);
+  audio.addEventListener("timeupdate", savePosition);
   audio.addEventListener("play", updateButton);
-  audio.addEventListener("pause", updateButton);
+  audio.addEventListener("pause", () => {
+    savePosition();
+    updateButton();
+  });
+  window.addEventListener("pagehide", savePosition);
 
   if (isEnabled()) {
     document.addEventListener("pointerdown", event => {
