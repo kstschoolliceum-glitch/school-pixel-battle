@@ -10802,7 +10802,7 @@ subscribeToChat();
   if (!audio || !button) return;
 
   const enabledStorageKey = "pixelBattleMusicEnabled";
-  const positionStorageKey = "pixelBattleMusicPosition";
+  const positionStorageKey = "pixelBattleMusicPosition:lofi-capy-v1";
   let lastSavedSecond = -1;
 
   audio.volume = 0.35;
@@ -10845,8 +10845,8 @@ subscribeToChat();
       ? '<span aria-hidden="true">🔊</span><span class="music-toggle-label">Музыка</span>'
       : '<span aria-hidden="true">🔇</span><span class="music-toggle-label">Музыка</span>';
     button.title = playing
-      ? "Выключить музыку — REDFXRD — BASS KING"
-      : "Включить музыку — REDFXRD — BASS KING";
+      ? "Выключить музыку — Lofi Tunes of Capy"
+      : "Включить музыку — Lofi Tunes of Capy";
   }
 
   async function startMusic() {
