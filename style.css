@@ -3412,3 +3412,48 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     transition: none;
   }
 }
+
+
+/* ---------- BACKGROUND MUSIC ---------- */
+
+.music-toggle {
+  min-height: 40px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: #cbd5e1;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.music-toggle:hover {
+  border-color: var(--purple-light);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.music-toggle.is-playing {
+  border-color: #8b5cf6;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.25);
+}
+
+@media (max-width: 650px) {
+  .music-toggle {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 7px;
+  }
+
+  .music-toggle-label {
+    display: none;
+  }
+}
