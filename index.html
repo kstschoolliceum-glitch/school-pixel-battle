@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=24">
 </head>
 
 <body>
@@ -648,6 +648,50 @@
       class="daily-profile-card"
     >
       <p>Загружаем достижения…</p>
+    </section>
+
+    <section
+      id="promo-code-profile"
+      class="promo-code-card"
+      aria-labelledby="promo-code-title"
+    >
+      <h3 id="promo-code-title">🎟️ Промокод</h3>
+      <p>
+        Одноразовые промокоды открывают временные игровые бонусы.
+      </p>
+
+      <div
+        id="promo-code-status"
+        class="promo-code-status"
+        aria-live="polite"
+      >
+        Введи одноразовый код и получи указанный бонус.
+      </div>
+
+      <form id="promo-code-form" class="promo-code-form">
+        <input
+          id="promo-code-input"
+          type="text"
+          minlength="6"
+          maxlength="64"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="ВВЕДИ ПРОМОКОД"
+          aria-label="Промокод"
+          required
+        >
+
+        <button id="promo-code-submit" type="submit">
+          АКТИВИРОВАТЬ
+        </button>
+      </form>
+
+      <div
+        id="promo-code-message"
+        class="promo-code-message"
+        aria-live="polite"
+      ></div>
     </section>
 
     <div class="notification-settings">
@@ -1652,7 +1696,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=44"></script>
+  <script src="app.js?v=45"></script>
 
 </body>
 </html>
