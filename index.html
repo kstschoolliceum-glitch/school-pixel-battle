@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=25">
 </head>
 
 <body>
@@ -852,6 +852,14 @@
       📚 Сезоны
     </button>
 
+    <button
+      id="admin-promos-tab"
+      class="admin-tab"
+      type="button"
+    >
+      🎟️ Промокоды
+    </button>
+
   </div>
 
 
@@ -1457,6 +1465,130 @@
 
 </div>
   <div
+    id="admin-promos-content"
+    class="admin-promos-content hidden"
+  >
+    <div class="admin-section-title">
+      <h2>🎟️ Управление промокодами</h2>
+      <p>
+        Создавай бонусы и раздавай коды ученикам. Полный код показывается только сразу после создания.
+      </p>
+    </div>
+
+    <form id="admin-promo-form" class="admin-promo-create-card">
+      <div class="admin-promo-grid">
+        <label class="admin-promo-code-field">
+          Промокод
+          <div class="admin-promo-code-input">
+            <input
+              id="admin-promo-code"
+              type="text"
+              minlength="6"
+              maxlength="64"
+              autocomplete="off"
+              spellcheck="false"
+              required
+            >
+            <button id="admin-promo-generate" type="button">
+              🎲 СГЕНЕРИРОВАТЬ
+            </button>
+          </div>
+        </label>
+
+        <label>
+          Название награды
+          <input
+            id="admin-promo-title"
+            type="text"
+            minlength="3"
+            maxlength="50"
+            value="Пиксельный час"
+            required
+          >
+        </label>
+
+        <label>
+          Длительность, минут
+          <input
+            id="admin-promo-duration"
+            type="number"
+            min="1"
+            max="1440"
+            value="60"
+            required
+          >
+        </label>
+
+        <label>
+          Скорость установки
+          <select id="admin-promo-cooldown">
+            <option value="1">1 пиксель в секунду</option>
+            <option value="2">1 пиксель в 2 секунды</option>
+            <option value="3">1 пиксель в 3 секунды</option>
+            <option value="4">1 пиксель в 4 секунды</option>
+          </select>
+        </label>
+
+        <label>
+          Количество активаций
+          <input
+            id="admin-promo-uses"
+            type="number"
+            min="1"
+            max="1000"
+            value="1"
+            required
+          >
+        </label>
+
+        <label>
+          Срок действия кода, дней
+          <input
+            id="admin-promo-valid-days"
+            type="number"
+            min="0"
+            max="365"
+            value="30"
+            required
+          >
+          <small>0 — без ограничения срока.</small>
+        </label>
+      </div>
+
+      <button id="admin-promo-submit" type="submit">
+        СОЗДАТЬ ПРОМОКОД
+      </button>
+
+      <div
+        id="admin-promo-message"
+        class="admin-message"
+        aria-live="polite"
+      ></div>
+    </form>
+
+    <div id="admin-promo-created" class="admin-promo-created hidden">
+      <div>
+        <span>Новый промокод</span>
+        <strong id="admin-promo-created-code"></strong>
+      </div>
+      <button id="admin-promo-copy" type="button">
+        📋 КОПИРОВАТЬ
+      </button>
+    </div>
+
+    <div class="admin-section-title admin-promo-list-title">
+      <h2>Созданные промокоды</h2>
+      <p>
+        Из соображений безопасности сохранены только последние четыре символа каждого кода.
+      </p>
+    </div>
+
+    <div id="admin-promo-list" class="admin-promo-list">
+      <p class="admin-promo-empty">Загрузка…</p>
+    </div>
+  </div>
+
+  <div
   id="admin-invites-content"
   class="admin-invites-content hidden"
 >
@@ -1696,7 +1828,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=45"></script>
+  <script src="app.js?v=46"></script>
 
 </body>
 </html>
