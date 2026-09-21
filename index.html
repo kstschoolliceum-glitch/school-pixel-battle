@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="style.css?v=23">
 </head>
 
 <body>
@@ -333,6 +333,17 @@
     <div class="logo">
       👑 <span>PIXEL <b>BATTLE</b></span>
     </div>
+
+    <button
+      id="music-toggle"
+      class="music-toggle"
+      type="button"
+      aria-pressed="false"
+      title="Включить музыку — REDFXRD — BASS KING"
+    >
+      <span aria-hidden="true">🔇</span>
+      <span class="music-toggle-label">Музыка</span>
+    </button>
 
     <div class="season">
       <span id="season-info">
@@ -1625,12 +1636,23 @@
 
 </nav>
 
+  <audio
+    id="background-music"
+    loop
+    preload="none"
+  >
+    <source
+      src="assets/music/REDFXRD_-_BASS_KING%20(online-audio-converter.com).mp3"
+      type="audio/mpeg"
+    >
+  </audio>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=41"></script>
+  <script src="app.js?v=42"></script>
 
 </body>
 </html>
