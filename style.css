@@ -3457,3 +3457,106 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     display: none;
   }
 }
+
+
+/* ---------- PROMO CODES ---------- */
+
+.promo-code-card {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #465574;
+  border-left: 5px solid #8b5cf6;
+  background:
+    linear-gradient(135deg, rgba(139, 92, 246, 0.14), transparent 55%),
+    #111a2a;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.22);
+}
+
+.promo-code-card h3 {
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.promo-code-card > p {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.promo-code-status {
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  border: 1px dashed #52627f;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.promo-code-status.active {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.09);
+  color: #fde68a;
+  font-weight: 800;
+}
+
+.promo-code-form {
+  display: flex;
+  gap: 8px;
+}
+
+.promo-code-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 11px 12px;
+  border: 1px solid #52627f;
+  border-radius: 8px;
+  background: #090f1b;
+  color: #ffffff;
+  font: inherit;
+  text-transform: uppercase;
+}
+
+.promo-code-form input:focus {
+  outline: 2px solid rgba(139, 92, 246, 0.45);
+  border-color: #a78bfa;
+}
+
+.promo-code-form button {
+  padding: 10px 13px;
+  border: 1px solid #a78bfa;
+  border-radius: 8px;
+  background: #6d28d9;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.promo-code-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.promo-code-message {
+  min-height: 18px;
+  margin-top: 9px;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.promo-code-message.error {
+  color: #fca5a5;
+}
+
+@media (max-width: 650px) {
+  .promo-code-form {
+    flex-direction: column;
+  }
+
+  .promo-code-form button {
+    min-height: 42px;
+  }
+}
