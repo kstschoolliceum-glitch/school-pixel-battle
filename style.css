@@ -4175,3 +4175,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   color: #76f5c5;
   font-weight: 900;
 }
+
+
+/* ---------- SELECTED PIXEL INDICATOR ---------- */
+
+.selection-indicator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1px solid #ffffff;
+  outline: 2px solid #000000;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.8),
+    0 0 10px rgba(0, 0, 0, 0.95);
+  transform-origin: center;
+}
