@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=25">
+  <link rel="stylesheet" href="style.css?v=26">
 </head>
 
 <body>
@@ -399,9 +399,51 @@
 
         <canvas id="pixel-canvas"></canvas>
 
+        <div id="stencil-layer" class="stencil-layer hidden" aria-hidden="true">
+          <img id="stencil-image" alt="">
+        </div>
+
         <div id="pixel-grid"></div>
 
       </div>
+
+
+      <section id="stencil-panel" class="stencil-panel">
+        <div class="stencil-panel-header">
+          <div>
+            <strong>🖼️ Мой трафарет</strong>
+            <span id="stencil-status">Загрузи PNG, JPG или WebP. Изображение останется только на этом устройстве.</span>
+          </div>
+          <div class="stencil-source-actions">
+            <label class="stencil-upload-button" for="stencil-file-input">ЗАГРУЗИТЬ</label>
+            <input id="stencil-file-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <button id="stencil-paste-button" type="button">ВСТАВИТЬ</button>
+          </div>
+        </div>
+
+        <div id="stencil-controls" class="stencil-controls hidden">
+          <label>
+            <span>По горизонтали</span>
+            <input id="stencil-x" type="range" min="0" max="300" value="0">
+          </label>
+          <label>
+            <span>По вертикали</span>
+            <input id="stencil-y" type="range" min="0" max="424" value="0">
+          </label>
+          <label>
+            <span>Размер</span>
+            <input id="stencil-size" type="range" min="10" max="100" value="100">
+          </label>
+          <label>
+            <span>Прозрачность</span>
+            <input id="stencil-opacity" type="range" min="10" max="100" value="55">
+          </label>
+          <div class="stencil-actions">
+            <button id="stencil-lock-button" type="button" aria-pressed="false">📌 ЗАКРЕПИТЬ</button>
+            <button id="stencil-delete-button" type="button">🗑️ УДАЛИТЬ</button>
+          </div>
+        </div>
+      </section>
 
 
       <div class="controls">
@@ -1828,7 +1870,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=46"></script>
+  <script src="app.js?v=47"></script>
 
 </body>
 </html>
