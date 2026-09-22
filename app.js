@@ -109,6 +109,9 @@ const pixelGrid =
 
 const stencilLayer = document.getElementById("stencil-layer");
 const stencilImage = document.getElementById("stencil-image");
+const stencilOpenButton = document.getElementById("stencil-open-button");
+const stencilDialog = document.getElementById("stencil-dialog");
+const stencilCloseButton = document.getElementById("stencil-close-button");
 const stencilFileInput = document.getElementById("stencil-file-input");
 const stencilPasteButton = document.getElementById("stencil-paste-button");
 const stencilControls = document.getElementById("stencil-controls");
@@ -121,6 +124,8 @@ const stencilLockButton = document.getElementById("stencil-lock-button");
 const stencilDeleteButton = document.getElementById("stencil-delete-button");
 const placeButton = document.getElementById("place-button");
 const coordinatesText = document.getElementById("coordinates");
+const coordinatePosition = document.getElementById("coordinate-position");
+const pixelOwner = document.getElementById("pixel-owner");
 const pixelCountText = document.getElementById("pixel-count");
 const cooldownText = document.getElementById("cooldown-text");
 
@@ -612,6 +617,47 @@ function updateTransform() {
    ПОЛЬЗОВАТЕЛЬСКИЙ ТРАФАРЕТ
 ------------------------- */
 
+function setPixelInformation(x = null, y = null, owner = "") {
+  if (x === null || y === null) {
+    coordinatePosition.textContent = "Выберите пиксель";
+    pixelOwner.textContent = "";
+    return;
+  }
+
+  coordinatePosition.textContent = `X: ${x}  Y: ${y}`;
+  pixelOwner.textContent = owner
+    ? `🏫 ${owner}`
+    : "Свободная клетка";
+}
+
+stencilOpenButton.addEventListener("click", () => {
+  if (typeof stencilDialog.showModal === "function") {
+    stencilDialog.showModal();
+  } else {
+    stencilDialog.setAttribute("open", "");
+  }
+});
+
+stencilCloseButton.addEventListener("click", () => {
+  stencilDialog.close();
+});
+
+stencilDialog.addEventListener("click", event => {
+  if (event.target === stencilDialog) {
+    const rect = stencilDialog.getBoundingClientRect();
+    const inside =
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom;
+
+    if (!inside) {
+      stencilDialog.close();
+    }
+  }
+});
+
+
 const STENCIL_TYPES = new Set([
   "image/png",
   "image/jpeg",
@@ -682,6 +728,7 @@ function removeStencil() {
   stencilImage.removeAttribute("src");
   stencilLayer.classList.add("hidden");
   stencilControls.classList.add("hidden");
+  stencilOpenButton.classList.remove("has-stencil");
   setStencilStatus("Трафарет удалён. Можно загрузить новый или вставить изображение.");
 }
 
@@ -721,6 +768,7 @@ function loadStencilFile(file) {
     stencilLockButton.textContent = "📌 ЗАКРЕПИТЬ";
     stencilImage.src = stencilObjectUrl;
     stencilLayer.classList.remove("hidden");
+    stencilOpenButton.classList.add("has-stencil");
     stencilControls.classList.remove("hidden");
     setStencilStatus(
       fit < 1
@@ -917,10 +965,7 @@ function selectPixel(clientX, clientY) {
   const owner =
   pixelOwners[index];
 
-  coordinatesText.textContent =
-  owner
-    ? `X: ${selectedX}  Y: ${selectedY} • 🏫 ${owner}`
-    : `X: ${selectedX}  Y: ${selectedY} • Свободная клетка`;
+  setPixelInformation(selectedX, selectedY, owner);
 
   updatePlaceButton();
   drawMap();
@@ -2560,8 +2605,7 @@ async function checkForSeasonChange() {
   selectedX = null;
   selectedY = null;
 
-  coordinatesText.textContent =
-    "Выберите пиксель";
+  setPixelInformation();
 
 
   // Обновляем название недели.
