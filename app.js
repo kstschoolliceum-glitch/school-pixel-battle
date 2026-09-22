@@ -106,6 +106,10 @@ const pixelGrid =
   document.getElementById(
     "pixel-grid"
   );
+const selectionIndicator =
+  document.getElementById(
+    "selection-indicator"
+  );
 
 const stencilLayer = document.getElementById("stencil-layer");
 const stencilCanvas = document.getElementById("stencil-canvas");
@@ -443,6 +447,7 @@ ctx.strokeRect(
   }
 
 }
+  updateSelectionIndicator();
 }
 
 /* -------------------------
@@ -538,6 +543,43 @@ function clampOffsets() {
     );
 
 }
+function updateSelectionIndicator() {
+  if (
+    selectedX === null ||
+    selectedY === null
+  ) {
+    selectionIndicator.classList.add("hidden");
+    return;
+  }
+
+  const indicatorSize =
+    scale < 5
+      ? Math.max(12, scale * 3)
+      : scale;
+
+  const pixelCenterX =
+    (selectedX + 0.5 - MAP_WIDTH / 2) *
+    scale;
+
+  const pixelCenterY =
+    (selectedY + 0.5 - MAP_HEIGHT / 2) *
+    scale;
+
+  selectionIndicator.style.width =
+    `${indicatorSize}px`;
+
+  selectionIndicator.style.height =
+    `${indicatorSize}px`;
+
+  selectionIndicator.style.transform =
+    `translate(
+      calc(-50% + ${offsetX + pixelCenterX}px),
+      calc(-50% + ${offsetY + pixelCenterY}px)
+    )`;
+
+  selectionIndicator.classList.remove("hidden");
+}
+
 function updateTransform() {
 
   clampOffsets();
@@ -617,6 +659,7 @@ function updateTransform() {
   }
 
   updateStencilTransform();
+  updateSelectionIndicator();
 }
 
 
