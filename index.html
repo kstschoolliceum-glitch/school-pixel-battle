@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 
 <body>
@@ -411,7 +411,7 @@
         <canvas id="pixel-canvas"></canvas>
 
         <div id="stencil-layer" class="stencil-layer hidden" aria-hidden="true">
-          <img id="stencil-image" alt="">
+          <canvas id="stencil-canvas" width="300" height="424"></canvas>
         </div>
 
         <div id="pixel-grid"></div>
@@ -444,21 +444,27 @@
 
         <div id="stencil-controls" class="stencil-controls hidden">
           <label>
-            <span>По горизонтали</span>
-            <input id="stencil-x" type="range" min="0" max="300" value="0">
+            <span>По горизонтали: <output id="stencil-x-value">0</output></span>
+            <input id="stencil-x" type="range" min="0" max="300" step="1" value="0">
           </label>
           <label>
-            <span>По вертикали</span>
-            <input id="stencil-y" type="range" min="0" max="424" value="0">
+            <span>По вертикали: <output id="stencil-y-value">0</output></span>
+            <input id="stencil-y" type="range" min="0" max="424" step="1" value="0">
           </label>
           <label>
-            <span>Размер</span>
-            <input id="stencil-size" type="range" min="10" max="100" value="100">
+            <span>Ширина: <output id="stencil-size-value">1</output> клеток</span>
+            <input id="stencil-size" type="range" min="1" max="300" step="1" value="1">
           </label>
           <label>
-            <span>Прозрачность</span>
-            <input id="stencil-opacity" type="range" min="10" max="100" value="55">
+            <span>Прозрачность: <output id="stencil-opacity-value">55</output>%</span>
+            <input id="stencil-opacity" type="range" min="10" max="100" step="1" value="55">
           </label>
+          <div class="stencil-nudge" aria-label="Перемещение трафарета по клеткам">
+            <button type="button" data-stencil-dx="0" data-stencil-dy="-1" aria-label="Трафарет вверх">↑</button>
+            <button type="button" data-stencil-dx="-1" data-stencil-dy="0" aria-label="Трафарет влево">←</button>
+            <button type="button" data-stencil-dx="1" data-stencil-dy="0" aria-label="Трафарет вправо">→</button>
+            <button type="button" data-stencil-dx="0" data-stencil-dy="1" aria-label="Трафарет вниз">↓</button>
+          </div>
           <div class="stencil-actions">
             <button id="stencil-lock-button" type="button" aria-pressed="false">📌 ЗАКРЕПИТЬ</button>
             <button id="stencil-delete-button" type="button">🗑️ УДАЛИТЬ</button>
@@ -1891,7 +1897,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=48"></script>
+  <script src="app.js?v=49"></script>
 
 </body>
 </html>
