@@ -3970,3 +3970,165 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     min-height: 44px;
   }
 }
+
+
+/* ---------- COMPACT MAP HEADER AND STENCIL DIALOG ---------- */
+
+.map-header {
+  gap: 12px;
+}
+
+.map-title {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.stencil-open-button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #5da9d6;
+  border-radius: 0;
+  background: #17344b;
+  color: #d8f3ff;
+  box-shadow: 2px 2px 0 #070b15;
+  font: 800 12px/1.15 "Courier New", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.stencil-open-button:hover,
+.stencil-open-button.has-stencil {
+  border-color: #76f5c5;
+  background: #12443d;
+  color: #baffea;
+}
+
+.pixel-information {
+  min-width: 0;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: #b9c6da;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: right;
+}
+
+#coordinate-position,
+#pixel-owner {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#pixel-owner {
+  color: #9bb8dd;
+  font-size: 11px;
+}
+
+.stencil-dialog {
+  width: min(620px, calc(100vw - 24px));
+  max-height: min(88dvh, 760px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 2px solid #5da9d6;
+  border-radius: 2px;
+  background: #10192b;
+  color: #f4f7ff;
+  box-shadow: 7px 7px 0 #050912;
+}
+
+.stencil-dialog::backdrop {
+  background: #030916d9;
+  backdrop-filter: blur(2px);
+}
+
+.stencil-dialog h2 {
+  margin: 0 48px 8px 0;
+  color: #d8f3ff;
+  font: 900 21px/1.2 "Courier New", monospace;
+}
+
+.stencil-dialog > #stencil-status {
+  display: block;
+  margin: 0 0 18px;
+  line-height: 1.45;
+}
+
+.stencil-close-button {
+  float: right;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #586a89;
+  border-radius: 0;
+  background: #18243a;
+  color: white;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stencil-dialog .stencil-source-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.stencil-dialog .stencil-controls {
+  grid-template-columns: 1fr 1fr;
+}
+
+.stencil-dialog .stencil-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 650px) {
+  .map-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 6px 8px;
+  }
+
+  .map-title {
+    gap: 6px;
+  }
+
+  .map-title-text {
+    display: none;
+  }
+
+  .daily-tasks-button,
+  .stencil-open-button {
+    min-height: 34px;
+    padding: 6px 7px;
+    font-size: 10px;
+  }
+
+  .pixel-information {
+    max-width: 112px;
+    padding-top: 2px;
+    font-size: 10px;
+  }
+
+  #pixel-owner {
+    font-size: 9px;
+  }
+
+  .stencil-dialog {
+    padding: 16px;
+  }
+
+  .stencil-dialog .stencil-source-actions,
+  .stencil-dialog .stencil-controls,
+  .stencil-dialog .stencil-actions {
+    grid-template-columns: 1fr;
+  }
+}
