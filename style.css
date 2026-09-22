@@ -4132,3 +4132,46 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ---------- GRID-ALIGNED STENCIL ---------- */
+
+.stencil-layer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.stencil-nudge {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(44px, 1fr));
+  gap: 8px;
+}
+
+.stencil-nudge button {
+  min-height: 42px;
+  border: 1px solid #4f6b91;
+  border-radius: 0;
+  background: #17263c;
+  color: #e4efff;
+  font: 900 21px/1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.stencil-nudge button:hover {
+  border-color: #76f5c5;
+  background: #173d37;
+}
+
+.stencil-nudge button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.stencil-controls output {
+  color: #76f5c5;
+  font-weight: 900;
+}
