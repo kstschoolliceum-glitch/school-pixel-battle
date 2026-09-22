@@ -715,8 +715,14 @@ const STENCIL_TYPES = new Set([
   "image/webp"
 ]);
 
+const STENCIL_DATABASE_NAME = "school-pixel-battle-local";
+const STENCIL_STORE_NAME = "user-stencils";
+
 let stencilObjectUrl = "";
 let stencilSourceImage = null;
+let stencilSourceBlob = null;
+let stencilSaveTimer = null;
+let stencilDatabasePromise = null;
 let stencilAspectRatio = 1;
 let stencilWidth = 1;
 let stencilHeight = 1;
@@ -725,6 +731,149 @@ let stencilX = 0;
 let stencilY = 0;
 let stencilOpacity = 0.55;
 let stencilLocked = false;
+
+function openStencilDatabase() {
+  if (!("indexedDB" in window)) {
+    return Promise.reject(new Error("IndexedDB недоступен"));
+  }
+
+  if (!stencilDatabasePromise) {
+    stencilDatabasePromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(STENCIL_DATABASE_NAME, 1);
+
+      request.onupgradeneeded = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(STENCIL_STORE_NAME)) {
+          database.createObjectStore(STENCIL_STORE_NAME, {
+            keyPath: "userId"
+          });
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  return stencilDatabasePromise;
+}
+
+async function readStoredStencil(userId) {
+  const database = await openStencilDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      STENCIL_STORE_NAME,
+      "readonly"
+    );
+    const request = transaction
+      .objectStore(STENCIL_STORE_NAME)
+      .get(userId);
+
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function writeStoredStencil(record) {
+  const database = await openStencilDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      STENCIL_STORE_NAME,
+      "readwrite"
+    );
+
+    transaction
+      .objectStore(STENCIL_STORE_NAME)
+      .put(record);
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function deleteStoredStencil(userId) {
+  const database = await openStencilDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      STENCIL_STORE_NAME,
+      "readwrite"
+    );
+
+    transaction
+      .objectStore(STENCIL_STORE_NAME)
+      .delete(userId);
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function saveStencilNow() {
+  clearTimeout(stencilSaveTimer);
+  stencilSaveTimer = null;
+
+  if (!currentUser?.id || !stencilSourceBlob) {
+    return;
+  }
+
+  try {
+    await writeStoredStencil({
+      userId: currentUser.id,
+      blob: stencilSourceBlob,
+      x: stencilX,
+      y: stencilY,
+      width: stencilWidth,
+      opacity: stencilOpacity,
+      locked: stencilLocked,
+      updatedAt: Date.now()
+    });
+  } catch (error) {
+    console.warn("Не удалось сохранить локальный трафарет:", error);
+  }
+}
+
+function scheduleStencilSave() {
+  clearTimeout(stencilSaveTimer);
+  stencilSaveTimer = setTimeout(saveStencilNow, 120);
+}
+
+function clearStencilView() {
+  clearTimeout(stencilSaveTimer);
+  stencilSaveTimer = null;
+
+  if (stencilObjectUrl) {
+    URL.revokeObjectURL(stencilObjectUrl);
+  }
+
+  stencilObjectUrl = "";
+  stencilSourceImage = null;
+  stencilSourceBlob = null;
+  stencilContext.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+  stencilLayer.classList.add("hidden");
+  stencilControls.classList.add("hidden");
+  stencilOpenButton.classList.remove("has-stencil");
+}
+
+async function restoreStencilForCurrentUser() {
+  clearStencilView();
+
+  if (!currentUser?.id) {
+    return;
+  }
+
+  try {
+    const stored = await readStoredStencil(currentUser.id);
+
+    if (stored?.blob instanceof Blob) {
+      loadStencilFile(stored.blob, stored);
+    }
+  } catch (error) {
+    console.warn("Не удалось восстановить локальный трафарет:", error);
+  }
+}
 
 function setStencilStatus(message, isError = false) {
   stencilStatus.textContent = message;
@@ -795,20 +944,19 @@ function updateStencilTransform() {
 }
 
 function removeStencil() {
-  if (stencilObjectUrl) {
-    URL.revokeObjectURL(stencilObjectUrl);
+  const userId = currentUser?.id;
+  clearStencilView();
+
+  if (userId) {
+    deleteStoredStencil(userId).catch(error => {
+      console.warn("Не удалось удалить сохранённый трафарет:", error);
+    });
   }
 
-  stencilObjectUrl = "";
-  stencilSourceImage = null;
-  stencilContext.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
-  stencilLayer.classList.add("hidden");
-  stencilControls.classList.add("hidden");
-  stencilOpenButton.classList.remove("has-stencil");
   setStencilStatus("Трафарет удалён. Можно загрузить новый или вставить изображение.");
 }
 
-function loadStencilFile(file) {
+function loadStencilFile(file, savedState = null) {
   if (!file || !STENCIL_TYPES.has(file.type)) {
     setStencilStatus("Поддерживаются только PNG, JPG и WebP.", true);
     return;
@@ -839,18 +987,31 @@ function loadStencilFile(file) {
 
     stencilObjectUrl = objectUrl;
     stencilSourceImage = probe;
+    stencilSourceBlob = file;
     stencilAspectRatio = aspectRatio;
     stencilMaxWidth = maxWidth;
-    stencilWidth = initialWidth;
-    stencilHeight = initialHeight;
-    stencilX = Math.round((MAP_WIDTH - stencilWidth) / 2);
-    stencilY = Math.round((MAP_HEIGHT - stencilHeight) / 2);
-    stencilOpacity = 0.55;
-    stencilLocked = false;
+    stencilWidth = Math.max(
+      1,
+      Math.min(
+        stencilMaxWidth,
+        Math.round(Number(savedState?.width) || initialWidth)
+      )
+    );
+    stencilHeight = calculateStencilHeight(stencilWidth);
+    stencilX = savedState
+      ? Math.round(Number(savedState.x) || 0)
+      : Math.round((MAP_WIDTH - stencilWidth) / 2);
+    stencilY = savedState
+      ? Math.round(Number(savedState.y) || 0)
+      : Math.round((MAP_HEIGHT - stencilHeight) / 2);
+    stencilOpacity = savedState
+      ? Math.max(0.1, Math.min(1, Number(savedState.opacity) || 0.55))
+      : 0.55;
+    stencilLocked = Boolean(savedState?.locked);
 
     stencilSizeInput.max = String(stencilMaxWidth);
     stencilSizeInput.value = String(stencilWidth);
-    stencilOpacityInput.value = "55";
+    stencilOpacityInput.value = String(Math.round(stencilOpacity * 100));
     stencilLockButton.disabled = false;
     stencilLockButton.setAttribute("aria-pressed", "false");
     stencilLockButton.textContent = "📌 ЗАКРЕПИТЬ";
@@ -858,10 +1019,19 @@ function loadStencilFile(file) {
     stencilOpenButton.classList.add("has-stencil");
     stencilControls.classList.remove("hidden");
 
-    setStencilStatus(
-      `Точный размер: ${stencilWidth} × ${stencilHeight} клеток. Положение и размер привязаны к сетке.`
-    );
     updateStencilTransform();
+    setStencilLocked(stencilLocked);
+
+    if (savedState) {
+      setStencilStatus(
+        `Трафарет восстановлен: X ${stencilX}, Y ${stencilY}, ${stencilWidth} × ${stencilHeight} клеток.`
+      );
+    } else {
+      setStencilStatus(
+        `Точный размер: ${stencilWidth} × ${stencilHeight} клеток. Положение и размер привязаны к сетке.`
+      );
+      saveStencilNow();
+    }
   };
 
   probe.onerror = () => {
@@ -933,11 +1103,13 @@ document.addEventListener("paste", event => {
 stencilXInput.addEventListener("input", () => {
   stencilX = Math.round(Number(stencilXInput.value));
   updateStencilTransform();
+  scheduleStencilSave();
 });
 
 stencilYInput.addEventListener("input", () => {
   stencilY = Math.round(Number(stencilYInput.value));
   updateStencilTransform();
+  scheduleStencilSave();
 });
 
 stencilSizeInput.addEventListener("input", () => {
@@ -955,12 +1127,14 @@ stencilSizeInput.addEventListener("input", () => {
   setStencilStatus(
     `Точный размер: ${stencilWidth} × ${stencilHeight} клеток.`
   );
+  scheduleStencilSave();
 });
 
 stencilOpacityInput.addEventListener("input", () => {
   stencilOpacity = Number(stencilOpacityInput.value) / 100;
   updateStencilReadout();
   drawStencil();
+  scheduleStencilSave();
 });
 
 stencilNudgeButtons.forEach(button => {
@@ -968,16 +1142,26 @@ stencilNudgeButtons.forEach(button => {
     stencilX += Number(button.dataset.stencilDx);
     stencilY += Number(button.dataset.stencilDy);
     updateStencilTransform();
+    scheduleStencilSave();
   });
 });
 
 stencilLockButton.addEventListener("click", () => {
   setStencilLocked(!stencilLocked);
+  scheduleStencilSave();
 });
 
 stencilDeleteButton.addEventListener("click", removeStencil);
 
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    saveStencilNow();
+  }
+});
+
 window.addEventListener("pagehide", () => {
+  saveStencilNow();
+
   if (stencilObjectUrl) {
     URL.revokeObjectURL(stencilObjectUrl);
   }
@@ -3300,6 +3484,7 @@ async function initializeAuth() {
     currentUser = session.user;
 
     authScreen.classList.add("hidden");
+    await restoreStencilForCurrentUser();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -3385,6 +3570,7 @@ loginForm.addEventListener(
       data.user;
 
     authScreen.classList.add("hidden");
+    await restoreStencilForCurrentUser();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -4308,6 +4494,8 @@ easyStartButton.addEventListener(
     currentUser =
       data.user;
 
+    await restoreStencilForCurrentUser();
+
 
     /*
      * Пароль больше не нужен.
@@ -4385,6 +4573,7 @@ logoutButton.addEventListener(
     logoutButton.textContent =
       "ВЫХОД...";
 
+    await saveStencilNow();
 
     const {
       error
@@ -4414,6 +4603,7 @@ logoutButton.addEventListener(
 
   onlinePresenceChannel = null;
 }
+    clearStencilView();
     currentUser = null;
     dailyTasks.reset();
 
