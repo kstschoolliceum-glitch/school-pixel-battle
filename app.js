@@ -106,6 +106,19 @@ const pixelGrid =
   document.getElementById(
     "pixel-grid"
   );
+
+const stencilLayer = document.getElementById("stencil-layer");
+const stencilImage = document.getElementById("stencil-image");
+const stencilFileInput = document.getElementById("stencil-file-input");
+const stencilPasteButton = document.getElementById("stencil-paste-button");
+const stencilControls = document.getElementById("stencil-controls");
+const stencilStatus = document.getElementById("stencil-status");
+const stencilXInput = document.getElementById("stencil-x");
+const stencilYInput = document.getElementById("stencil-y");
+const stencilSizeInput = document.getElementById("stencil-size");
+const stencilOpacityInput = document.getElementById("stencil-opacity");
+const stencilLockButton = document.getElementById("stencil-lock-button");
+const stencilDeleteButton = document.getElementById("stencil-delete-button");
 const placeButton = document.getElementById("place-button");
 const coordinatesText = document.getElementById("coordinates");
 const pixelCountText = document.getElementById("pixel-count");
@@ -591,7 +604,228 @@ function updateTransform() {
 
   }
 
+  updateStencilTransform();
 }
+
+
+/* -------------------------
+   ПОЛЬЗОВАТЕЛЬСКИЙ ТРАФАРЕТ
+------------------------- */
+
+const STENCIL_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp"
+]);
+
+let stencilObjectUrl = "";
+let stencilBaseWidth = 0;
+let stencilBaseHeight = 0;
+let stencilX = 0;
+let stencilY = 0;
+let stencilSize = 1;
+let stencilOpacity = 0.55;
+let stencilLocked = false;
+
+function setStencilStatus(message, isError = false) {
+  stencilStatus.textContent = message;
+  stencilStatus.classList.toggle("error", isError);
+}
+
+function getStencilDimensions() {
+  return {
+    width: stencilBaseWidth * stencilSize,
+    height: stencilBaseHeight * stencilSize
+  };
+}
+
+function clampStencilPosition() {
+  const dimensions = getStencilDimensions();
+  stencilX = Math.max(0, Math.min(MAP_WIDTH - dimensions.width, stencilX));
+  stencilY = Math.max(0, Math.min(MAP_HEIGHT - dimensions.height, stencilY));
+
+  stencilXInput.max = String(Math.max(0, Math.round(MAP_WIDTH - dimensions.width)));
+  stencilYInput.max = String(Math.max(0, Math.round(MAP_HEIGHT - dimensions.height)));
+  stencilXInput.value = String(Math.round(stencilX));
+  stencilYInput.value = String(Math.round(stencilY));
+}
+
+function updateStencilTransform() {
+  if (!stencilLayer || !stencilImage) {
+    return;
+  }
+
+  stencilLayer.style.width = `${MAP_WIDTH * scale}px`;
+  stencilLayer.style.height = `${MAP_HEIGHT * scale}px`;
+  stencilLayer.style.transform =
+    `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+
+  if (!stencilObjectUrl) {
+    return;
+  }
+
+  clampStencilPosition();
+  const dimensions = getStencilDimensions();
+  stencilImage.style.left = `${stencilX * scale}px`;
+  stencilImage.style.top = `${stencilY * scale}px`;
+  stencilImage.style.width = `${dimensions.width * scale}px`;
+  stencilImage.style.height = `${dimensions.height * scale}px`;
+  stencilImage.style.opacity = String(stencilOpacity);
+}
+
+function removeStencil() {
+  if (stencilObjectUrl) {
+    URL.revokeObjectURL(stencilObjectUrl);
+  }
+
+  stencilObjectUrl = "";
+  stencilImage.removeAttribute("src");
+  stencilLayer.classList.add("hidden");
+  stencilControls.classList.add("hidden");
+  setStencilStatus("Трафарет удалён. Можно загрузить новый или вставить изображение.");
+}
+
+function loadStencilFile(file) {
+  if (!file || !STENCIL_TYPES.has(file.type)) {
+    setStencilStatus("Поддерживаются только PNG, JPG и WebP.", true);
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  const probe = new Image();
+
+  probe.onload = () => {
+    const fit = Math.min(
+      1,
+      MAP_WIDTH / probe.naturalWidth,
+      MAP_HEIGHT / probe.naturalHeight
+    );
+
+    if (stencilObjectUrl) {
+      URL.revokeObjectURL(stencilObjectUrl);
+    }
+
+    stencilObjectUrl = objectUrl;
+    stencilBaseWidth = Math.max(1, probe.naturalWidth * fit);
+    stencilBaseHeight = Math.max(1, probe.naturalHeight * fit);
+    stencilSize = 1;
+    stencilX = (MAP_WIDTH - stencilBaseWidth) / 2;
+    stencilY = (MAP_HEIGHT - stencilBaseHeight) / 2;
+    stencilOpacity = 0.55;
+    stencilLocked = false;
+
+    stencilSizeInput.value = "100";
+    stencilOpacityInput.value = "55";
+    stencilLockButton.disabled = false;
+    stencilLockButton.setAttribute("aria-pressed", "false");
+    stencilLockButton.textContent = "📌 ЗАКРЕПИТЬ";
+    stencilImage.src = stencilObjectUrl;
+    stencilLayer.classList.remove("hidden");
+    stencilControls.classList.remove("hidden");
+    setStencilStatus(
+      fit < 1
+        ? "Изображение автоматически уменьшено до размеров карты."
+        : "Трафарет готов. Настрой положение, размер и прозрачность."
+    );
+    updateStencilTransform();
+  };
+
+  probe.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    setStencilStatus("Не удалось прочитать изображение.", true);
+  };
+
+  probe.src = objectUrl;
+}
+
+function setStencilLocked(locked) {
+  stencilLocked = locked;
+  [stencilXInput, stencilYInput, stencilSizeInput].forEach(input => {
+    input.disabled = locked;
+  });
+  stencilLockButton.setAttribute("aria-pressed", String(locked));
+  stencilLockButton.textContent = locked
+    ? "🔓 ОТКРЕПИТЬ"
+    : "📌 ЗАКРЕПИТЬ";
+  setStencilStatus(
+    locked
+      ? "Трафарет закреплён. Он продолжит двигаться и масштабироваться вместе с картой."
+      : "Трафарет откреплён — положение и размер снова можно менять."
+  );
+}
+
+stencilFileInput.addEventListener("change", () => {
+  loadStencilFile(stencilFileInput.files[0]);
+  stencilFileInput.value = "";
+});
+
+stencilPasteButton.addEventListener("click", async () => {
+  if (!navigator.clipboard || !navigator.clipboard.read) {
+    setStencilStatus("Нажми Ctrl+V или используй кнопку «Загрузить».", true);
+    return;
+  }
+
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const type = item.types.find(candidate => STENCIL_TYPES.has(candidate));
+      if (type) {
+        loadStencilFile(await item.getType(type));
+        return;
+      }
+    }
+    setStencilStatus("В буфере обмена нет PNG, JPG или WebP.", true);
+  } catch (error) {
+    setStencilStatus("Браузер не разрешил чтение буфера. Нажми Ctrl+V или загрузи файл.", true);
+  }
+});
+
+document.addEventListener("paste", event => {
+  const item = Array.from(event.clipboardData?.items || [])
+    .find(candidate => candidate.kind === "file" && STENCIL_TYPES.has(candidate.type));
+
+  if (item) {
+    event.preventDefault();
+    loadStencilFile(item.getAsFile());
+  }
+});
+
+stencilXInput.addEventListener("input", () => {
+  stencilX = Number(stencilXInput.value);
+  updateStencilTransform();
+});
+
+stencilYInput.addEventListener("input", () => {
+  stencilY = Number(stencilYInput.value);
+  updateStencilTransform();
+});
+
+stencilSizeInput.addEventListener("input", () => {
+  const oldDimensions = getStencilDimensions();
+  const centerX = stencilX + oldDimensions.width / 2;
+  const centerY = stencilY + oldDimensions.height / 2;
+  stencilSize = Number(stencilSizeInput.value) / 100;
+  const dimensions = getStencilDimensions();
+  stencilX = centerX - dimensions.width / 2;
+  stencilY = centerY - dimensions.height / 2;
+  updateStencilTransform();
+});
+
+stencilOpacityInput.addEventListener("input", () => {
+  stencilOpacity = Number(stencilOpacityInput.value) / 100;
+  updateStencilTransform();
+});
+
+stencilLockButton.addEventListener("click", () => {
+  setStencilLocked(!stencilLocked);
+});
+
+stencilDeleteButton.addEventListener("click", removeStencil);
+window.addEventListener("pagehide", () => {
+  if (stencilObjectUrl) {
+    URL.revokeObjectURL(stencilObjectUrl);
+  }
+});
 
 
 /* -------------------------
