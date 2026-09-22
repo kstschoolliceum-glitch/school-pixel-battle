@@ -3818,3 +3818,155 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     flex-direction: column;
   }
 }
+
+
+/* ---------- USER STENCIL ---------- */
+
+.stencil-layer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.stencil-layer img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+
+.stencil-panel {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #2d3a50;
+  border-radius: 12px;
+  background: #111a2a;
+}
+
+.stencil-panel-header,
+.stencil-source-actions,
+.stencil-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.stencil-panel-header {
+  justify-content: space-between;
+}
+
+.stencil-panel-header > div:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stencil-panel-header strong {
+  color: #e9d5ff;
+  font-size: 14px;
+}
+
+#stencil-status {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+#stencil-status.error {
+  color: #fca5a5;
+}
+
+.stencil-upload-button,
+.stencil-source-actions button,
+.stencil-actions button {
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+  background: #5b21b6;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+  cursor: pointer;
+}
+
+.stencil-actions #stencil-delete-button {
+  border-color: #7f1d1d;
+  background: #450a0a;
+}
+
+.stencil-controls {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.stencil-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stencil-controls input[type="range"] {
+  width: 100%;
+  accent-color: #8b5cf6;
+}
+
+.stencil-controls input:disabled {
+  opacity: 0.45;
+}
+
+@media (max-width: 850px) {
+  .stencil-panel-header,
+  .stencil-controls {
+    align-items: stretch;
+  }
+
+  .stencil-panel-header {
+    flex-direction: column;
+  }
+
+  .stencil-source-actions,
+  .stencil-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stencil-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stencil-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .stencil-panel {
+    margin-top: 10px;
+    padding: 10px;
+  }
+
+  .stencil-controls {
+    gap: 9px;
+  }
+
+  .stencil-upload-button,
+  .stencil-source-actions button,
+  .stencil-actions button {
+    min-height: 44px;
+  }
+}
