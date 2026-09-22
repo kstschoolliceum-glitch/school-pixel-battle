@@ -108,7 +108,9 @@ const pixelGrid =
   );
 
 const stencilLayer = document.getElementById("stencil-layer");
-const stencilImage = document.getElementById("stencil-image");
+const stencilCanvas = document.getElementById("stencil-canvas");
+const stencilContext = stencilCanvas.getContext("2d");
+stencilContext.imageSmoothingEnabled = false;
 const stencilOpenButton = document.getElementById("stencil-open-button");
 const stencilDialog = document.getElementById("stencil-dialog");
 const stencilCloseButton = document.getElementById("stencil-close-button");
@@ -120,6 +122,11 @@ const stencilXInput = document.getElementById("stencil-x");
 const stencilYInput = document.getElementById("stencil-y");
 const stencilSizeInput = document.getElementById("stencil-size");
 const stencilOpacityInput = document.getElementById("stencil-opacity");
+const stencilXValue = document.getElementById("stencil-x-value");
+const stencilYValue = document.getElementById("stencil-y-value");
+const stencilSizeValue = document.getElementById("stencil-size-value");
+const stencilOpacityValue = document.getElementById("stencil-opacity-value");
+const stencilNudgeButtons = document.querySelectorAll("[data-stencil-dx][data-stencil-dy]");
 const stencilLockButton = document.getElementById("stencil-lock-button");
 const stencilDeleteButton = document.getElementById("stencil-delete-button");
 const placeButton = document.getElementById("place-button");
@@ -643,20 +650,21 @@ stencilCloseButton.addEventListener("click", () => {
 });
 
 stencilDialog.addEventListener("click", event => {
-  if (event.target === stencilDialog) {
-    const rect = stencilDialog.getBoundingClientRect();
-    const inside =
-      event.clientX >= rect.left &&
-      event.clientX <= rect.right &&
-      event.clientY >= rect.top &&
-      event.clientY <= rect.bottom;
+  if (event.target !== stencilDialog) {
+    return;
+  }
 
-    if (!inside) {
-      stencilDialog.close();
-    }
+  const rect = stencilDialog.getBoundingClientRect();
+  const inside =
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom;
+
+  if (!inside) {
+    stencilDialog.close();
   }
 });
-
 
 const STENCIL_TYPES = new Set([
   "image/png",
@@ -665,11 +673,13 @@ const STENCIL_TYPES = new Set([
 ]);
 
 let stencilObjectUrl = "";
-let stencilBaseWidth = 0;
-let stencilBaseHeight = 0;
+let stencilSourceImage = null;
+let stencilAspectRatio = 1;
+let stencilWidth = 1;
+let stencilHeight = 1;
+let stencilMaxWidth = MAP_WIDTH;
 let stencilX = 0;
 let stencilY = 0;
-let stencilSize = 1;
 let stencilOpacity = 0.55;
 let stencilLocked = false;
 
@@ -678,26 +688,57 @@ function setStencilStatus(message, isError = false) {
   stencilStatus.classList.toggle("error", isError);
 }
 
-function getStencilDimensions() {
-  return {
-    width: stencilBaseWidth * stencilSize,
-    height: stencilBaseHeight * stencilSize
-  };
+function updateStencilReadout() {
+  stencilXValue.value = String(stencilX);
+  stencilYValue.value = String(stencilY);
+  stencilSizeValue.value = String(stencilWidth);
+  stencilOpacityValue.value = String(Math.round(stencilOpacity * 100));
+}
+
+function calculateStencilHeight(width) {
+  return Math.max(
+    1,
+    Math.min(MAP_HEIGHT, Math.round(width / stencilAspectRatio))
+  );
 }
 
 function clampStencilPosition() {
-  const dimensions = getStencilDimensions();
-  stencilX = Math.max(0, Math.min(MAP_WIDTH - dimensions.width, stencilX));
-  stencilY = Math.max(0, Math.min(MAP_HEIGHT - dimensions.height, stencilY));
+  stencilX = Math.round(
+    Math.max(0, Math.min(MAP_WIDTH - stencilWidth, stencilX))
+  );
+  stencilY = Math.round(
+    Math.max(0, Math.min(MAP_HEIGHT - stencilHeight, stencilY))
+  );
 
-  stencilXInput.max = String(Math.max(0, Math.round(MAP_WIDTH - dimensions.width)));
-  stencilYInput.max = String(Math.max(0, Math.round(MAP_HEIGHT - dimensions.height)));
-  stencilXInput.value = String(Math.round(stencilX));
-  stencilYInput.value = String(Math.round(stencilY));
+  stencilXInput.max = String(Math.max(0, MAP_WIDTH - stencilWidth));
+  stencilYInput.max = String(Math.max(0, MAP_HEIGHT - stencilHeight));
+  stencilXInput.value = String(stencilX);
+  stencilYInput.value = String(stencilY);
+  updateStencilReadout();
+}
+
+function drawStencil() {
+  stencilContext.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+  if (!stencilSourceImage) {
+    return;
+  }
+
+  stencilContext.save();
+  stencilContext.imageSmoothingEnabled = false;
+  stencilContext.globalAlpha = stencilOpacity;
+  stencilContext.drawImage(
+    stencilSourceImage,
+    stencilX,
+    stencilY,
+    stencilWidth,
+    stencilHeight
+  );
+  stencilContext.restore();
 }
 
 function updateStencilTransform() {
-  if (!stencilLayer || !stencilImage) {
+  if (!stencilLayer || !stencilCanvas) {
     return;
   }
 
@@ -706,17 +747,8 @@ function updateStencilTransform() {
   stencilLayer.style.transform =
     `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
 
-  if (!stencilObjectUrl) {
-    return;
-  }
-
   clampStencilPosition();
-  const dimensions = getStencilDimensions();
-  stencilImage.style.left = `${stencilX * scale}px`;
-  stencilImage.style.top = `${stencilY * scale}px`;
-  stencilImage.style.width = `${dimensions.width * scale}px`;
-  stencilImage.style.height = `${dimensions.height * scale}px`;
-  stencilImage.style.opacity = String(stencilOpacity);
+  drawStencil();
 }
 
 function removeStencil() {
@@ -725,7 +757,8 @@ function removeStencil() {
   }
 
   stencilObjectUrl = "";
-  stencilImage.removeAttribute("src");
+  stencilSourceImage = null;
+  stencilContext.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
   stencilLayer.classList.add("hidden");
   stencilControls.classList.add("hidden");
   stencilOpenButton.classList.remove("has-stencil");
@@ -742,10 +775,19 @@ function loadStencilFile(file) {
   const probe = new Image();
 
   probe.onload = () => {
-    const fit = Math.min(
+    const aspectRatio = probe.naturalWidth / probe.naturalHeight;
+    const maxWidthByHeight = Math.max(
       1,
-      MAP_WIDTH / probe.naturalWidth,
-      MAP_HEIGHT / probe.naturalHeight
+      Math.floor(MAP_HEIGHT * aspectRatio)
+    );
+    const maxWidth = Math.min(MAP_WIDTH, maxWidthByHeight);
+    const initialWidth = Math.max(
+      1,
+      Math.min(probe.naturalWidth, maxWidth)
+    );
+    const initialHeight = Math.max(
+      1,
+      Math.min(MAP_HEIGHT, Math.round(initialWidth / aspectRatio))
     );
 
     if (stencilObjectUrl) {
@@ -753,27 +795,28 @@ function loadStencilFile(file) {
     }
 
     stencilObjectUrl = objectUrl;
-    stencilBaseWidth = Math.max(1, probe.naturalWidth * fit);
-    stencilBaseHeight = Math.max(1, probe.naturalHeight * fit);
-    stencilSize = 1;
-    stencilX = (MAP_WIDTH - stencilBaseWidth) / 2;
-    stencilY = (MAP_HEIGHT - stencilBaseHeight) / 2;
+    stencilSourceImage = probe;
+    stencilAspectRatio = aspectRatio;
+    stencilMaxWidth = maxWidth;
+    stencilWidth = initialWidth;
+    stencilHeight = initialHeight;
+    stencilX = Math.round((MAP_WIDTH - stencilWidth) / 2);
+    stencilY = Math.round((MAP_HEIGHT - stencilHeight) / 2);
     stencilOpacity = 0.55;
     stencilLocked = false;
 
-    stencilSizeInput.value = "100";
+    stencilSizeInput.max = String(stencilMaxWidth);
+    stencilSizeInput.value = String(stencilWidth);
     stencilOpacityInput.value = "55";
     stencilLockButton.disabled = false;
     stencilLockButton.setAttribute("aria-pressed", "false");
     stencilLockButton.textContent = "📌 ЗАКРЕПИТЬ";
-    stencilImage.src = stencilObjectUrl;
     stencilLayer.classList.remove("hidden");
     stencilOpenButton.classList.add("has-stencil");
     stencilControls.classList.remove("hidden");
+
     setStencilStatus(
-      fit < 1
-        ? "Изображение автоматически уменьшено до размеров карты."
-        : "Трафарет готов. Настрой положение, размер и прозрачность."
+      `Точный размер: ${stencilWidth} × ${stencilHeight} клеток. Положение и размер привязаны к сетке.`
     );
     updateStencilTransform();
   };
@@ -788,17 +831,23 @@ function loadStencilFile(file) {
 
 function setStencilLocked(locked) {
   stencilLocked = locked;
-  [stencilXInput, stencilYInput, stencilSizeInput].forEach(input => {
-    input.disabled = locked;
+  [
+    stencilXInput,
+    stencilYInput,
+    stencilSizeInput,
+    ...stencilNudgeButtons
+  ].forEach(control => {
+    control.disabled = locked;
   });
+
   stencilLockButton.setAttribute("aria-pressed", String(locked));
   stencilLockButton.textContent = locked
     ? "🔓 ОТКРЕПИТЬ"
     : "📌 ЗАКРЕПИТЬ";
   setStencilStatus(
     locked
-      ? "Трафарет закреплён. Он продолжит двигаться и масштабироваться вместе с картой."
-      : "Трафарет откреплён — положение и размер снова можно менять."
+      ? `Закреплено: X ${stencilX}, Y ${stencilY}, ${stencilWidth} × ${stencilHeight} клеток.`
+      : "Трафарет откреплён — его снова можно перемещать по клеткам."
   );
 }
 
@@ -839,29 +888,44 @@ document.addEventListener("paste", event => {
 });
 
 stencilXInput.addEventListener("input", () => {
-  stencilX = Number(stencilXInput.value);
+  stencilX = Math.round(Number(stencilXInput.value));
   updateStencilTransform();
 });
 
 stencilYInput.addEventListener("input", () => {
-  stencilY = Number(stencilYInput.value);
+  stencilY = Math.round(Number(stencilYInput.value));
   updateStencilTransform();
 });
 
 stencilSizeInput.addEventListener("input", () => {
-  const oldDimensions = getStencilDimensions();
-  const centerX = stencilX + oldDimensions.width / 2;
-  const centerY = stencilY + oldDimensions.height / 2;
-  stencilSize = Number(stencilSizeInput.value) / 100;
-  const dimensions = getStencilDimensions();
-  stencilX = centerX - dimensions.width / 2;
-  stencilY = centerY - dimensions.height / 2;
+  const oldCenterX = stencilX + stencilWidth / 2;
+  const oldCenterY = stencilY + stencilHeight / 2;
+
+  stencilWidth = Math.max(
+    1,
+    Math.min(stencilMaxWidth, Math.round(Number(stencilSizeInput.value)))
+  );
+  stencilHeight = calculateStencilHeight(stencilWidth);
+  stencilX = Math.round(oldCenterX - stencilWidth / 2);
+  stencilY = Math.round(oldCenterY - stencilHeight / 2);
   updateStencilTransform();
+  setStencilStatus(
+    `Точный размер: ${stencilWidth} × ${stencilHeight} клеток.`
+  );
 });
 
 stencilOpacityInput.addEventListener("input", () => {
   stencilOpacity = Number(stencilOpacityInput.value) / 100;
-  updateStencilTransform();
+  updateStencilReadout();
+  drawStencil();
+});
+
+stencilNudgeButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    stencilX += Number(button.dataset.stencilDx);
+    stencilY += Number(button.dataset.stencilDy);
+    updateStencilTransform();
+  });
 });
 
 stencilLockButton.addEventListener("click", () => {
@@ -869,6 +933,7 @@ stencilLockButton.addEventListener("click", () => {
 });
 
 stencilDeleteButton.addEventListener("click", removeStencil);
+
 window.addEventListener("pagehide", () => {
   if (stencilObjectUrl) {
     URL.revokeObjectURL(stencilObjectUrl);
