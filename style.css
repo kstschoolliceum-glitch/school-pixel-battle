@@ -4624,3 +4624,178 @@ body.admin-view .mobile-nav {
     font-size: 10px;
   }
 }
+
+
+/* ---------- USER AGREEMENT ---------- */
+
+.user-agreement-dialog {
+  width: min(760px, calc(100vw - 24px));
+  max-height: min(90dvh, 840px);
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #7862b0;
+  border-radius: 2px;
+  background: #10192b;
+  color: #e7edf8;
+  box-shadow: 8px 8px 0 #050912;
+}
+
+.user-agreement-dialog::backdrop {
+  background: rgba(3, 9, 22, .92);
+  backdrop-filter: blur(3px);
+}
+
+.user-agreement-heading {
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-bottom: 2px solid #354665;
+  background: #151f35;
+}
+
+.user-agreement-heading > span {
+  font-size: 30px;
+}
+
+.user-agreement-heading h2 {
+  margin: 0 0 5px;
+  color: #d8cbff;
+  font: 900 22px/1.2 "Courier New", monospace;
+}
+
+.user-agreement-heading p,
+.user-agreement-version {
+  margin: 0;
+  color: #9eabc0;
+  font-size: 12px;
+}
+
+.user-agreement-scroll {
+  max-height: min(55dvh, 520px);
+  padding: 6px 20px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #65518f #0c1423;
+}
+
+.user-agreement-scroll section {
+  padding: 13px 0;
+  border-bottom: 1px solid #2b3951;
+}
+
+.user-agreement-scroll section:last-child {
+  border-bottom: 0;
+}
+
+.user-agreement-scroll h3 {
+  margin: 0 0 7px;
+  color: #8ff1d1;
+  font-size: 15px;
+}
+
+.user-agreement-scroll p,
+.user-agreement-scroll li {
+  color: #c5cfde;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.user-agreement-scroll p {
+  margin: 7px 0;
+}
+
+.user-agreement-scroll ul {
+  margin: 7px 0 0;
+  padding-left: 20px;
+}
+
+.user-agreement-scroll a {
+  color: #93c5fd;
+}
+
+.user-agreement-confirm {
+  margin: 14px 20px 10px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #465574;
+  background: #0c1423;
+  color: #f4f7ff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.user-agreement-confirm input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  accent-color: #7c3aed;
+}
+
+#user-agreement-accept {
+  width: calc(100% - 40px);
+  min-height: 46px;
+  margin: 0 20px 9px;
+  border: 2px solid #b9a5ef;
+  border-radius: 0;
+  background: #6338ae;
+  color: #fff;
+  box-shadow: 3px 3px 0 #050912;
+  font: 900 13px/1.2 "Courier New", monospace;
+  cursor: pointer;
+}
+
+#user-agreement-accept:disabled {
+  border-color: #3c485d;
+  background: #252d3b;
+  color: #778397;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.user-agreement-version {
+  padding: 0 20px 14px;
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .user-agreement-dialog {
+    width: calc(100vw - 12px);
+    max-height: 94dvh;
+  }
+
+  .user-agreement-heading {
+    padding: 14px;
+  }
+
+  .user-agreement-heading h2 {
+    font-size: 18px;
+  }
+
+  .user-agreement-scroll {
+    max-height: 56dvh;
+    padding: 4px 14px 12px;
+  }
+
+  .user-agreement-scroll p,
+  .user-agreement-scroll li {
+    font-size: 12px;
+  }
+
+  .user-agreement-confirm {
+    margin: 10px 14px 8px;
+    padding: 10px;
+  }
+
+  #user-agreement-accept {
+    width: calc(100% - 28px);
+    margin: 0 14px 8px;
+  }
+
+  .user-agreement-version {
+    padding: 0 14px 10px;
+  }
+}
