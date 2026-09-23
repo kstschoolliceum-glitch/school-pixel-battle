@@ -4193,3 +4193,41 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     0 0 10px rgba(0, 0, 0, 0.95);
   transform-origin: center;
 }
+
+
+/* ---------- ADMIN STUDENT IP REVIEW ---------- */
+
+.student-ip-cell {
+  min-width: 230px;
+  max-width: 330px;
+  vertical-align: top;
+}
+
+.student-ip-address {
+  margin-bottom: 5px;
+  color: #cbd5e1;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.student-ip-warning {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid;
+  font-size: 11px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.student-ip-warning.exact {
+  border-color: #ef4444;
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+}
+
+.student-ip-warning.similar {
+  border-color: #f59e0b;
+  background: rgba(120, 53, 15, 0.3);
+  color: #fde68a;
+}
