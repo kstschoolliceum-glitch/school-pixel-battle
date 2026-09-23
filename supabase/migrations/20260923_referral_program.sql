@@ -150,7 +150,7 @@ begin
         select 1
         from public.profiles
         where id = auth.uid()
-          and banned = false
+          and coalesce(banned, false) = false
     ) then
         raise exception 'ACTIVE_USER_REQUIRED';
     end if;
@@ -165,7 +165,7 @@ begin
     end if;
 
     loop
-        v_code := upper(encode(gen_random_bytes(8), 'hex'));
+        v_code := upper(encode(extensions.gen_random_bytes(8), 'hex'));
 
         begin
             insert into public.referral_codes (
