@@ -4431,3 +4431,196 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     font-size: 11px;
   }
 }
+
+
+/* ---------- MOBILE ADMIN PANEL ---------- */
+
+body.admin-view {
+  overflow-x: hidden;
+}
+
+body.admin-view .mobile-nav {
+  display: none !important;
+}
+
+.admin-section [data-admin-panel] {
+  min-width: 0;
+}
+
+@media (max-width: 650px) {
+  body.admin-view {
+    padding-bottom: 0;
+  }
+
+  body.admin-view .header {
+    display: none;
+  }
+
+  .admin-section {
+    width: 100%;
+    padding: 10px 8px 24px;
+    overflow: visible;
+  }
+
+  .admin-header {
+    margin-bottom: 10px;
+    padding: 10px;
+    gap: 10px;
+    border: 1px solid #334155;
+    background: #101827;
+  }
+
+  .admin-header h1 {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .admin-header p {
+    font-size: 12px;
+  }
+
+  #admin-close-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .admin-tabs {
+    top: 4px;
+    max-width: 100%;
+  }
+
+  .admin-tab-group {
+    min-width: 170px;
+  }
+
+  .admin-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-card {
+    min-height: 92px;
+    padding: 14px;
+  }
+
+  .admin-card strong {
+    font-size: 21px;
+  }
+
+  .admin-broadcast-card,
+  .invite-generator-form,
+  .generated-invites,
+  .class-create-card,
+  .admin-promo-create-card {
+    padding: 14px;
+  }
+
+  .invite-generator,
+  .class-create-form,
+  .admin-promo-grid,
+  .season-map-content,
+  .season-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .students-toolbar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-section input,
+  .admin-section select,
+  .admin-section textarea,
+  .admin-section button {
+    max-width: 100%;
+  }
+
+  .admin-section-title {
+    margin-bottom: 14px;
+  }
+
+  .admin-section-title h2 {
+    font-size: 18px;
+  }
+
+  .admin-students-content,
+  .admin-invites-content,
+  .admin-classes-content,
+  .admin-seasons-content,
+  .admin-referrals-content,
+  .admin-promos-content {
+    padding: 12px 0;
+  }
+
+  .students-table-wrapper,
+  .invite-stats-table-wrapper,
+  .classes-table-wrapper,
+  .referral-admin-table-wrapper {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .students-table,
+  .invite-stats-table,
+  .classes-table,
+  .referral-admin-table {
+    font-size: 11px;
+  }
+
+  .students-table th,
+  .students-table td,
+  .invite-stats-table th,
+  .invite-stats-table td,
+  .classes-table th,
+  .classes-table td,
+  .referral-admin-table th,
+  .referral-admin-table td {
+    padding: 9px 10px;
+  }
+
+  .student-ip-cell {
+    min-width: 190px;
+  }
+
+  .student-action-button {
+    min-height: 38px;
+  }
+
+  .generated-invites-header,
+  .admin-current-season-header,
+  .season-map-viewer-header,
+  .admin-promo-created,
+  .admin-promo-code-input {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .season-map-actions,
+  .season-timelapse-buttons {
+    width: 100%;
+  }
+
+  .season-map-actions button,
+  .season-timelapse-buttons button,
+  #admin-promo-submit,
+  #admin-promo-copy {
+    width: 100%;
+  }
+
+  .admin-promo-item-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-tab-group {
+    min-width: 158px;
+  }
+
+  .admin-tab {
+    font-size: 10px;
+  }
+}
