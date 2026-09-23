@@ -67,6 +67,14 @@ const registerForm =
 const registerInvite =
   document.getElementById("register-invite");
 
+const referralClassField =
+  document.getElementById("referral-class-field");
+
+const referralClassSelect =
+  document.getElementById("referral-class-select");
+
+let referralRegistrationCode = "";
+
 const registerUsername =
   document.getElementById("register-username");
 
@@ -2177,6 +2185,81 @@ if (!easyLabel) {
 
 }
 
+async function loadReferralRegistrationClasses() {
+  const { data, error } =
+    await supabaseClient.rpc(
+      "get_referral_registration_classes"
+    );
+
+  referralClassSelect.innerHTML =
+    '<option value="">Выберите класс</option>';
+
+  if (error) {
+    console.error("REFERRAL CLASSES ERROR:", error);
+    referralClassSelect.innerHTML =
+      '<option value="">Не удалось загрузить классы</option>';
+    return;
+  }
+
+  for (const item of data ?? []) {
+    const option =
+      document.createElement("option");
+
+    option.value = item.class_id;
+    option.textContent = item.class_name;
+    referralClassSelect.appendChild(option);
+  }
+}
+
+function applyReferralFromUrl() {
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const referralCode =
+    params.get("ref")?.trim().toUpperCase();
+
+  if (!referralCode) {
+    return false;
+  }
+
+  referralRegistrationCode =
+    referralCode;
+
+  openRegister();
+
+  registerInvite.required = false;
+  registerInvite.classList.add("hidden");
+  referralClassField.classList.remove("hidden");
+  referralClassSelect.required = true;
+
+  registerForm.classList.add(
+    "easy-registration",
+    "referral-registration"
+  );
+
+  registerUsername.required = false;
+  registerPassword.required = false;
+  registerPasswordRepeat.required = false;
+
+  let easyLabel =
+    document.getElementById("easy-invite-label");
+
+  if (!easyLabel) {
+    easyLabel =
+      document.createElement("div");
+    easyLabel.id = "easy-invite-label";
+    easyLabel.className = "easy-invite-label";
+    registerForm.prepend(easyLabel);
+  }
+
+  easyLabel.textContent =
+    "✓ Реферальное приглашение принято";
+
+  loadReferralRegistrationClasses();
+  registerNickname.focus();
+  return true;
+}
+
 showLogin.addEventListener(
   "click",
   openLogin
@@ -2188,7 +2271,9 @@ showRegister.addEventListener(
   openRegister
 );
 
-applyInviteFromUrl();
+if (!applyReferralFromUrl()) {
+  applyInviteFromUrl();
+}
 
 async function loadClassRanking() {
 
@@ -2954,6 +3039,123 @@ function startSeasonWatcher() {
     );
 
 }
+const referralProfileStatus =
+  document.getElementById("referral-profile-status");
+const referralLinkRow =
+  document.getElementById("referral-link-row");
+const referralLinkInput =
+  document.getElementById("referral-link-input");
+const referralCopyButton =
+  document.getElementById("referral-copy-button");
+const referralCreateButton =
+  document.getElementById("referral-create-button");
+const referralInvitedList =
+  document.getElementById("referral-invited-list");
+
+async function loadMyReferralProfile() {
+  if (!currentUser) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "get_my_referral_dashboard"
+    );
+
+  if (error) {
+    console.error("MY REFERRALS ERROR:", error);
+    referralProfileStatus.textContent =
+      "Не удалось загрузить приглашения.";
+    return;
+  }
+
+  const dashboard =
+    data ?? {};
+
+  const code =
+    dashboard.referral_code ?? "";
+
+  referralProfileStatus.textContent =
+    `Приглашено учеников: ${Number(dashboard.invited_count ?? 0)}`;
+
+  referralLinkRow.classList.toggle(
+    "hidden",
+    !code
+  );
+  referralCreateButton.classList.toggle(
+    "hidden",
+    Boolean(code)
+  );
+
+  if (code) {
+    const url =
+      new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    url.searchParams.set("ref", code);
+    referralLinkInput.value = url.toString();
+  }
+
+  referralInvitedList.innerHTML = "";
+
+  for (const item of dashboard.invited ?? []) {
+    const row =
+      document.createElement("div");
+    row.className =
+      "referral-invited-item";
+    row.textContent =
+      `${item.nickname} (${item.username}) · ${item.class_name ?? "без класса"}`;
+    referralInvitedList.appendChild(row);
+  }
+
+  if ((dashboard.invited ?? []).length === 0) {
+    referralInvitedList.textContent =
+      "По вашей ссылке пока никто не зарегистрировался.";
+  }
+}
+
+referralCreateButton.addEventListener(
+  "click",
+  async () => {
+    referralCreateButton.disabled = true;
+
+    const { error } =
+      await supabaseClient.rpc(
+        "create_my_referral_code"
+      );
+
+    referralCreateButton.disabled = false;
+
+    if (error) {
+      console.error("CREATE REFERRAL ERROR:", error);
+      alert("Не удалось создать ссылку.");
+      return;
+    }
+
+    await loadMyReferralProfile();
+  }
+);
+
+referralCopyButton.addEventListener(
+  "click",
+  async () => {
+    try {
+      await navigator.clipboard.writeText(
+        referralLinkInput.value
+      );
+      referralCopyButton.textContent =
+        "✓ СКОПИРОВАНО";
+      setTimeout(() => {
+        referralCopyButton.textContent =
+          "📋 КОПИРОВАТЬ";
+      }, 1500);
+    } catch (error) {
+      referralLinkInput.select();
+      document.execCommand("copy");
+    }
+  }
+);
+
 let currentUserIsAdmin = false;
 
 function hideAdminOnlineUsers() {
@@ -3506,6 +3708,7 @@ async function initializeAuth() {
     authScreen.classList.add("hidden");
     await restoreStencilForCurrentUser();
     recordCurrentUserIp();
+    await loadMyReferralProfile();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -3593,6 +3796,7 @@ loginForm.addEventListener(
     authScreen.classList.add("hidden");
     await restoreStencilForCurrentUser();
     recordCurrentUserIp();
+    await loadMyReferralProfile();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -3941,6 +4145,14 @@ registerForm.addEventListener(
         "easy-registration"
       );
 
+    const referralRegistration =
+      registerForm.classList.contains(
+        "referral-registration"
+      );
+
+    const referralClassId =
+      referralClassSelect.value;
+
 
     if (
       !easyRegistration &&
@@ -3950,6 +4162,16 @@ registerForm.addEventListener(
       registerMessage.textContent =
         "Логин: 3–20 латинских букв, цифр или _";
 
+      return;
+    }
+
+
+    if (
+      referralRegistration &&
+      !referralClassId
+    ) {
+      registerMessage.textContent =
+        "Выберите свой класс.";
       return;
     }
 
@@ -4007,22 +4229,32 @@ const {
   error
 } =
   await supabaseClient.functions.invoke(
-    "register-student",
+    referralRegistration
+      ? "register-referral-student"
+      : "register-student",
     {
-      body: easyRegistration
+      body: referralRegistration
         ? {
-            inviteCode,
-            nickname,
-            easy: true
+            referralCode:
+              referralRegistrationCode,
+            classId:
+              referralClassId,
+            nickname
           }
-        : {
-            inviteCode,
-            username,
-            nickname,
-            password
-          }
-          }
-      );
+        : easyRegistration
+          ? {
+              inviteCode,
+              nickname,
+              easy: true
+            }
+          : {
+              inviteCode,
+              username,
+              nickname,
+              password
+            }
+    }
+  );
 
 
 /*
@@ -4030,6 +4262,15 @@ const {
  */
 
 const messages = {
+
+  INVALID_REFERRAL:
+    "Реферальная ссылка недействительна.",
+
+  INVALID_CLASS:
+    "Выбранный класс недоступен.",
+
+  REFERRER_UNAVAILABLE:
+    "Пригласивший аккаунт недоступен.",
 
   INVALID_INVITE:
     "Такого кода приглашения нет.",
@@ -4518,6 +4759,7 @@ easyStartButton.addEventListener(
 
     await restoreStencilForCurrentUser();
     recordCurrentUserIp();
+    await loadMyReferralProfile();
 
 
     /*
@@ -4629,6 +4871,8 @@ logoutButton.addEventListener(
     clearStencilView();
     currentUser = null;
     dailyTasks.reset();
+    referralProfileStatus.textContent = "Загрузка…";
+    referralInvitedList.innerHTML = "";
 
     currentOnlineUserIds = [];
     hideAdminOnlineUsers();
@@ -7426,6 +7670,107 @@ adminStudentsTab.addEventListener(
   "click",
   openAdminStudents
 );
+const adminReferralsTab =
+  document.getElementById("admin-referrals-tab");
+const adminReferralsContent =
+  document.getElementById("admin-referrals-content");
+const adminReferralsBody =
+  document.getElementById("admin-referrals-body");
+const adminReferralsCount =
+  document.getElementById("admin-referrals-count");
+
+async function loadAdminReferrals() {
+  const { data, error } =
+    await supabaseClient.rpc(
+      "admin_get_referrals"
+    );
+
+  adminReferralsBody.innerHTML = "";
+
+  if (error) {
+    console.error("ADMIN REFERRALS ERROR:", error);
+    adminReferralsBody.innerHTML =
+      '<tr><td colspan="5">Не удалось загрузить данные</td></tr>';
+    return;
+  }
+
+  const rows = data ?? [];
+  adminReferralsCount.textContent =
+    rows.length.toLocaleString("ru-RU");
+
+  if (rows.length === 0) {
+    adminReferralsBody.innerHTML =
+      '<tr><td colspan="5">Регистраций пока нет</td></tr>';
+    return;
+  }
+
+  for (const item of rows) {
+    const row =
+      document.createElement("tr");
+
+    const values = [
+      `${item.inviter_nickname} (${item.inviter_username})`,
+      item.inviter_class_name ?? "—",
+      `${item.invited_nickname} (${item.invited_username})`,
+      item.invited_class_name ?? "—",
+      new Date(item.created_at)
+        .toLocaleString("ru-RU")
+    ];
+
+    for (const value of values) {
+      const cell =
+        document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    }
+
+    adminReferralsBody.appendChild(row);
+  }
+}
+
+adminReferralsTab.addEventListener(
+  "click",
+  async () => {
+    [
+      adminOverviewContent,
+      adminStudentsContent,
+      adminInvitesContent,
+      adminClassesContent,
+      adminSeasonsContent,
+      adminPromosContent
+    ].forEach(element =>
+      element.classList.add("hidden")
+    );
+
+    document
+      .querySelectorAll(".admin-tab")
+      .forEach(tab =>
+        tab.classList.remove("active")
+      );
+
+    adminReferralsContent.classList.remove(
+      "hidden"
+    );
+    adminReferralsTab.classList.add(
+      "active"
+    );
+
+    await loadAdminReferrals();
+  }
+);
+
+document
+  .querySelectorAll(".admin-tab")
+  .forEach(tab => {
+    if (tab !== adminReferralsTab) {
+      tab.addEventListener("click", () => {
+        adminReferralsContent.classList.add(
+          "hidden"
+        );
+      });
+    }
+  });
+
 const adminClassesTab =
   document.getElementById(
     "admin-classes-tab"
