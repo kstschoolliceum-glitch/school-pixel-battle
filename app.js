@@ -7737,10 +7737,12 @@ adminReferralsTab.addEventListener(
       adminInvitesContent,
       adminClassesContent,
       adminSeasonsContent,
-      adminPromosContent
-    ].forEach(element =>
-      element.classList.add("hidden")
-    );
+      document.getElementById("admin-promos-content")
+    ]
+      .filter(Boolean)
+      .forEach(element =>
+        element.classList.add("hidden")
+      );
 
     document
       .querySelectorAll(".admin-tab")
