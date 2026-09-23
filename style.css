@@ -4231,3 +4231,101 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   background: rgba(120, 53, 15, 0.3);
   color: #fde68a;
 }
+
+
+/* ---------- REFERRAL PROGRAM ---------- */
+
+.referral-class-field,
+.referral-profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.referral-class-field select,
+.referral-link-row input {
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #465574;
+  background: #090f1b;
+  color: #fff;
+}
+
+.referral-profile-card {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #3b82f6;
+  background: rgba(30, 64, 175, 0.12);
+}
+
+.referral-profile-card h3,
+.referral-profile-card p {
+  margin: 0;
+}
+
+.referral-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.referral-link-row button,
+#referral-create-button {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #60a5fa;
+  background: #1d4ed8;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.referral-invited-list {
+  display: grid;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.referral-invited-item {
+  padding: 7px 9px;
+  border: 1px solid #334155;
+  background: #0b1220;
+}
+
+.admin-referrals-content {
+  padding: 24px;
+}
+
+.referral-admin-summary {
+  margin: 14px 0;
+  color: #cbd5e1;
+}
+
+.referral-admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.referral-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.referral-admin-table th,
+.referral-admin-table td {
+  padding: 10px;
+  border: 1px solid #34415a;
+  color: #dbeafe;
+  text-align: left;
+  font-size: 12px;
+}
+
+@media (max-width: 650px) {
+  .referral-link-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-referrals-content {
+    padding: 14px;
+  }
+}
