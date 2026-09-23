@@ -210,12 +210,20 @@ Deno.serve(async request => {
     } =
       await admin
         .from("classes")
-        .select("id")
+        .select("id,name")
         .eq("id", classId)
         .eq("is_active", true)
         .maybeSingle();
 
-    if (!selectedClass) {
+    const selectedClassName =
+      String(selectedClass?.name ?? "")
+        .trim()
+        .toLocaleUpperCase("ru-RU");
+
+    if (
+      !selectedClass ||
+      selectedClassName === "МОДЕРАТОР"
+    ) {
       return response(
         request,
         { success: false, error: "INVALID_CLASS" },
