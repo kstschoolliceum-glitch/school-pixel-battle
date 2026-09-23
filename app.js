@@ -3472,6 +3472,26 @@ pushPermissionEnableButton?.addEventListener(
 
   }
 );
+async function recordCurrentUserIp() {
+  if (!currentUser) {
+    return;
+  }
+
+  try {
+    const { error } =
+      await supabaseClient.functions.invoke(
+        "record-client-ip",
+        { body: {} }
+      );
+
+    if (error) {
+      console.warn("IP RECORD ERROR:", error);
+    }
+  } catch (error) {
+    console.warn("IP RECORD REQUEST ERROR:", error);
+  }
+}
+
 async function initializeAuth() {
 
   const {
@@ -3485,6 +3505,7 @@ async function initializeAuth() {
 
     authScreen.classList.add("hidden");
     await restoreStencilForCurrentUser();
+    recordCurrentUserIp();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -3571,6 +3592,7 @@ loginForm.addEventListener(
 
     authScreen.classList.add("hidden");
     await restoreStencilForCurrentUser();
+    recordCurrentUserIp();
 
     await loadActiveSeason();
     await loadClassNames();
@@ -4495,6 +4517,7 @@ easyStartButton.addEventListener(
       data.user;
 
     await restoreStencilForCurrentUser();
+    recordCurrentUserIp();
 
 
     /*
@@ -6648,39 +6671,48 @@ const studentsStatusFilter =
 
 
 let adminStudents = [];
+let adminStudentIps = [];
+
 async function loadAdminStudents() {
 
   if (!currentUserIsAdmin) {
     return;
   }
 
+  const [studentsResult, ipsResult] =
+    await Promise.all([
+      supabaseClient.rpc(
+        "admin_get_students"
+      ),
+      supabaseClient.rpc(
+        "admin_get_student_ips"
+      )
+    ]);
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "admin_get_students"
-    );
-
-
-  if (error) {
-
+  if (studentsResult.error) {
     console.error(
       "ADMIN STUDENTS ERROR:",
-      error
+      studentsResult.error
     );
-
     return;
   }
 
+  if (ipsResult.error) {
+    console.warn(
+      "ADMIN STUDENT IPS ERROR:",
+      ipsResult.error
+    );
+  }
 
   adminStudents =
-    data ?? [];
+    studentsResult.data ?? [];
 
+  adminStudentIps =
+    ipsResult.error
+      ? []
+      : (ipsResult.data ?? []);
 
   fillStudentsClassFilter();
-
   renderAdminStudents();
 
 }
@@ -6737,6 +6769,138 @@ function fillStudentsClassFilter() {
     currentValue;
 
 }
+function getStudentIpRecords(userId) {
+  return adminStudentIps.filter(
+    item => String(item.user_id) === String(userId)
+  );
+}
+
+function getStudentIpMatches(student) {
+  const ownRecords =
+    getStudentIpRecords(student.user_id);
+
+  const exact = new Map();
+  const similar = new Map();
+
+  for (const own of ownRecords) {
+    for (const candidate of adminStudentIps) {
+      if (
+        String(candidate.user_id) ===
+        String(student.user_id)
+      ) {
+        continue;
+      }
+
+      const otherStudent =
+        adminStudents.find(
+          item =>
+            String(item.user_id) ===
+            String(candidate.user_id)
+        );
+
+      if (!otherStudent) {
+        continue;
+      }
+
+      const label =
+        `${otherStudent.username ?? otherStudent.nickname ?? "аккаунт"} (${candidate.ip_address})`;
+
+      if (
+        own.ip_address &&
+        own.ip_address === candidate.ip_address
+      ) {
+        exact.set(
+          `${candidate.user_id}:${candidate.ip_address}`,
+          label
+        );
+      } else if (
+        own.network_group &&
+        own.network_group === candidate.network_group
+      ) {
+        similar.set(
+          `${candidate.user_id}:${candidate.ip_address}`,
+          label
+        );
+      }
+    }
+  }
+
+  return {
+    exact: [...exact.values()],
+    similar: [...similar.values()]
+  };
+}
+
+function createStudentIpCell(student) {
+  const cell =
+    document.createElement("td");
+
+  cell.className =
+    "student-ip-cell";
+
+  const records =
+    getStudentIpRecords(student.user_id);
+
+  if (records.length === 0) {
+    cell.textContent =
+      "Нет данных";
+    return cell;
+  }
+
+  for (const record of records) {
+    const address =
+      document.createElement("div");
+
+    address.className =
+      "student-ip-address";
+
+    const lastSeen =
+      record.last_seen
+        ? new Date(record.last_seen)
+            .toLocaleString("ru-RU")
+        : "";
+
+    address.textContent =
+      record.ip_address +
+      (lastSeen
+        ? ` · ${lastSeen}`
+        : "");
+
+    cell.appendChild(address);
+  }
+
+  const matches =
+    getStudentIpMatches(student);
+
+  if (matches.exact.length > 0) {
+    const warning =
+      document.createElement("div");
+
+    warning.className =
+      "student-ip-warning exact";
+
+    warning.textContent =
+      `⚠ Совпадает: ${matches.exact.join(", ")}`;
+
+    cell.appendChild(warning);
+  }
+
+  if (matches.similar.length > 0) {
+    const warning =
+      document.createElement("div");
+
+    warning.className =
+      "student-ip-warning similar";
+
+    warning.textContent =
+      `≈ Похожая сеть: ${matches.similar.join(", ")}`;
+
+    cell.appendChild(warning);
+  }
+
+  return cell;
+}
+
 function renderAdminStudents() {
 
   const body =
@@ -6779,7 +6943,13 @@ function renderAdminStudents() {
             student.nickname ?? ""
           )
             .toLowerCase()
-            .includes(search);
+            .includes(search) ||
+          getStudentIpRecords(student.user_id)
+            .some(item =>
+              String(item.ip_address ?? "")
+                .toLowerCase()
+                .includes(search)
+            );
 
 
         const matchesClass =
@@ -6830,7 +7000,7 @@ function renderAdminStudents() {
     const cell =
       document.createElement("td");
 
-    cell.colSpan = 7;
+    cell.colSpan = 8;
     cell.textContent =
       "Ученики не найдены";
 
@@ -6884,6 +7054,10 @@ function renderAdminStudents() {
       Number(
         student.total_pixels ?? 0
       ).toLocaleString("ru-RU");
+
+
+    const ipCell =
+      createStudentIpCell(student);
 
 
     const statusCell =
@@ -7181,6 +7355,7 @@ actionsCell.appendChild(
       className,
       weekly,
       total,
+      ipCell,
       statusCell,
       actionsCell
     );
