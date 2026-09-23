@@ -28,6 +28,115 @@ revoke all on table public.referral_codes
 revoke all on table public.student_referrals
     from public, anon, authenticated;
 
+create table if not exists public.referral_registration_limits (
+    limit_day date not null default current_date,
+    referral_code text not null,
+    ip_hash text not null,
+    attempts integer not null default 0,
+    updated_at timestamptz not null default now(),
+    primary key (limit_day, referral_code, ip_hash)
+);
+
+alter table public.referral_registration_limits enable row level security;
+
+revoke all on table public.referral_registration_limits
+    from public, anon, authenticated;
+
+create or replace function public.consume_referral_registration_slot(
+    p_referral_code text,
+    p_ip_hash text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_code text := upper(trim(p_referral_code));
+    v_inviter_id uuid;
+    v_code_attempts integer;
+    v_ip_attempts integer;
+    v_total_referrals integer;
+begin
+    if
+        length(v_code) <> 16
+        or v_code ~ '[^A-F0-9]'
+        or length(p_ip_hash) <> 64
+        or p_ip_hash ~ '[^a-f0-9]'
+    then
+        return false;
+    end if;
+
+    perform pg_advisory_xact_lock(
+        hashtext(v_code || ':' || p_ip_hash)
+    );
+
+    select inviter_id
+    into v_inviter_id
+    from public.referral_codes
+    where code = v_code;
+
+    if v_inviter_id is null then
+        return false;
+    end if;
+
+    select count(*)
+    into v_total_referrals
+    from public.student_referrals
+    where inviter_id = v_inviter_id;
+
+    if v_total_referrals >= 25 then
+        return false;
+    end if;
+
+    select coalesce(sum(attempts), 0)
+    into v_code_attempts
+    from public.referral_registration_limits
+    where limit_day = current_date
+      and referral_code = v_code;
+
+    select coalesce(sum(attempts), 0)
+    into v_ip_attempts
+    from public.referral_registration_limits
+    where limit_day = current_date
+      and ip_hash = p_ip_hash;
+
+    if v_code_attempts >= 10 or v_ip_attempts >= 3 then
+        return false;
+    end if;
+
+    insert into public.referral_registration_limits (
+        limit_day,
+        referral_code,
+        ip_hash,
+        attempts,
+        updated_at
+    )
+    values (
+        current_date,
+        v_code,
+        p_ip_hash,
+        1,
+        now()
+    )
+    on conflict (limit_day, referral_code, ip_hash)
+    do update set
+        attempts =
+            public.referral_registration_limits.attempts + 1,
+        updated_at = now();
+
+    delete from public.referral_registration_limits
+    where limit_day < current_date - 14;
+
+    return true;
+end;
+$$;
+
+revoke all on function public.consume_referral_registration_slot(text, text)
+    from public, anon, authenticated;
+grant execute on function public.consume_referral_registration_slot(text, text)
+    to service_role;
+
 create or replace function public.create_my_referral_code()
 returns text
 language plpgsql
