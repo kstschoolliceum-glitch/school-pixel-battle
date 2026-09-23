@@ -254,6 +254,7 @@ as $$
     select c.id, c.name
     from public.classes c
     where c.is_active = true
+      and upper(btrim(c.name)) <> 'МОДЕРАТОР'
     order by c.grade, c.name;
 $$;
 
