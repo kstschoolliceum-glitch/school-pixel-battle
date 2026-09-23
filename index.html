@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=31">
 </head>
 
 <body>
@@ -173,6 +173,13 @@
         autocomplete="off"
         required
       >
+
+      <label id="referral-class-field" class="referral-class-field hidden">
+        Выберите свой класс
+        <select id="referral-class-select">
+          <option value="">Загрузка классов...</option>
+        </select>
+      </label>
 
       <div id="register-username-fields">
 
@@ -722,6 +729,22 @@
     </section>
 
     <section
+      id="referral-profile"
+      class="referral-profile-card"
+      aria-live="polite"
+    >
+      <h3>🤝 Мои приглашения</h3>
+      <p>Создай личную ссылку и отправь её другому ученику. Класс он выберет сам.</p>
+      <div id="referral-profile-status">Загрузка…</div>
+      <div id="referral-link-row" class="referral-link-row hidden">
+        <input id="referral-link-input" type="text" readonly aria-label="Реферальная ссылка">
+        <button id="referral-copy-button" type="button">📋 КОПИРОВАТЬ</button>
+      </div>
+      <button id="referral-create-button" type="button" class="hidden">СОЗДАТЬ ССЫЛКУ</button>
+      <div id="referral-invited-list" class="referral-invited-list"></div>
+    </section>
+
+    <section
       id="promo-code-profile"
       class="promo-code-card"
       aria-labelledby="promo-code-title"
@@ -921,6 +944,14 @@
       type="button"
     >
       📚 Сезоны
+    </button>
+
+    <button
+      id="admin-referrals-tab"
+      class="admin-tab"
+      type="button"
+    >
+      🤝 Рефералы
     </button>
 
     <button
@@ -1537,6 +1568,35 @@
 
 </div>
   <div
+    id="admin-referrals-content"
+    class="admin-referrals-content hidden"
+  >
+    <div class="admin-section-title">
+      <h2>🤝 Реферальная программа</h2>
+      <p>Кто создал приглашение и какой ученик зарегистрировался по ссылке.</p>
+    </div>
+    <div class="referral-admin-summary">
+      Всего регистраций: <strong id="admin-referrals-count">0</strong>
+    </div>
+    <div class="referral-admin-table-wrapper">
+      <table class="referral-admin-table">
+        <thead>
+          <tr>
+            <th>Кто пригласил</th>
+            <th>Класс</th>
+            <th>Кого пригласил</th>
+            <th>Класс</th>
+            <th>Дата</th>
+          </tr>
+        </thead>
+        <tbody id="admin-referrals-body">
+          <tr><td colspan="5">Загрузка…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div
     id="admin-promos-content"
     class="admin-promos-content hidden"
   >
@@ -1900,7 +1960,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=52"></script>
+  <script src="app.js?v=53"></script>
 
 </body>
 </html>
