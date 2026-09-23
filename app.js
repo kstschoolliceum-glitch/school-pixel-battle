@@ -12428,3 +12428,65 @@ const promoCodes = (() => {
 
   updateButton();
 })();
+
+
+/* ---------- UNIFIED ADMIN NAVIGATION ---------- */
+
+(() => {
+  const tabs = Array.from(
+    document.querySelectorAll(".admin-tab[data-admin-target]")
+  );
+  const panels = Array.from(
+    document.querySelectorAll("[data-admin-panel]")
+  );
+
+  if (!tabs.length || !panels.length) return;
+
+  function activateAdminPanel(tab) {
+    const targetId = tab.dataset.adminTarget;
+    const targetPanel = document.getElementById(targetId);
+
+    if (!targetPanel) return;
+
+    panels.forEach(panel => {
+      panel.classList.toggle("hidden", panel !== targetPanel);
+      panel.setAttribute("aria-hidden", panel === targetPanel ? "false" : "true");
+    });
+
+    tabs.forEach(item => {
+      const isActive = item === tab;
+      item.classList.toggle("active", isActive);
+      item.setAttribute("aria-selected", isActive ? "true" : "false");
+      item.tabIndex = isActive ? 0 : -1;
+    });
+
+    tab.closest(".admin-tab-group")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest"
+    });
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      activateAdminPanel(tab);
+    }, true);
+
+    tab.addEventListener("keydown", event => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+      event.preventDefault();
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const currentIndex = tabs.indexOf(tab);
+      const nextTab = tabs[
+        (currentIndex + direction + tabs.length) % tabs.length
+      ];
+
+      nextTab.focus();
+      nextTab.click();
+    });
+  });
+
+  const initialTab = tabs.find(tab => tab.classList.contains("active")) || tabs[0];
+  activateAdminPanel(initialTab);
+})();
