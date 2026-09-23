@@ -4329,3 +4329,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     padding: 14px;
   }
 }
+
+
+.referral-class-field.hidden,
+.referral-link-row.hidden {
+  display: none;
+}
