@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=33">
 </head>
 
 <body>
@@ -904,70 +904,56 @@
   </div>
 
 
-  <div class="admin-tabs">
+  <nav class="admin-tabs" aria-label="Разделы админ-панели">
+    <div class="admin-tab-group">
+      <span class="admin-tab-group-title">Главное</span>
+      <button id="admin-overview-tab" class="admin-tab active" type="button"
+        data-admin-target="admin-overview-content" aria-controls="admin-overview-content" aria-selected="true">
+        📊 Обзор
+      </button>
+    </div>
 
-    <button
-      id="admin-overview-tab"
-      class="admin-tab active"
-      type="button"
-    >
-      📊 Обзор
-    </button>
+    <div class="admin-tab-group">
+      <span class="admin-tab-group-title">Участники</span>
+      <button id="admin-students-tab" class="admin-tab" type="button"
+        data-admin-target="admin-students-content" aria-controls="admin-students-content" aria-selected="false">
+        👥 Ученики
+      </button>
+      <button id="admin-referrals-tab" class="admin-tab" type="button"
+        data-admin-target="admin-referrals-content" aria-controls="admin-referrals-content" aria-selected="false">
+        🤝 Рефералы
+      </button>
+    </div>
 
-    <button
-      id="admin-students-tab"
-      class="admin-tab"
-      type="button"
-    >
-      👥 Ученики
-    </button>
+    <div class="admin-tab-group">
+      <span class="admin-tab-group-title">Игра</span>
+      <button id="admin-classes-tab" class="admin-tab" type="button"
+        data-admin-target="admin-classes-content" aria-controls="admin-classes-content" aria-selected="false">
+        🏫 Классы
+      </button>
+      <button id="admin-seasons-tab" class="admin-tab" type="button"
+        data-admin-target="admin-seasons-content" aria-controls="admin-seasons-content" aria-selected="false">
+        📚 Сезоны
+      </button>
+    </div>
 
-    <button
-      id="admin-invites-tab"
-      class="admin-tab"
-      type="button"
-    >
-      🎟️ Приглашения
-    </button>
-
-    <button
-      id="admin-classes-tab"
-      class="admin-tab"
-      type="button"
-    >
-      🏫 Классы
-    </button>
-
-    <button
-      id="admin-seasons-tab"
-      class="admin-tab"
-      type="button"
-    >
-      📚 Сезоны
-    </button>
-
-    <button
-      id="admin-referrals-tab"
-      class="admin-tab"
-      type="button"
-    >
-      🤝 Рефералы
-    </button>
-
-    <button
-      id="admin-promos-tab"
-      class="admin-tab"
-      type="button"
-    >
-      🎟️ Промокоды
-    </button>
-
-  </div>
+    <div class="admin-tab-group">
+      <span class="admin-tab-group-title">Доступ и бонусы</span>
+      <button id="admin-invites-tab" class="admin-tab" type="button"
+        data-admin-target="admin-invites-content" aria-controls="admin-invites-content" aria-selected="false">
+        🎟️ Приглашения
+      </button>
+      <button id="admin-promos-tab" class="admin-tab" type="button"
+        data-admin-target="admin-promos-content" aria-controls="admin-promos-content" aria-selected="false">
+        🎁 Промокоды
+      </button>
+    </div>
+  </nav>
 
 
   <div
   class="admin-overview"
-  id="admin-overview-content"
+  id="admin-overview-content" data-admin-panel
 >
 
     <div class="admin-card">
@@ -1045,7 +1031,7 @@
 
   </div>
 <div
-  id="admin-students-content"
+  id="admin-students-content" data-admin-panel
   class="admin-students-content hidden"
 >
 
@@ -1131,7 +1117,7 @@
 </div>
 
   <div
-  id="admin-classes-content"
+  id="admin-classes-content" data-admin-panel
   class="admin-classes-content hidden"
 >
 
@@ -1245,7 +1231,7 @@
 
 </div>
   <div
-  id="admin-seasons-content"
+  id="admin-seasons-content" data-admin-panel
   class="admin-seasons-content hidden"
 >
 <div
@@ -1568,7 +1554,7 @@
 
 </div>
   <div
-    id="admin-referrals-content"
+    id="admin-referrals-content" data-admin-panel
     class="admin-referrals-content hidden"
   >
     <div class="admin-section-title">
@@ -1597,7 +1583,7 @@
   </div>
 
   <div
-    id="admin-promos-content"
+    id="admin-promos-content" data-admin-panel
     class="admin-promos-content hidden"
   >
     <div class="admin-section-title">
@@ -1721,7 +1707,7 @@
   </div>
 
   <div
-  id="admin-invites-content"
+  id="admin-invites-content" data-admin-panel
   class="admin-invites-content hidden"
 >
 
@@ -1960,7 +1946,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=53"></script>
+  <script src="app.js?v=54"></script>
 
 </body>
 </html>
