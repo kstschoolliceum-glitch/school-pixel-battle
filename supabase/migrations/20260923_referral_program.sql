@@ -243,7 +243,7 @@ $$;
 
 create or replace function public.get_referral_registration_classes()
 returns table (
-    class_id uuid,
+    class_id bigint,
     class_name text
 )
 language sql
