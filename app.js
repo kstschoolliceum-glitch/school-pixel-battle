@@ -3345,6 +3345,7 @@ async function checkAdminStatus() {
     );
 
     scheduleAdminOnlineUsersRefresh();
+    unblockMeGame.loadStatus();
 
   } else {
 
