@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=37">
 </head>
 
 <body>
@@ -729,6 +729,26 @@
       class="daily-profile-card"
     >
       <p>Загружаем достижения…</p>
+    </section>
+
+    <section
+      id="unblock-me-profile"
+      class="unblock-profile-card"
+      aria-labelledby="unblock-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="unblock-profile-title">🧱 Unblock Me</h3>
+          <p>Освободи красный блок и получи Турбокисть на 10 минут.</p>
+        </div>
+        <span id="unblock-me-badge">1 раз в сутки</span>
+      </div>
+      <div id="unblock-me-profile-status" class="unblock-profile-status" aria-live="polite">
+        Проверяем игру дня…
+      </div>
+      <button id="unblock-me-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
     </section>
 
     <section
@@ -2075,6 +2095,41 @@
 </dialog>
 
 
+<dialog
+  id="unblock-me-dialog"
+  class="unblock-dialog"
+  aria-labelledby="unblock-me-title"
+>
+  <button
+    id="unblock-me-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="unblock-me-title">🧱 Unblock Me</h2>
+      <p>Передвигай блоки и выведи красный блок через выход справа.</p>
+    </div>
+    <span id="unblock-me-moves">Ходов: 0</span>
+  </div>
+
+  <div class="unblock-board-wrap">
+    <div id="unblock-me-board" class="unblock-board" aria-label="Игровое поле Unblock Me"></div>
+    <span class="unblock-exit" aria-hidden="true">ВЫХОД →</span>
+  </div>
+
+  <p id="unblock-me-message" class="unblock-message" aria-live="polite">
+    Перетаскивай горизонтальные блоки влево и вправо, вертикальные — вверх и вниз.
+  </p>
+
+  <div class="unblock-actions">
+    <button id="unblock-me-reset" type="button">↻ НАЧАТЬ ЗАНОВО</button>
+  </div>
+</dialog>
+
+
 <nav class="mobile-nav">
 
   <button
@@ -2126,7 +2181,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=58"></script>
+  <script src="app.js?v=59"></script>
 
 </body>
 </html>
