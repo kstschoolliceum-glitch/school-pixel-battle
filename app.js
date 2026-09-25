@@ -5355,6 +5355,10 @@ const mobileChatButton =
   document.getElementById(
     "mobile-chat-button"
   );
+const mobileMinigamesButton =
+  document.getElementById(
+    "mobile-minigames-button"
+  );
 const mobileProfileButton =
   document.getElementById(
     "mobile-profile-button"
@@ -5366,6 +5370,7 @@ function setMobileView(view) {
   document.body.classList.remove(
     "mobile-ranking-view",
     "mobile-chat-view",
+    "mobile-minigames-view",
     "mobile-profile-view"
   );
 
@@ -5379,6 +5384,10 @@ function setMobileView(view) {
   );
   
   mobileChatButton.classList.remove(
+    "selected"
+  );
+
+  mobileMinigamesButton.classList.remove(
     "selected"
   );
   
@@ -5417,6 +5426,21 @@ function setMobileView(view) {
 
   return;
 }
+  if (view === "minigames") {
+
+    document.body.classList.add(
+      "mobile-minigames-view"
+    );
+
+    mobileMinigamesButton.classList.add(
+      "selected"
+    );
+
+    unblockMeGame.loadStatus();
+
+    return;
+  }
+
   if (view === "profile") {
 
     document.body.classList.add(
@@ -5429,7 +5453,6 @@ function setMobileView(view) {
 
     loadMyProfile();
     dailyTasks.load();
-    unblockMeGame.loadStatus();
 
     return;
   }
@@ -5460,6 +5483,13 @@ mobileChatButton.addEventListener(
   "click",
   () => {
     setMobileView("chat");
+  }
+);
+
+mobileMinigamesButton.addEventListener(
+  "click",
+  () => {
+    setMobileView("minigames");
   }
 );
 
