@@ -274,6 +274,67 @@ begin
 end;
 $migration$;
 
+create or replace function public.admin_restart_unblock_me(
+    p_puzzle integer default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $admin_unblock$
+declare
+    v_user_id uuid := auth.uid();
+    v_now timestamptz := clock_timestamp();
+    v_date date := (v_now at time zone 'Asia/Almaty')::date;
+    v_puzzle integer;
+begin
+    if v_user_id is null then
+        raise exception 'NOT_AUTHENTICATED';
+    end if;
+
+    if not coalesce(public.is_admin(), false) then
+        raise exception 'ADMIN_REQUIRED';
+    end if;
+
+    v_puzzle := coalesce(
+        p_puzzle,
+        public.unblock_me_puzzle_for(v_user_id, v_date)
+    );
+
+    if v_puzzle < 1 or v_puzzle > 50 then
+        raise exception 'INVALID_PUZZLE';
+    end if;
+
+    delete from public.unblock_me_daily
+    where user_id = v_user_id
+      and game_date = v_date;
+
+    insert into public.unblock_me_daily (
+        user_id, game_date, puzzle, started_at
+    )
+    values (
+        v_user_id, v_date, v_puzzle, v_now
+    );
+
+    return jsonb_build_object(
+        'success', true,
+        'state', 'started',
+        'game_date', v_date,
+        'puzzle', v_puzzle,
+        'started_at', v_now,
+        'completed_at', null,
+        'move_count', null,
+        'boost_until', null,
+        'server_now', v_now
+    );
+end;
+$admin_unblock$;
+
+revoke all on function public.admin_restart_unblock_me(integer)
+    from public, anon;
+grant execute on function public.admin_restart_unblock_me(integer)
+    to authenticated;
+
 revoke all on function public.get_unblock_me_status() from public, anon;
 revoke all on function public.start_unblock_me() from public, anon;
 revoke all on function public.finish_unblock_me(integer) from public, anon;
