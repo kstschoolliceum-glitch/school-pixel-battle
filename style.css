@@ -5176,3 +5176,34 @@ body.admin-view .mobile-nav {
     white-space: nowrap;
   }
 }
+
+
+/* Compact five-item phone navigation. */
+@media (max-width: 650px) {
+  body .mobile-nav {
+    height: 60px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  body .mobile-nav button {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 3px 1px 2px;
+    gap: 1px;
+    font-size: 16px;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  body .mobile-nav button span {
+    width: 100%;
+    font-size: 9px;
+    line-height: 1.1;
+    letter-spacing: 0;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
