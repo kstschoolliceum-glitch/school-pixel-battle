@@ -531,6 +531,7 @@ body {
   }
   
   body.mobile-ranking-view .controls,
+  body.mobile-minigames-view .controls,
   body.mobile-profile-view .controls,
   body.mobile-chat-view .controls,
   body.admin-view .controls {
@@ -551,7 +552,7 @@ body {
     bottom: 0;
 
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
 
     background: rgba(12, 17, 28, 0.97);
     border-top: 1px solid var(--border);
@@ -1367,6 +1368,8 @@ body {
   }
 
   body.mobile-profile-view
+  .map-section,
+  body.mobile-minigames-view
   .map-section {
     display: none;
   }
@@ -1375,6 +1378,8 @@ body {
   body.mobile-ranking-view
   .sidebar,
   body.mobile-profile-view
+  .sidebar,
+  body.mobile-minigames-view
   .sidebar {
     display: block;
   }
@@ -1392,6 +1397,8 @@ body {
 
 
   body.mobile-profile-view
+  .sidebar .panel,
+  body.mobile-minigames-view
   .sidebar .panel {
     display: none;
   }
@@ -1401,11 +1408,18 @@ body {
     display: block;
   }
 
+  body.mobile-minigames-view
+  #minigames-panel {
+    display: block;
+  }
+
 
   body.mobile-ranking-view
   #ranking-panel,
   body.mobile-profile-view
-  #profile-panel {
+  #profile-panel,
+  body.mobile-minigames-view
+  #minigames-panel {
     min-height: calc(100vh - 150px);
   }
 
@@ -5130,5 +5144,35 @@ body.admin-view .mobile-nav {
   .unblock-exit {
     right: -54px;
     font-size: 10px;
+  }
+}
+
+
+.minigames-intro {
+  margin: -4px 0 14px;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+#minigames-panel .unblock-profile-card {
+  margin-top: 0;
+}
+
+@media (max-width: 650px) {
+  body.mobile-minigames-view #minigames-panel {
+    min-height: calc(100vh - 150px);
+  }
+
+  .mobile-nav button {
+    min-width: 0;
+    padding-inline: 2px;
+  }
+
+  .mobile-nav button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
