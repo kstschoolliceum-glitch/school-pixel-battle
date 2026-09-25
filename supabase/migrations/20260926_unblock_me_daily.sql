@@ -170,6 +170,8 @@ declare
     v_date date := (v_now at time zone 'Asia/Almaty')::date;
     v_game public.unblock_me_daily%rowtype;
     v_boost_until timestamptz;
+    v_nickname text;
+    v_class_name text;
 begin
     if v_user_id is null then
         raise exception 'NOT_AUTHENTICATED';
@@ -222,6 +224,33 @@ begin
         boost_until = v_boost_until
     where user_id = v_user_id
       and game_date = v_date;
+
+    -- Тестовые прохождения администратора не засоряют общий чат.
+    if not coalesce(public.is_admin(), false) then
+        select p.nickname, c.name
+        into v_nickname, v_class_name
+        from public.profiles p
+        left join public.classes c on c.id = p.class_id
+        where p.id = v_user_id;
+
+        insert into public.chat_messages (
+            user_id,
+            message,
+            message_type,
+            created_at
+        )
+        values (
+            null,
+            format(
+                '🎮 %s [%s] прошёл(ла) Unblock Me за %s ходов и получил(а) Турбокисть на 10 минут!',
+                coalesce(v_nickname, 'Игрок'),
+                coalesce(v_class_name, '—'),
+                p_moves
+            ),
+            'system',
+            v_now
+        );
+    end if;
 
     return jsonb_build_object(
         'success', true,
