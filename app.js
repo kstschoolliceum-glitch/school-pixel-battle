@@ -3023,7 +3023,7 @@ async function checkForSeasonChange() {
   await loadClassRanking();
   await loadMyProfile();
   await dailyTasks.load();
-    await unblockMeGame.loadStatus();
+  await unblockMeGame.loadStatus();
 
 
   drawMap();
@@ -5429,6 +5429,7 @@ function setMobileView(view) {
 
     loadMyProfile();
     dailyTasks.load();
+    unblockMeGame.loadStatus();
 
     return;
   }
