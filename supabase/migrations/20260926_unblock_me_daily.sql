@@ -8,7 +8,7 @@ create table if not exists public.unblock_me_daily (
         references public.profiles(id) on delete cascade,
     game_date date not null,
     puzzle integer not null
-        check (puzzle between 1 and 3),
+        check (puzzle between 1 and 50),
     started_at timestamptz not null default clock_timestamp(),
     completed_at timestamptz,
     move_count integer,
@@ -29,14 +29,24 @@ create index if not exists unblock_me_daily_boost_idx
 alter table public.unblock_me_daily enable row level security;
 revoke all on table public.unblock_me_daily from public, anon, authenticated;
 
-create or replace function public.unblock_me_puzzle_for(p_date date)
+create or replace function public.unblock_me_puzzle_for(
+    p_user_id uuid,
+    p_date date
+)
 returns integer
 language sql
 immutable
 set search_path = public
-as $$
-    select mod(p_date - date '2026-01-01', 3) + 1;
-$$;
+as $
+    select (
+        (
+            hashtextextended(
+                p_user_id::text || ':' || p_date::text,
+                0
+            ) & 9223372036854775807
+        ) % 50 + 1
+    )::integer;
+$;
 
 create or replace function public.get_unblock_me_status()
 returns jsonb
@@ -75,7 +85,7 @@ begin
             else 'started'
         end,
         'game_date', v_date,
-        'puzzle', coalesce(v_game.puzzle, public.unblock_me_puzzle_for(v_date)),
+        'puzzle', coalesce(v_game.puzzle, public.unblock_me_puzzle_for(v_user_id, v_date)),
         'started_at', v_game.started_at,
         'completed_at', v_game.completed_at,
         'move_count', v_game.move_count,
@@ -115,7 +125,7 @@ begin
         user_id, game_date, puzzle, started_at
     )
     values (
-        v_user_id, v_date, public.unblock_me_puzzle_for(v_date), v_now
+        v_user_id, v_date, public.unblock_me_puzzle_for(v_user_id, v_date), v_now
     )
     on conflict (user_id, game_date) do nothing;
 
