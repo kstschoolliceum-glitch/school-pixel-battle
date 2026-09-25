@@ -3023,6 +3023,7 @@ async function checkForSeasonChange() {
   await loadClassRanking();
   await loadMyProfile();
   await dailyTasks.load();
+    await unblockMeGame.loadStatus();
 
 
   drawMap();
@@ -3733,6 +3734,7 @@ async function initializeAuth() {
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await unblockMeGame.loadStatus();
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -3822,6 +3824,7 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await unblockMeGame.loadStatus();
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -4824,6 +4827,7 @@ easyStartButton.addEventListener(
 
     await loadMyProfile();
     await dailyTasks.load();
+    await unblockMeGame.loadStatus();
 
     await checkAdminStatus();
 
@@ -4891,6 +4895,7 @@ logoutButton.addEventListener(
     clearStencilView();
     currentUser = null;
     dailyTasks.reset();
+    unblockMeGame.reset();
     referralProfileStatus.textContent = "Загрузка…";
     referralInvitedList.innerHTML = "";
 
@@ -11926,6 +11931,390 @@ const dailyTasks = (() => {
 
   render();
   return { load, applyStatus, setProfile, reset };
+})();
+
+
+/* -------------------------
+   ЕЖЕДНЕВНАЯ ИГРА UNBLOCK ME
+------------------------- */
+
+const unblockMeGame = (() => {
+  const profileCard = document.getElementById("unblock-me-profile");
+  const statusText = document.getElementById("unblock-me-profile-status");
+  const openButton = document.getElementById("unblock-me-open");
+  const badge = document.getElementById("unblock-me-badge");
+  const dialog = document.getElementById("unblock-me-dialog");
+  const closeButton = document.getElementById("unblock-me-close");
+  const board = document.getElementById("unblock-me-board");
+  const movesText = document.getElementById("unblock-me-moves");
+  const message = document.getElementById("unblock-me-message");
+  const resetButton = document.getElementById("unblock-me-reset");
+
+  if (
+    !profileCard || !statusText || !openButton || !dialog ||
+    !closeButton || !board || !movesText || !message || !resetButton
+  ) {
+    return { loadStatus() {}, reset() {} };
+  }
+
+  const PUZZLES = {
+    1: [
+      { id: "target", x: 0, y: 2, width: 2, height: 1, axis: "horizontal", target: true },
+      { id: "gate", x: 3, y: 0, width: 1, height: 3, axis: "vertical" },
+      { id: "lock", x: 2, y: 3, width: 2, height: 1, axis: "horizontal" }
+    ],
+    2: [
+      { id: "target", x: 0, y: 2, width: 2, height: 1, axis: "horizontal", target: true },
+      { id: "gate", x: 2, y: 0, width: 1, height: 3, axis: "vertical" },
+      { id: "lock", x: 1, y: 3, width: 2, height: 1, axis: "horizontal" }
+    ],
+    3: [
+      { id: "target", x: 0, y: 2, width: 2, height: 1, axis: "horizontal", target: true },
+      { id: "gate", x: 4, y: 0, width: 1, height: 3, axis: "vertical" },
+      { id: "lock", x: 3, y: 3, width: 2, height: 1, axis: "horizontal" }
+    ]
+  };
+
+  let status = null;
+  let blocks = [];
+  let puzzleNumber = 1;
+  let moveCount = 0;
+  let submitting = false;
+  let drag = null;
+  let clockOffsetMs = 0;
+  let requestNumber = 0;
+
+  function serverNow() {
+    return Date.now() + clockOffsetMs;
+  }
+
+  function setClock(value) {
+    const parsed = Date.parse(value || "");
+    if (Number.isFinite(parsed)) clockOffsetMs = parsed - Date.now();
+  }
+
+  function remainingSeconds(value) {
+    const end = Date.parse(value || "");
+    return Number.isFinite(end)
+      ? Math.max(0, Math.ceil((end - serverNow()) / 1000))
+      : 0;
+  }
+
+  function formatDuration(seconds) {
+    const safe = Math.max(0, Math.ceil(Number(seconds) || 0));
+    return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+  }
+
+  function setProfileMessage(text, type = "") {
+    statusText.textContent = text;
+    statusText.classList.toggle("success", type === "success");
+    statusText.classList.toggle("error", type === "error");
+  }
+
+  function renderProfile() {
+    const state = status?.state || "loading";
+    const boostSeconds = remainingSeconds(status?.boost_until);
+
+    openButton.disabled = false;
+    badge.textContent = "1 раз в сутки";
+
+    if (state === "available") {
+      setProfileMessage("Сегодня игра ещё не пройдена. Победи и сразу получи ускорение.");
+      openButton.textContent = "🎮 ИГРАТЬ";
+      return;
+    }
+
+    if (state === "started") {
+      setProfileMessage("Игра дня начата. Можно продолжить до победы.");
+      openButton.textContent = "▶ ПРОДОЛЖИТЬ";
+      return;
+    }
+
+    if (state === "completed") {
+      openButton.disabled = true;
+      openButton.textContent = "✓ СЕГОДНЯ ПРОЙДЕНО";
+      badge.textContent = boostSeconds > 0
+        ? `⚡ ${formatDuration(boostSeconds)}`
+        : "Завтра новая игра";
+      setProfileMessage(
+        boostSeconds > 0
+          ? `Победа! Турбокисть активна ещё ${formatDuration(boostSeconds)}.`
+          : "Сегодняшняя награда уже использована. Новая игра появится после 00:00.",
+        "success"
+      );
+      return;
+    }
+
+    openButton.disabled = true;
+    openButton.textContent = "НЕДОСТУПНО";
+  }
+
+  async function loadStatus() {
+    if (!currentUser) return;
+    const userId = currentUser.id;
+    const ownRequest = ++requestNumber;
+    openButton.disabled = true;
+    openButton.textContent = "ЗАГРУЗКА…";
+    setProfileMessage("Проверяем игру дня…");
+
+    const { data, error } = await supabaseClient.rpc("get_unblock_me_status");
+
+    if (!currentUser || currentUser.id !== userId || ownRequest !== requestNumber) return;
+
+    if (error) {
+      console.error("UNBLOCK ME STATUS ERROR:", error);
+      status = null;
+      setProfileMessage("Мини-игра пока недоступна: требуется установить обновление базы.", "error");
+      openButton.disabled = true;
+      openButton.textContent = "НЕДОСТУПНО";
+      return;
+    }
+
+    setClock(data?.server_now);
+    status = data || null;
+    renderProfile();
+  }
+
+  function clonePuzzle(number) {
+    const source = PUZZLES[number] || PUZZLES[1];
+    return source.map(block => ({ ...block }));
+  }
+
+  function updateMoves() {
+    movesText.textContent = `Ходов: ${moveCount}`;
+  }
+
+  function intersects(first, second, x = first.x, y = first.y) {
+    return !(
+      x + first.width <= second.x ||
+      x >= second.x + second.width ||
+      y + first.height <= second.y ||
+      y >= second.y + second.height
+    );
+  }
+
+  function canPlace(block, x, y) {
+    if (
+      x < 0 || y < 0 ||
+      x + block.width > 6 ||
+      y + block.height > 6
+    ) {
+      return false;
+    }
+
+    return !blocks.some(other =>
+      other !== block && intersects(block, other, x, y)
+    );
+  }
+
+  function moveToward(block, desired) {
+    const property = block.axis === "horizontal" ? "x" : "y";
+    const start = block[property];
+    const direction = Math.sign(desired - start);
+    let next = start;
+
+    while (next !== desired) {
+      const candidate = next + direction;
+      const x = property === "x" ? candidate : block.x;
+      const y = property === "y" ? candidate : block.y;
+      if (!canPlace(block, x, y)) break;
+      next = candidate;
+    }
+
+    block[property] = next;
+  }
+
+  function positionBlock(element, block) {
+    element.style.left = `${block.x * 100 / 6}%`;
+    element.style.top = `${block.y * 100 / 6}%`;
+    element.style.width = `${block.width * 100 / 6}%`;
+    element.style.height = `${block.height * 100 / 6}%`;
+  }
+
+  function renderBoard() {
+    board.replaceChildren();
+
+    blocks.forEach(block => {
+      const element = document.createElement("div");
+      element.className =
+        `unblock-block ${block.axis}${block.target ? " target" : ""}`;
+      element.dataset.blockId = block.id;
+      element.setAttribute(
+        "aria-label",
+        block.target ? "Красный блок — выведи его вправо" : "Подвижный блок"
+      );
+      positionBlock(element, block);
+      board.append(element);
+    });
+  }
+
+  function resetBoard() {
+    blocks = clonePuzzle(puzzleNumber);
+    moveCount = 0;
+    submitting = false;
+    drag = null;
+    updateMoves();
+    message.className = "unblock-message";
+    message.textContent =
+      "Перетаскивай горизонтальные блоки влево и вправо, вертикальные — вверх и вниз.";
+    resetButton.disabled = false;
+    renderBoard();
+  }
+
+  function targetIsFree() {
+    const target = blocks.find(block => block.target);
+    return Boolean(target && target.x + target.width === 6);
+  }
+
+  async function finishGame() {
+    if (submitting) return;
+    submitting = true;
+    resetButton.disabled = true;
+    message.className = "unblock-message";
+    message.textContent = "Проверяем победу и выдаём Турбокисть…";
+
+    const { data, error } = await supabaseClient.rpc(
+      "finish_unblock_me",
+      { p_moves: moveCount }
+    );
+
+    if (error || !data?.success) {
+      console.error("UNBLOCK ME FINISH ERROR:", error);
+      submitting = false;
+      resetButton.disabled = false;
+      message.className = "unblock-message error";
+      message.textContent = String(error?.message || "").includes("TOO_FAST")
+        ? "Слишком быстро для проверки. Подожди несколько секунд и передвинь красный блок ещё раз."
+        : "Не удалось сохранить победу. Проверь интернет и попробуй ещё раз.";
+      return;
+    }
+
+    setClock(data.server_now);
+    status = {
+      ...(status || {}),
+      state: "completed",
+      completed_at: data.server_now,
+      move_count: data.move_count || moveCount,
+      boost_until: data.boost_until,
+      server_now: data.server_now
+    };
+    renderProfile();
+    message.className = "unblock-message success";
+    message.textContent =
+      "Победа! ⚡ Турбокисть уже включена на 10 минут. Можно возвращаться на карту.";
+    resetButton.disabled = true;
+  }
+
+  function handlePointerDown(event) {
+    if (submitting || status?.state === "completed") return;
+    const element = event.target.closest(".unblock-block");
+    if (!element) return;
+    const block = blocks.find(item => item.id === element.dataset.blockId);
+    if (!block) return;
+
+    event.preventDefault();
+    element.setPointerCapture?.(event.pointerId);
+    element.classList.add("dragging");
+    drag = {
+      pointerId: event.pointerId,
+      block,
+      element,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: block.x,
+      startY: block.y
+    };
+  }
+
+  function handlePointerMove(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    event.preventDefault();
+
+    const cellSize = board.getBoundingClientRect().width / 6;
+    const delta = drag.block.axis === "horizontal"
+      ? event.clientX - drag.startClientX
+      : event.clientY - drag.startClientY;
+    const origin = drag.block.axis === "horizontal" ? drag.startX : drag.startY;
+    const desired = Math.round(origin + delta / cellSize);
+
+    moveToward(drag.block, desired);
+    positionBlock(drag.element, drag.block);
+  }
+
+  function finishPointer(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const changed = drag.block.x !== drag.startX || drag.block.y !== drag.startY;
+    drag.element.classList.remove("dragging");
+    drag = null;
+
+    if (!changed) return;
+    moveCount += 1;
+    updateMoves();
+
+    if (targetIsFree()) {
+      finishGame();
+    }
+  }
+
+  async function openGame() {
+    if (!currentUser || status?.state === "completed") return;
+    openButton.disabled = true;
+    openButton.textContent = "ОТКРЫВАЕМ…";
+
+    const { data, error } = await supabaseClient.rpc("start_unblock_me");
+
+    if (error || !data?.success) {
+      console.error("UNBLOCK ME START ERROR:", error);
+      setProfileMessage("Не удалось начать игру. Попробуй ещё раз.", "error");
+      openButton.disabled = false;
+      openButton.textContent = "🎮 ИГРАТЬ";
+      return;
+    }
+
+    setClock(data.server_now);
+    status = {
+      ...(status || {}),
+      ...data
+    };
+
+    if (status.state === "completed") {
+      renderProfile();
+      return;
+    }
+
+    puzzleNumber = Math.max(1, Math.min(3, Number(data.puzzle) || 1));
+    resetBoard();
+    renderProfile();
+    dialog.showModal();
+  }
+
+  openButton.addEventListener("click", openGame);
+  closeButton.addEventListener("click", () => dialog.close());
+  resetButton.addEventListener("click", resetBoard);
+  dialog.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+  board.addEventListener("pointerdown", handlePointerDown);
+  board.addEventListener("pointermove", handlePointerMove);
+  board.addEventListener("pointerup", finishPointer);
+  board.addEventListener("pointercancel", finishPointer);
+
+  setInterval(() => {
+    if (status?.state === "completed") renderProfile();
+  }, 1000);
+
+  return {
+    loadStatus,
+    reset() {
+      requestNumber++;
+      status = null;
+      blocks = [];
+      if (dialog.open) dialog.close();
+      openButton.disabled = true;
+      openButton.textContent = "ЗАГРУЗКА…";
+      setProfileMessage("Проверяем игру дня…");
+    }
+  };
 })();
 
 initializeAuth();
