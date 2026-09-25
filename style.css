@@ -4838,3 +4838,297 @@ body.admin-view .mobile-nav {
 .admin-report-actions button:first-child{border-color:#22c55e;background:#14532d}
 .admin-reports-empty{margin:0;padding:18px;border:1px dashed #475569;color:#94a3b8;text-align:center}.admin-reports-empty.error{color:#fca5a5}
 @media(max-width:650px){.pixel-information{max-width:126px}.chat-report-button{width:32px;height:32px;opacity:1}.moderation-report-dialog{padding:15px}.admin-reports-content{padding:12px 0}.admin-reports-toolbar,.admin-report-header,.admin-report-actions{align-items:stretch;flex-direction:column}.admin-reports-toolbar span{margin-left:0}.admin-reports-toolbar select,.admin-reports-toolbar button,.admin-report-actions button{width:100%}}
+
+
+/* -------------------------
+   ЕЖЕДНЕВНАЯ ИГРА UNBLOCK ME
+------------------------- */
+
+.unblock-profile-card {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(14, 116, 144, 0.18), rgba(15, 23, 42, 0.94));
+}
+
+.unblock-profile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.unblock-profile-heading h3,
+.unblock-profile-heading p {
+  margin: 0;
+}
+
+.unblock-profile-heading p {
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+#unblock-me-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.unblock-profile-status {
+  margin: 14px 0 10px;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.unblock-profile-status.success {
+  color: #86efac;
+}
+
+.unblock-profile-status.error {
+  color: #fca5a5;
+}
+
+#unblock-me-open {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #38bdf8;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#unblock-me-open:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.unblock-dialog {
+  width: min(94vw, 500px);
+  max-height: 94vh;
+  padding: 22px;
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  border-radius: 18px;
+  background: #071225;
+  color: #f8fafc;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+}
+
+.unblock-dialog::backdrop {
+  background: rgba(2, 6, 23, 0.82);
+  backdrop-filter: blur(4px);
+}
+
+.unblock-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.14);
+  color: #ffffff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.unblock-dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-right: 34px;
+}
+
+.unblock-dialog-heading h2,
+.unblock-dialog-heading p {
+  margin: 0;
+}
+
+.unblock-dialog-heading p {
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#unblock-me-moves {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  color: #facc15;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.unblock-board-wrap {
+  position: relative;
+  width: min(78vw, 360px);
+  margin: 24px auto 18px;
+}
+
+.unblock-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+  border: 6px solid #334155;
+  border-radius: 12px;
+  background-color: #e2e8f0;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.14) 1px, transparent 1px);
+  background-size: calc(100% / 6) calc(100% / 6);
+  box-shadow: inset 0 0 24px rgba(15, 23, 42, 0.22);
+  touch-action: none;
+  user-select: none;
+}
+
+.unblock-board::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: calc((100% / 6) * 2);
+  right: -8px;
+  width: 12px;
+  height: calc(100% / 6);
+  background: #071225;
+}
+
+.unblock-block {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 3px solid rgba(15, 23, 42, 0.42);
+  border-radius: 9px;
+  background: linear-gradient(145deg, #fbbf24, #d97706);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.34),
+    0 4px 8px rgba(15, 23, 42, 0.28);
+  color: rgba(69, 26, 3, 0.7);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: grab;
+  touch-action: none;
+  transition: left 90ms ease, top 90ms ease;
+}
+
+.unblock-block.vertical::before {
+  content: "↕";
+}
+
+.unblock-block.horizontal::before {
+  content: "↔";
+}
+
+.unblock-block.target {
+  z-index: 3;
+  border-color: #7f1d1d;
+  background: linear-gradient(145deg, #fb7185, #dc2626);
+  color: #ffffff;
+}
+
+.unblock-block.target::before {
+  content: "→";
+}
+
+.unblock-block.dragging {
+  cursor: grabbing;
+  filter: brightness(1.1);
+  transition: none;
+}
+
+.unblock-exit {
+  position: absolute;
+  top: calc((100% / 6) * 2 + 14px);
+  right: -65px;
+  color: #fb7185;
+  font-size: 11px;
+  font-weight: 900;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.unblock-message {
+  min-height: 42px;
+  margin: 0;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.unblock-message.success {
+  color: #86efac;
+  font-weight: 800;
+}
+
+.unblock-message.error {
+  color: #fca5a5;
+}
+
+.unblock-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+#unblock-me-reset {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #64748b;
+  border-radius: 9px;
+  background: #172033;
+  color: #e2e8f0;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 650px) {
+  .unblock-profile-heading {
+    display: block;
+  }
+
+  #unblock-me-badge {
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  .unblock-dialog {
+    width: calc(100vw - 18px);
+    padding: 18px 14px;
+  }
+
+  .unblock-dialog-heading {
+    display: block;
+  }
+
+  #unblock-me-moves {
+    display: block;
+    margin-top: 10px;
+  }
+
+  .unblock-board-wrap {
+    width: min(78vw, 330px);
+    margin-top: 18px;
+  }
+
+  .unblock-exit {
+    right: -54px;
+    font-size: 10px;
+  }
+}
