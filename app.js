@@ -12048,6 +12048,17 @@ const unblockMeGame = (() => {
     }
 
     if (state === "completed") {
+      if (currentUserIsAdmin) {
+        openButton.disabled = false;
+        openButton.textContent = "🧪 ПРОВЕРИТЬ СЛЕДУЮЩИЙ УРОВЕНЬ";
+        badge.textContent = `Админ · ${status.puzzle}/50`;
+        setProfileMessage(
+          "Режим проверки: можно проходить уровни без ограничений. Следующим откроется новый уровень.",
+          "success"
+        );
+        return;
+      }
+
       openButton.disabled = true;
       openButton.textContent = "✓ СЕГОДНЯ ПРОЙДЕНО";
       badge.textContent = boostSeconds > 0
@@ -12282,15 +12293,35 @@ const unblockMeGame = (() => {
   }
 
   async function openGame() {
-    if (!currentUser || status?.state === "completed") return;
+    if (!currentUser) return;
+
+    const adminReplay =
+      status?.state === "completed" &&
+      currentUserIsAdmin;
+
+    if (status?.state === "completed" && !adminReplay) return;
+
     openButton.disabled = true;
     openButton.textContent = "ОТКРЫВАЕМ…";
 
-    const { data, error } = await supabaseClient.rpc("start_unblock_me");
+    const nextPuzzle =
+      (Math.max(1, Number(status?.puzzle) || 1) % 50) + 1;
+
+    const { data, error } = adminReplay
+      ? await supabaseClient.rpc(
+          "admin_restart_unblock_me",
+          { p_puzzle: nextPuzzle }
+        )
+      : await supabaseClient.rpc("start_unblock_me");
 
     if (error || !data?.success) {
       console.error("UNBLOCK ME START ERROR:", error);
-      setProfileMessage("Не удалось начать игру. Попробуй ещё раз.", "error");
+      setProfileMessage(
+        adminReplay
+          ? "Не удалось включить режим проверки. Выполни дополнительный SQL для администратора."
+          : "Не удалось начать игру. Попробуй ещё раз.",
+        "error"
+      );
       openButton.disabled = false;
       openButton.textContent = "🎮 ИГРАТЬ";
       return;
