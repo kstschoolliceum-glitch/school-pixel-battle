@@ -37,7 +37,7 @@ returns integer
 language sql
 immutable
 set search_path = public
-as $
+as $unblock_level$
     select (
         (
             hashtextextended(
@@ -46,7 +46,7 @@ as $
             ) & 9223372036854775807
         ) % 50 + 1
     )::integer;
-$;
+$unblock_level$;
 
 create or replace function public.get_unblock_me_status()
 returns jsonb
