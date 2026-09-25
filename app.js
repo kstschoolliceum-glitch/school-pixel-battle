@@ -1150,18 +1150,29 @@ stencilOpacityInput.addEventListener("input", () => {
   scheduleStencilSave();
 });
 
+[
+  stencilXInput,
+  stencilYInput,
+  stencilSizeInput,
+  stencilOpacityInput
+].forEach(control => {
+  control.addEventListener("change", () => {
+    saveStencilNow();
+  });
+});
+
 stencilNudgeButtons.forEach(button => {
   button.addEventListener("click", () => {
     stencilX += Number(button.dataset.stencilDx);
     stencilY += Number(button.dataset.stencilDy);
     updateStencilTransform();
-    scheduleStencilSave();
+    saveStencilNow();
   });
 });
 
 stencilLockButton.addEventListener("click", () => {
   setStencilLocked(!stencilLocked);
-  scheduleStencilSave();
+  saveStencilNow();
 });
 
 stencilDeleteButton.addEventListener("click", removeStencil);
