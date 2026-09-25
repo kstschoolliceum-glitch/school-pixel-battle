@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=35">
+  <link rel="stylesheet" href="style.css?v=36">
 </head>
 
 <body>
@@ -408,6 +408,9 @@
   <span id="coordinates" class="pixel-information">
     <span id="coordinate-position">Выберите пиксель</span>
     <span id="pixel-owner"></span>
+    <button id="pixel-report-button" class="pixel-report-button hidden" type="button">
+      🚩 Пожаловаться
+    </button>
   </span>
 
 </div>
@@ -922,6 +925,10 @@
       <button id="admin-referrals-tab" class="admin-tab" type="button"
         data-admin-target="admin-referrals-content" aria-controls="admin-referrals-content" aria-selected="false">
         🤝 Рефералы
+      </button>
+      <button id="admin-reports-tab" class="admin-tab" type="button"
+        data-admin-target="admin-reports-content" aria-controls="admin-reports-content" aria-selected="false">
+        🚨 Жалобы
       </button>
     </div>
 
@@ -1553,6 +1560,28 @@
   </div>
 
 </div>
+  <div id="admin-reports-content" data-admin-panel class="admin-reports-content hidden">
+    <div class="admin-section-title">
+      <h2>🚨 Жалобы участников</h2>
+      <p>Сообщения и пиксели, отправленные на проверку.</p>
+    </div>
+    <div class="admin-reports-toolbar">
+      <label>Статус
+        <select id="admin-reports-status">
+          <option value="open">Ожидают решения</option>
+          <option value="resolved">Рассмотренные</option>
+          <option value="dismissed">Отклонённые</option>
+          <option value="all">Все</option>
+        </select>
+      </label>
+      <button id="admin-reports-refresh" type="button">↻ ОБНОВИТЬ</button>
+      <span>Найдено: <strong id="admin-reports-count">0</strong></span>
+    </div>
+    <div id="admin-reports-list" class="admin-reports-list">
+      <p class="admin-reports-empty">Откройте вкладку для загрузки жалоб.</p>
+    </div>
+  </div>
+
   <div
     id="admin-referrals-content" data-admin-panel
     class="admin-referrals-content hidden"
@@ -1874,6 +1903,30 @@
 
 
 
+<dialog id="moderation-report-dialog" class="moderation-report-dialog" aria-labelledby="moderation-report-title">
+  <button id="moderation-report-close" class="moderation-report-close" type="button" aria-label="Закрыть окно жалобы">×</button>
+  <h2 id="moderation-report-title">🚩 Сообщить о нарушении</h2>
+  <p id="moderation-report-target" class="moderation-report-target"></p>
+  <form id="moderation-report-form">
+    <label>Причина
+      <select id="moderation-report-reason" required>
+        <option value="">Выберите причину</option>
+        <option value="bullying">Оскорбление или травля</option>
+        <option value="inappropriate">Непристойный контент</option>
+        <option value="personal_data">Чужие личные данные</option>
+        <option value="spam">Спам или намеренная порча</option>
+        <option value="cheating">Нечестная игра</option>
+        <option value="other">Другое нарушение</option>
+      </select>
+    </label>
+    <label>Комментарий для администратора
+      <textarea id="moderation-report-details" maxlength="500" rows="4" placeholder="Кратко опишите, что произошло"></textarea>
+    </label>
+    <div id="moderation-report-message" class="moderation-report-message" aria-live="polite"></div>
+    <button id="moderation-report-submit" type="submit">ОТПРАВИТЬ ЖАЛОБУ</button>
+  </form>
+</dialog>
+
 <dialog
   id="user-agreement-dialog"
   class="user-agreement-dialog"
@@ -2073,7 +2126,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=56"></script>
+  <script src="app.js?v=57"></script>
 
 </body>
 </html>
