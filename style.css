@@ -4799,3 +4799,42 @@ body.admin-view .mobile-nav {
     padding: 0 14px 10px;
   }
 }
+
+
+/* ---------- MODERATION REPORTS ---------- */
+.pixel-report-button,.chat-report-button{border:1px solid #7f1d1d;border-radius:0;background:#32131a;color:#fecaca;cursor:pointer}
+.pixel-report-button{min-height:24px;margin-top:4px;padding:3px 7px;font-size:9px;font-weight:900}
+.chat-message{position:relative}
+.chat-report-button{width:28px;height:28px;margin-left:5px;padding:0;flex:0 0 auto;opacity:.7}
+.chat-message:hover .chat-report-button,.chat-report-button:focus-visible{opacity:1}
+.moderation-report-dialog{width:min(520px,calc(100vw - 20px));padding:20px;border:2px solid #ef4444;border-radius:2px;background:#10192b;color:#f4f7ff;box-shadow:7px 7px 0 #050912}
+.moderation-report-dialog::backdrop{background:rgba(3,9,22,.88);backdrop-filter:blur(2px)}
+.moderation-report-dialog h2{margin:0 42px 7px 0;color:#fecaca;font:900 20px/1.2 "Courier New",monospace}
+.moderation-report-close{float:right;width:36px;height:36px;border:1px solid #64748b;background:#18243a;color:white;font-size:24px;cursor:pointer}
+.moderation-report-target{margin:0 0 15px;padding:9px;border-left:3px solid #ef4444;background:#24131b;color:#dbe3ef;font-size:12px;word-break:break-word}
+#moderation-report-form,#moderation-report-form label{display:flex;flex-direction:column}
+#moderation-report-form{gap:13px}
+#moderation-report-form label{gap:6px;color:#cbd5e1;font-size:12px;font-weight:800}
+#moderation-report-form select,#moderation-report-form textarea{width:100%;padding:10px;border:1px solid #465574;background:#090f1b;color:white;font:inherit}
+#moderation-report-submit{min-height:44px;border:1px solid #f87171;background:#991b1b;color:white;font-weight:900;cursor:pointer}
+.moderation-report-message{min-height:18px;color:#86efac;font-size:12px}.moderation-report-message.error{color:#fca5a5}
+.admin-reports-content{padding:24px}
+.admin-reports-toolbar{margin-bottom:16px;padding:12px;display:flex;align-items:flex-end;gap:12px;border:1px solid #334155;background:#0d1626}
+.admin-reports-toolbar label{display:flex;flex-direction:column;gap:5px;color:#94a3b8;font-size:11px;font-weight:800}
+.admin-reports-toolbar select,.admin-reports-toolbar button{min-height:40px;padding:8px 11px;border:1px solid #465574;background:#111827;color:white}
+.admin-reports-toolbar span{margin-left:auto;color:#cbd5e1}
+.admin-reports-list{display:grid;gap:12px}
+.admin-report-card{padding:15px;border:1px solid #394862;border-left:5px solid #ef4444;background:#101827}
+.admin-report-header,.admin-report-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-report-header>div{display:flex;flex-direction:column;gap:3px}.admin-report-header strong{color:white}
+.admin-report-header div span,.admin-report-meta{color:#94a3b8;font-size:11px}
+.admin-report-status{padding:5px 8px;border:1px solid currentColor;font-size:10px;font-weight:900;text-transform:uppercase}
+.admin-report-status.open{color:#fca5a5}.admin-report-status.resolved{color:#86efac}.admin-report-status.dismissed{color:#94a3b8}
+.admin-report-meta,.admin-report-reason,.admin-report-evidence,.admin-report-note{margin-top:10px;padding:9px;border:1px solid #2f3b52;background:#0a111e}
+.admin-report-reason strong{color:#fde68a}.admin-report-reason p,.admin-report-note{color:#cbd5e1;font-size:12px}
+.admin-report-evidence{color:#dbeafe;font:12px/1.45 "Courier New",monospace;white-space:pre-wrap;word-break:break-word}
+.admin-report-actions{margin-top:12px;justify-content:flex-end}
+.admin-report-actions button{min-height:38px;padding:8px 11px;border:1px solid #64748b;background:#172033;color:white;font-weight:900;cursor:pointer}
+.admin-report-actions button:first-child{border-color:#22c55e;background:#14532d}
+.admin-reports-empty{margin:0;padding:18px;border:1px dashed #475569;color:#94a3b8;text-align:center}.admin-reports-empty.error{color:#fca5a5}
+@media(max-width:650px){.pixel-information{max-width:126px}.chat-report-button{width:32px;height:32px;opacity:1}.moderation-report-dialog{padding:15px}.admin-reports-content{padding:12px 0}.admin-reports-toolbar,.admin-report-header,.admin-report-actions{align-items:stretch;flex-direction:column}.admin-reports-toolbar span{margin-left:0}.admin-reports-toolbar select,.admin-reports-toolbar button,.admin-report-actions button{width:100%}}
