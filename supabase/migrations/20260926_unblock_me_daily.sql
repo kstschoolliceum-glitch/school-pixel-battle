@@ -22,6 +22,15 @@ create table if not exists public.unblock_me_daily (
     )
 );
 
+-- Обновляем ограничение у проектов, где таблица уже была создана
+-- ранней версией миграции с тремя уровнями.
+alter table public.unblock_me_daily
+    drop constraint if exists unblock_me_daily_puzzle_check;
+
+alter table public.unblock_me_daily
+    add constraint unblock_me_daily_puzzle_check
+    check (puzzle between 1 and 50);
+
 create index if not exists unblock_me_daily_boost_idx
     on public.unblock_me_daily(user_id, boost_until)
     where boost_until is not null;
