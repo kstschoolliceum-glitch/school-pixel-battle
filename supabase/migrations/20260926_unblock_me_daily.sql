@@ -190,7 +190,7 @@ begin
         raise exception 'INVALID_MOVE_COUNT';
     end if;
 
-    if v_now < v_game.started_at + interval '5 seconds' then
+    if v_now < v_game.started_at + interval '2 seconds' then
         raise exception 'GAME_COMPLETED_TOO_FAST';
     end if;
 
