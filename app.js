@@ -458,6 +458,17 @@ ctx.strokeRect(
   updateSelectionIndicator();
 }
 
+let mapDrawFrame = 0;
+
+function scheduleMapDraw() {
+  if (mapDrawFrame) return;
+
+  mapDrawFrame = requestAnimationFrame(() => {
+    mapDrawFrame = 0;
+    drawMap();
+  });
+}
+
 /* -------------------------
    РАЗМЕР КАРТЫ НА ЭКРАНЕ
 ------------------------- */
@@ -4231,8 +4242,8 @@ function subscribeToPixels() {
               ) ?? null
             : null;
 
-        drawMap();
-        
+        scheduleMapDraw();
+
         scheduleRankingRefresh();
       }
     )
@@ -12494,7 +12505,7 @@ const unblockMeGame = (() => {
   board.addEventListener("pointercancel", finishPointer);
 
   setInterval(() => {
-    if (status?.state === "completed") renderProfile();
+    if (!document.hidden && status?.state === "completed") renderProfile();
   }, 1000);
 
   return {
@@ -13198,7 +13209,7 @@ const sokobanGame = (() => {
     const rows = Array.isArray(status.layout) ? status.layout : [];
     const boxes = Array.isArray(status.boxes) ? status.boxes : [];
     const boxKeys = new Set(boxes.map(item => `${item.r}:${item.c}`));
-    board.replaceChildren();
+    const fragment = document.createDocumentFragment();
     board.style.gridTemplateColumns = `repeat(${rows[0]?.length || 1}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${rows.length || 1}, 1fr)`;
 
@@ -13215,10 +13226,11 @@ const sokobanGame = (() => {
         if (Number(status.player_row) === r && Number(status.player_col) === col) {
           cell.classList.add("player");
         }
-        board.appendChild(cell);
+        fragment.appendChild(cell);
       });
     });
 
+    board.replaceChildren(fragment);
     movesText.textContent = `Ходов: ${Number(status.move_count) || 0}`;
   }
 
@@ -13397,7 +13409,7 @@ const sokobanGame = (() => {
   resetButton.addEventListener("click", resetLevel);
 
   setInterval(() => {
-    if (status) renderProfile();
+    if (!document.hidden && status) renderProfile();
   }, 1000);
 
   function reset() {
