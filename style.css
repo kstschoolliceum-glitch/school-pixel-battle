@@ -5488,3 +5488,30 @@ body.admin-view .mobile-nav {
 .sokoban-controls button:active {
   background: #754a2b;
 }
+
+
+.sokoban-reset-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  margin-top: 12px;
+  padding: 6px 10px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  opacity: 0.82;
+}
+
+.sokoban-reset-top:hover,
+.sokoban-reset-top:focus-visible {
+  opacity: 1;
+}
+
+@media (max-width: 650px) {
+  .sokoban-reset-top {
+    min-height: 32px;
+    margin-top: 10px;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+}
