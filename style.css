@@ -322,7 +322,7 @@ body {
 
 .ranking-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 
   margin-bottom: 14px;
@@ -5645,5 +5645,26 @@ body.admin-view .mobile-nav {
     min-height: 46px;
     padding: 6px 4px;
     font-size: 10px;
+  }
+}
+
+
+.ranking .student-ranking-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking .student-ranking-class {
+  margin-left: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .ranking-tab {
+    padding-inline: 3px;
+    font-size: 9px;
   }
 }
