@@ -5207,3 +5207,169 @@ body.admin-view .mobile-nav {
     white-space: nowrap;
   }
 }
+
+
+/* ---------- SOKOBAN ---------- */
+
+.sokoban-profile-card {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: linear-gradient(145deg, rgba(22, 101, 52, 0.2), rgba(15, 23, 42, 0.94));
+}
+
+#sokoban-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.14);
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+#sokoban-open {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #4ade80;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#sokoban-open:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sokoban-dialog {
+  border-color: rgba(74, 222, 128, 0.65);
+}
+
+#sokoban-moves {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  color: #facc15;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.sokoban-board {
+  display: grid;
+  width: min(82vw, 390px);
+  aspect-ratio: 1;
+  margin: 22px auto 16px;
+  overflow: hidden;
+  border: 5px solid #334155;
+  border-radius: 12px;
+  background: #172033;
+  box-shadow: inset 0 0 24px rgba(2, 6, 23, 0.45);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.sokoban-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: #cbd5e1;
+}
+
+.sokoban-cell.wall {
+  border-color: #334155;
+  background: linear-gradient(145deg, #64748b, #334155);
+  box-shadow: inset 0 0 0 2px rgba(148, 163, 184, 0.16);
+}
+
+.sokoban-cell.target::after {
+  content: "";
+  width: 48%;
+  height: 48%;
+  border: 3px solid #16a34a;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.24);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.55);
+}
+
+.sokoban-cell.box::before {
+  content: "📦";
+  position: absolute;
+  z-index: 2;
+  font-size: clamp(18px, 6vw, 34px);
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px rgba(15, 23, 42, 0.3));
+}
+
+.sokoban-cell.box-on-target::before {
+  filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.9));
+}
+
+.sokoban-cell.player::before {
+  content: "🧑";
+  position: absolute;
+  z-index: 3;
+  font-size: clamp(18px, 6vw, 34px);
+  line-height: 1;
+}
+
+.sokoban-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 54px);
+  gap: 7px;
+  justify-content: center;
+  margin: 12px auto 2px;
+}
+
+.sokoban-controls button {
+  width: 54px;
+  height: 48px;
+  border: 1px solid #64748b;
+  border-radius: 10px;
+  background: #172033;
+  color: #f8fafc;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.sokoban-controls button:active {
+  transform: scale(0.96);
+  background: #263449;
+}
+
+#sokoban-reset {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #64748b;
+  border-radius: 9px;
+  background: #172033;
+  color: #e2e8f0;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#minigames-panel .sokoban-profile-card {
+  margin-top: 14px;
+}
+
+@media (max-width: 650px) {
+  #sokoban-badge {
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  #sokoban-moves {
+    display: block;
+    margin-top: 10px;
+  }
+
+  .sokoban-board {
+    width: min(88vw, 360px);
+    margin-top: 16px;
+  }
+}
