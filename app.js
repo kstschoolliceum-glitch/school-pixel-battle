@@ -2587,41 +2587,154 @@ const quarterRankingTab =
     "quarter-ranking-tab"
   );
 
+const studentsRankingTab =
+  document.getElementById(
+    "students-ranking-tab"
+  );
+
+function setActiveRankingTab(activeTab) {
+  [
+    weeklyRankingTab,
+    quarterRankingTab,
+    studentsRankingTab
+  ].forEach(tab => {
+    tab.classList.toggle(
+      "active",
+      tab === activeTab
+    );
+  });
+}
+
+async function loadActiveRanking() {
+  if (
+    studentsRankingTab.classList.contains(
+      "active"
+    )
+  ) {
+    await loadStudentRanking();
+    return;
+  }
+
+  if (
+    quarterRankingTab.classList.contains(
+      "active"
+    )
+  ) {
+    await loadQuarterRanking();
+    return;
+  }
+
+  await loadClassRanking();
+}
 
 weeklyRankingTab.addEventListener(
   "click",
   async () => {
-
-    weeklyRankingTab.classList.add(
-      "active"
-    );
-
-    quarterRankingTab.classList.remove(
-      "active"
-    );
-
+    setActiveRankingTab(weeklyRankingTab);
     await loadClassRanking();
-
   }
 );
-
 
 quarterRankingTab.addEventListener(
   "click",
   async () => {
-
-    quarterRankingTab.classList.add(
-      "active"
-    );
-
-    weeklyRankingTab.classList.remove(
-      "active"
-    );
-
+    setActiveRankingTab(quarterRankingTab);
     await loadQuarterRanking();
-
   }
 );
+
+studentsRankingTab.addEventListener(
+  "click",
+  async () => {
+    setActiveRankingTab(studentsRankingTab);
+    await loadStudentRanking();
+  }
+);
+async function loadStudentRanking() {
+  const rankingElement =
+    document.getElementById(
+      "class-ranking"
+    );
+
+  if (!rankingElement) return;
+
+  rankingElement.innerHTML =
+    "<div><span>Загрузка рейтинга...</span></div>";
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_student_all_time_ranking",
+      { p_limit: 100 }
+    );
+
+  if (error) {
+    console.error(
+      "STUDENT RANKING ERROR:",
+      error
+    );
+
+    rankingElement.innerHTML =
+      "<div><span>Не удалось загрузить рейтинг учеников</span></div>";
+    return;
+  }
+
+  rankingElement.replaceChildren();
+
+  if (!data || data.length === 0) {
+    rankingElement.innerHTML =
+      "<div><span>Рейтинг учеников пока пуст</span></div>";
+    return;
+  }
+
+  data.forEach((student, index) => {
+    const row =
+      document.createElement("div");
+
+    let place = `${index + 1}.`;
+
+    if (index === 0) place = "🥇";
+    if (index === 1) place = "🥈";
+    if (index === 2) place = "🥉";
+
+    const name =
+      document.createElement("span");
+
+    name.className =
+      "student-ranking-name";
+
+    name.append(
+      document.createTextNode(
+        `${place} ${student.nickname || "Игрок"}`
+      )
+    );
+
+    const className =
+      document.createElement("small");
+
+    className.className =
+      "student-ranking-class";
+
+    className.textContent =
+      `[${student.class_name || "—"}]`;
+
+    name.appendChild(className);
+
+    const score =
+      document.createElement("strong");
+
+    score.textContent =
+      Number(
+        student.pixels_count ?? 0
+      ).toLocaleString("ru-RU");
+
+    row.append(name, score);
+    rankingElement.appendChild(row);
+  });
+}
+
 async function loadMyProfile() {
   const profileUserId = currentUser?.id;
 
@@ -5413,7 +5526,7 @@ function setMobileView(view) {
       "selected"
     );
 
-    loadClassRanking();
+    loadActiveRanking();
 
     return;
   }
