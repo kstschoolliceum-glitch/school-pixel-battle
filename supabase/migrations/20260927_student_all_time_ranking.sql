@@ -1,5 +1,8 @@
 begin;
 
+create index if not exists pixel_history_user_id_idx
+    on public.pixel_history (user_id);
+
 create or replace function public.get_student_all_time_ranking(
     p_limit integer default 100
 )
@@ -22,13 +25,20 @@ begin
     select
         p.nickname,
         coalesce(c.name, '—') as class_name,
-        coalesce(p.total_pixels, 0)::bigint as pixels_count
+        coalesce(stats.pixels_count, 0)::bigint as pixels_count
     from public.profiles p
     left join public.classes c on c.id = p.class_id
+    left join (
+        select
+            history.user_id,
+            count(*)::bigint as pixels_count
+        from public.pixel_history history
+        group by history.user_id
+    ) stats on stats.user_id = p.id
     where p.banned = false
       and coalesce(p.role, 'student') <> 'admin'
     order by
-        coalesce(p.total_pixels, 0) desc,
+        coalesce(stats.pixels_count, 0) desc,
         p.nickname asc
     limit least(greatest(coalesce(p_limit, 100), 1), 100);
 end;
