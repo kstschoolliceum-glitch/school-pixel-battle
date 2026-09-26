@@ -12038,9 +12038,7 @@ const unblockMeGame = (() => {
     const retrySeconds = remainingSeconds(status?.next_available_at);
 
     openButton.disabled = false;
-    badge.textContent = status?.puzzle
-      ? `Уровень ${status.puzzle}/50`
-      : "Каждые 6 часов";
+    badge.textContent = "Каждые 6 часов";
 
     if (state === "available") {
       setProfileMessage("Сегодня игра ещё не пройдена. Победи и сразу получи ускорение.");
@@ -12057,10 +12055,10 @@ const unblockMeGame = (() => {
     if (state === "completed") {
       if (currentUserIsAdmin) {
         openButton.disabled = false;
-        openButton.textContent = "🧪 ПРОВЕРИТЬ СЛЕДУЮЩИЙ УРОВЕНЬ";
-        badge.textContent = `Админ · ${status.puzzle}/50`;
+        openButton.textContent = "🧪 ПРОВЕРИТЬ СЛЕДУЮЩУЮ ИГРУ";
+        badge.textContent = "Режим проверки";
         setProfileMessage(
-          "Режим проверки: можно проходить уровни без ограничений. Следующим откроется новый уровень.",
+          "Режим проверки: можно проходить игру без ограничений. Следующей откроется новая головоломка.",
           "success"
         );
         return;
