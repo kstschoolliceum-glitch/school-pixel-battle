@@ -13153,6 +13153,40 @@ const sokobanGame = (() => {
     button.addEventListener("click", () => move(button.dataset.sokobanDirection));
   });
 
+  let swipeStart = null;
+
+  board.addEventListener("pointerdown", event => {
+    swipeStart = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY
+    };
+    board.setPointerCapture?.(event.pointerId);
+  });
+
+  board.addEventListener("pointerup", event => {
+    if (!swipeStart || swipeStart.id !== event.pointerId || busy) {
+      swipeStart = null;
+      return;
+    }
+
+    const dx = event.clientX - swipeStart.x;
+    const dy = event.clientY - swipeStart.y;
+    swipeStart = null;
+
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      move(dx > 0 ? "right" : "left");
+    } else {
+      move(dy > 0 ? "down" : "up");
+    }
+  });
+
+  board.addEventListener("pointercancel", () => {
+    swipeStart = null;
+  });
+
   document.addEventListener("keydown", event => {
     if (!dialog.open || busy) return;
     const directions = {
