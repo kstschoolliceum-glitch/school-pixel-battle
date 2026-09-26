@@ -662,7 +662,36 @@
         Выполняй задания, проходи мини-игры и получай игровые бонусы.
       </p>
 
-      <section class="tasks-section daily-tasks-section" aria-labelledby="daily-tasks-section-title">
+      <div class="tasks-panel-tabs" role="tablist" aria-label="Разделы заданий">
+        <button
+          id="tasks-daily-tab"
+          class="tasks-panel-tab active"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="tasks-daily-panel"
+        >
+          📅 Ежедневные задания
+        </button>
+        <button
+          id="tasks-games-tab"
+          class="tasks-panel-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tasks-games-panel"
+          tabindex="-1"
+        >
+          🎮 Мини-игры
+        </button>
+      </div>
+
+      <section
+        id="tasks-daily-panel"
+        class="tasks-section daily-tasks-section"
+        role="tabpanel"
+        aria-labelledby="tasks-daily-tab"
+      >
         <div class="tasks-section-heading">
           <div>
             <h3 id="daily-tasks-section-title">📅 Ежедневные задания</h3>
@@ -680,7 +709,13 @@
         </div>
       </section>
 
-      <section class="tasks-section minigames-section" aria-labelledby="minigames-section-title">
+      <section
+        id="tasks-games-panel"
+        class="tasks-section minigames-section"
+        role="tabpanel"
+        aria-labelledby="tasks-games-tab"
+        hidden
+      >
         <div class="tasks-section-heading">
           <div>
             <h3 id="minigames-section-title">🎮 Мини-игры</h3>
