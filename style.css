@@ -5515,3 +5515,79 @@ body.admin-view .mobile-nav {
     font-size: 10px;
   }
 }
+
+
+/* ---------- TASKS SECTIONS ---------- */
+
+.tasks-section {
+  padding: 14px;
+  border: 1px solid #3f506c;
+  background: #0d1627;
+  box-shadow: 3px 3px 0 #070b15;
+}
+
+.tasks-section + .tasks-section {
+  margin-top: 16px;
+}
+
+.tasks-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tasks-section-heading h3,
+.tasks-section-heading p {
+  margin: 0;
+}
+
+.tasks-section-heading h3 {
+  color: #f8fafc;
+  font: 900 16px/1.25 "Courier New", monospace;
+}
+
+.tasks-section-heading p {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.daily-tasks-section {
+  border-color: #725aa8;
+  background: linear-gradient(145deg, rgba(88, 57, 145, 0.24), #0d1627);
+}
+
+.daily-tasks-launch {
+  flex: 0 0 auto;
+  min-width: 92px;
+  min-height: 42px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.minigames-section {
+  border-color: #365b70;
+}
+
+.minigames-section > .unblock-profile-card:first-of-type {
+  margin-top: 14px;
+}
+
+@media (max-width: 650px) {
+  .tasks-section {
+    padding: 12px;
+  }
+
+  .tasks-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .daily-tasks-launch {
+    width: 100%;
+    min-height: 44px;
+  }
+}
