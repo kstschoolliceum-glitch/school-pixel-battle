@@ -12877,7 +12877,7 @@ const promoCodes = (() => {
       oscillator.frequency.exponentialRampToValueAtTime(230, startedAt + 0.055);
 
       gain.gain.setValueAtTime(0.0001, startedAt);
-      gain.gain.exponentialRampToValueAtTime(0.045, startedAt + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.07, startedAt + 0.006);
       gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + 0.07);
 
       oscillator.connect(gain);
