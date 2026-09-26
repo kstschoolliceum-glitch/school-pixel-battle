@@ -690,6 +690,26 @@
         ЗАГРУЗКА…
       </button>
     </section>
+
+    <section
+      id="sokoban-profile"
+      class="unblock-profile-card sokoban-profile-card"
+      aria-labelledby="sokoban-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="sokoban-profile-title">📦 Ящики</h3>
+          <p>Расставь ящики по отмеченным местам. За каждые 3 уровня — Турбокисть на 10 минут.</p>
+        </div>
+        <span id="sokoban-badge">0 из 3</span>
+      </div>
+      <div id="sokoban-profile-status" class="unblock-profile-status" aria-live="polite">
+        Загружаем прогресс…
+      </div>
+      <button id="sokoban-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
+    </section>
     </div>
 
     <div class="panel" id="profile-panel">
@@ -2134,6 +2154,46 @@
 
   <div class="unblock-actions">
     <button id="unblock-me-reset" type="button">↻ НАЧАТЬ ЗАНОВО</button>
+  </div>
+</dialog>
+
+<dialog
+  id="sokoban-dialog"
+  class="unblock-dialog sokoban-dialog"
+  aria-labelledby="sokoban-title"
+>
+  <button
+    id="sokoban-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="sokoban-title">📦 Ящики</h2>
+      <p>Передвигай рабочего и поставь все ящики на светящиеся клетки.</p>
+    </div>
+    <span id="sokoban-moves">Ходов: 0</span>
+  </div>
+
+  <div id="sokoban-board" class="sokoban-board" aria-label="Игровое поле Ящики"></div>
+
+  <p id="sokoban-message" class="unblock-message" aria-live="polite">
+    Нажимай стрелки на экране или клавиатуре. Ящик можно только толкать.
+  </p>
+
+  <div class="sokoban-controls" aria-label="Управление персонажем">
+    <span></span>
+    <button type="button" data-sokoban-direction="up" aria-label="Вверх">↑</button>
+    <span></span>
+    <button type="button" data-sokoban-direction="left" aria-label="Влево">←</button>
+    <button type="button" data-sokoban-direction="down" aria-label="Вниз">↓</button>
+    <button type="button" data-sokoban-direction="right" aria-label="Вправо">→</button>
+  </div>
+
+  <div class="unblock-actions">
+    <button id="sokoban-reset" type="button">↻ НАЧАТЬ УРОВЕНЬ ЗАНОВО</button>
   </div>
 </dialog>
 
