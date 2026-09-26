@@ -13228,15 +13228,7 @@ const sokobanGame = (() => {
   resetButton.addEventListener("click", resetLevel);
 
   setInterval(() => {
-    if (
-      status &&
-      (
-        remainingSeconds(status.boost_until) > 0 ||
-        remainingSeconds(status.next_available_at) > 0
-      )
-    ) {
-      renderProfile();
-    }
+    if (status) renderProfile();
   }, 1000);
 
   function reset() {
