@@ -384,16 +384,6 @@
     </span>
 
     <button
-      id="daily-tasks-button"
-      class="daily-tasks-button"
-      type="button"
-      aria-haspopup="dialog"
-      aria-controls="daily-tasks-dialog"
-    >
-      📋 Задания
-    </button>
-
-    <button
       id="stencil-open-button"
       class="stencil-open-button"
       type="button"
@@ -667,10 +657,37 @@
 
       </div>
     <div class="panel" id="minigames-panel">
-      <h2>🎮 Задания</h2>
+      <h2>📋 Задания</h2>
       <p class="minigames-intro">
-        Проходи ежедневные головоломки и получай игровые бонусы.
+        Выполняй задания, проходи мини-игры и получай игровые бонусы.
       </p>
+
+      <section class="tasks-section daily-tasks-section" aria-labelledby="daily-tasks-section-title">
+        <div class="tasks-section-heading">
+          <div>
+            <h3 id="daily-tasks-section-title">📅 Ежедневные задания</h3>
+            <p>Выполни три задания дня и забери награду.</p>
+          </div>
+          <button
+            id="daily-tasks-button"
+            class="daily-tasks-button daily-tasks-launch"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="daily-tasks-dialog"
+          >
+            📋 0/3
+          </button>
+        </div>
+      </section>
+
+      <section class="tasks-section minigames-section" aria-labelledby="minigames-section-title">
+        <div class="tasks-section-heading">
+          <div>
+            <h3 id="minigames-section-title">🎮 Мини-игры</h3>
+            <p>Решай головоломки и зарабатывай дополнительные бонусы.</p>
+          </div>
+        </div>
+
     <section
       id="unblock-me-profile"
       class="unblock-profile-card"
@@ -710,6 +727,7 @@
         ЗАГРУЗКА…
       </button>
     </section>
+      </section>
     </div>
 
     <div class="panel" id="profile-panel">
