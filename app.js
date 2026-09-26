@@ -12018,7 +12018,12 @@ const unblockMeGame = (() => {
 
   function formatDuration(seconds) {
     const safe = Math.max(0, Math.ceil(Number(seconds) || 0));
-    return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+    const hours = Math.floor(safe / 3600);
+    const minutes = Math.floor((safe % 3600) / 60);
+    const tail = `${String(minutes).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+    return hours > 0
+      ? `${String(hours).padStart(2, "0")}:${tail}`
+      : tail;
   }
 
   function setProfileMessage(text, type = "") {
@@ -12030,11 +12035,12 @@ const unblockMeGame = (() => {
   function renderProfile() {
     const state = status?.state || "loading";
     const boostSeconds = remainingSeconds(status?.boost_until);
+    const retrySeconds = remainingSeconds(status?.next_available_at);
 
     openButton.disabled = false;
     badge.textContent = status?.puzzle
       ? `Уровень ${status.puzzle}/50`
-      : "1 раз в сутки";
+      : "Каждые 6 часов";
 
     if (state === "available") {
       setProfileMessage("Сегодня игра ещё не пройдена. Победи и сразу получи ускорение.");
@@ -12060,15 +12066,23 @@ const unblockMeGame = (() => {
         return;
       }
 
+      if (retrySeconds <= 0) {
+        openButton.disabled = false;
+        openButton.textContent = "🎮 ИГРАТЬ СНОВА";
+        badge.textContent = "Новая игра доступна";
+        setProfileMessage("Прошло 6 часов — можно снова получить Турбокисть.");
+        return;
+      }
+
       openButton.disabled = true;
-      openButton.textContent = "✓ СЕГОДНЯ ПРОЙДЕНО";
+      openButton.textContent = `СНОВА ЧЕРЕЗ ${formatDuration(retrySeconds)}`;
       badge.textContent = boostSeconds > 0
         ? `⚡ ${formatDuration(boostSeconds)}`
-        : "Завтра новая игра";
+        : `Через ${formatDuration(retrySeconds)}`;
       setProfileMessage(
         boostSeconds > 0
-          ? `Победа! Турбокисть активна ещё ${formatDuration(boostSeconds)}.`
-          : "Сегодняшняя награда уже использована. Новая игра появится после 00:00.",
+          ? `Победа! Турбокисть активна ещё ${formatDuration(boostSeconds)}. Следующая игра через ${formatDuration(retrySeconds)}.`
+          : `Следующая игра станет доступна через ${formatDuration(retrySeconds)}.`,
         "success"
       );
       return;
@@ -12233,6 +12247,7 @@ const unblockMeGame = (() => {
       completed_at: data.server_now,
       move_count: data.move_count || moveCount,
       boost_until: data.boost_until,
+      next_available_at: data.next_available_at,
       server_now: data.server_now
     };
     renderProfile();
@@ -12300,7 +12315,11 @@ const unblockMeGame = (() => {
       status?.state === "completed" &&
       currentUserIsAdmin;
 
-    if (status?.state === "completed" && !adminReplay) return;
+    if (
+      status?.state === "completed" &&
+      !adminReplay &&
+      remainingSeconds(status?.next_available_at) > 0
+    ) return;
 
     openButton.disabled = true;
     openButton.textContent = "ОТКРЫВАЕМ…";
