@@ -12045,7 +12045,7 @@ const unblockMeGame = (() => {
     const retrySeconds = remainingSeconds(status?.next_available_at);
 
     openButton.disabled = false;
-    badge.textContent = "Каждые 6 часов";
+    badge.textContent = "Каждые 3 часа";
 
     if (state === "available") {
       setProfileMessage("Сегодня игра ещё не пройдена. Победи и сразу получи ускорение.");
@@ -12075,7 +12075,7 @@ const unblockMeGame = (() => {
         openButton.disabled = false;
         openButton.textContent = "🎮 ИГРАТЬ СНОВА";
         badge.textContent = "Новая игра доступна";
-        setProfileMessage("Прошло 6 часов — можно снова получить Турбокисть.");
+        setProfileMessage("Прошло 3 часа — можно снова получить Турбокисть.");
         return;
       }
 
@@ -13000,13 +13000,27 @@ const sokobanGame = (() => {
   function renderProfile() {
     const completed = Number(status?.completed_in_reward) || 0;
     const boostSeconds = remainingSeconds(status?.boost_until);
+    const retrySeconds = remainingSeconds(status?.next_available_at);
+
+    statusText.classList.remove("error");
+
+    if (retrySeconds > 0) {
+      badge.textContent = `Через ${formatDuration(retrySeconds)}`;
+      openButton.disabled = true;
+      openButton.textContent = `СНОВА ЧЕРЕЗ ${formatDuration(retrySeconds)}`;
+      statusText.classList.add("success");
+      statusText.textContent = boostSeconds > 0
+        ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}. Новая игра через ${formatDuration(retrySeconds)}.`
+        : `Следующая игра станет доступна через ${formatDuration(retrySeconds)}.`;
+      return;
+    }
+
     badge.textContent = `${completed} из 3`;
     openButton.disabled = !status || busy;
     openButton.textContent = status ? "📦 ИГРАТЬ" : "ЗАГРУЗКА…";
-    statusText.classList.remove("error");
     statusText.classList.toggle("success", boostSeconds > 0);
     statusText.textContent = boostSeconds > 0
-      ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}. Продолжай проходить уровни.`
+      ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}.`
       : `До следующей Турбокисти: ${3 - completed} ур.`;
   }
 
@@ -13072,7 +13086,7 @@ const sokobanGame = (() => {
   }
 
   async function move(direction) {
-    if (!status || busy) return;
+    if (!status || busy || remainingSeconds(status.next_available_at) > 0) return;
     busy = true;
     directionButtons.forEach(button => button.disabled = true);
 
@@ -13090,6 +13104,13 @@ const sokobanGame = (() => {
     }
 
     if (!data?.success) {
+      if (data?.error === "GAME_COOLDOWN") {
+        setClock(data.server_now);
+        status.next_available_at = data.next_available_at;
+        renderProfile();
+        setMessage("Игра пока закрыта — дождись окончания таймера.", "error");
+        return;
+      }
       if (data?.error !== "BLOCKED") setMessage("Этот ход сейчас недоступен.", "error");
       return;
     }
@@ -13098,7 +13119,10 @@ const sokobanGame = (() => {
 
     if (data.level_completed) {
       if (data.reward_granted) {
-        setMessage("Три уровня пройдены! Турбокисть включена на 10 минут.", "success");
+        setMessage("Три уровня пройдены! Турбокисть включена на 10 минут. Новая игра — через 4 часа.", "success");
+        setTimeout(() => {
+          if (dialog.open) dialog.close();
+        }, 1600);
         if (typeof refreshCooldownFromServer === "function") refreshCooldownFromServer();
       } else {
         setMessage(
@@ -13133,7 +13157,7 @@ const sokobanGame = (() => {
 
   openButton.addEventListener("click", async () => {
     if (!status) await loadStatus();
-    if (!status) return;
+    if (!status || remainingSeconds(status.next_available_at) > 0) return;
     renderBoard();
     setMessage("Нажимай стрелки. Ящик можно только толкать.");
     if (!dialog.open) dialog.showModal();
@@ -13204,7 +13228,15 @@ const sokobanGame = (() => {
   resetButton.addEventListener("click", resetLevel);
 
   setInterval(() => {
-    if (status && remainingSeconds(status.boost_until) > 0) renderProfile();
+    if (
+      status &&
+      (
+        remainingSeconds(status.boost_until) > 0 ||
+        remainingSeconds(status.next_available_at) > 0
+      )
+    ) {
+      renderProfile();
+    }
   }, 1000);
 
   function reset() {
