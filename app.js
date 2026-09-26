@@ -3024,6 +3024,7 @@ async function checkForSeasonChange() {
   await loadMyProfile();
   await dailyTasks.load();
   await unblockMeGame.loadStatus();
+  await sokobanGame.loadStatus();
 
 
   drawMap();
@@ -3346,6 +3347,7 @@ async function checkAdminStatus() {
 
     scheduleAdminOnlineUsersRefresh();
     unblockMeGame.loadStatus();
+    sokobanGame.loadStatus();
 
   } else {
 
@@ -3736,6 +3738,7 @@ async function initializeAuth() {
     await loadMyProfile();
     await dailyTasks.load();
     await unblockMeGame.loadStatus();
+  await sokobanGame.loadStatus();
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -3826,6 +3829,7 @@ loginForm.addEventListener(
     await loadMyProfile();
     await dailyTasks.load();
     await unblockMeGame.loadStatus();
+  await sokobanGame.loadStatus();
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -4829,6 +4833,7 @@ easyStartButton.addEventListener(
     await loadMyProfile();
     await dailyTasks.load();
     await unblockMeGame.loadStatus();
+  await sokobanGame.loadStatus();
 
     await checkAdminStatus();
 
@@ -4897,6 +4902,7 @@ logoutButton.addEventListener(
     currentUser = null;
     dailyTasks.reset();
     unblockMeGame.reset();
+    sokobanGame.reset();
     referralProfileStatus.textContent = "Загрузка…";
     referralInvitedList.innerHTML = "";
 
@@ -5438,6 +5444,7 @@ function setMobileView(view) {
     );
 
     unblockMeGame.loadStatus();
+    sokobanGame.loadStatus();
 
     return;
   }
@@ -12934,6 +12941,252 @@ const promoCodes = (() => {
   }
 
   updateButton();
+})();
+
+
+/* -------------------------
+   ИГРА «ЯЩИКИ» (SOKOBAN)
+------------------------- */
+
+const sokobanGame = (() => {
+  const profileCard = document.getElementById("sokoban-profile");
+  const statusText = document.getElementById("sokoban-profile-status");
+  const openButton = document.getElementById("sokoban-open");
+  const badge = document.getElementById("sokoban-badge");
+  const dialog = document.getElementById("sokoban-dialog");
+  const closeButton = document.getElementById("sokoban-close");
+  const board = document.getElementById("sokoban-board");
+  const movesText = document.getElementById("sokoban-moves");
+  const message = document.getElementById("sokoban-message");
+  const resetButton = document.getElementById("sokoban-reset");
+  const directionButtons = Array.from(document.querySelectorAll("[data-sokoban-direction]"));
+
+  if (
+    !profileCard || !statusText || !openButton || !badge || !dialog ||
+    !closeButton || !board || !movesText || !message || !resetButton
+  ) {
+    return { loadStatus() {}, reset() {} };
+  }
+
+  let status = null;
+  let busy = false;
+  let serverOffsetMs = 0;
+  let requestNumber = 0;
+
+  function setClock(serverNow) {
+    const parsed = Date.parse(serverNow || "");
+    serverOffsetMs = Number.isFinite(parsed) ? parsed - Date.now() : 0;
+  }
+
+  function remainingSeconds(value) {
+    const target = Date.parse(value || "");
+    if (!Number.isFinite(target)) return 0;
+    return Math.max(0, Math.ceil((target - (Date.now() + serverOffsetMs)) / 1000));
+  }
+
+  function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Number(totalSeconds) || 0);
+    const minutes = Math.floor(seconds / 60);
+    const tail = String(seconds % 60).padStart(2, "0");
+    return minutes > 0 ? `${minutes}:${tail}` : `0:${tail}`;
+  }
+
+  function setMessage(text, type = "") {
+    message.textContent = text;
+    message.classList.toggle("success", type === "success");
+    message.classList.toggle("error", type === "error");
+  }
+
+  function renderProfile() {
+    const completed = Number(status?.completed_in_reward) || 0;
+    const boostSeconds = remainingSeconds(status?.boost_until);
+    badge.textContent = `${completed} из 3`;
+    openButton.disabled = !status || busy;
+    openButton.textContent = status ? "📦 ИГРАТЬ" : "ЗАГРУЗКА…";
+    statusText.classList.remove("error");
+    statusText.classList.toggle("success", boostSeconds > 0);
+    statusText.textContent = boostSeconds > 0
+      ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}. Продолжай проходить уровни.`
+      : `До следующей Турбокисти: ${3 - completed} ур.`;
+  }
+
+  function renderBoard() {
+    if (!status?.layout) return;
+    const rows = Array.isArray(status.layout) ? status.layout : [];
+    const boxes = Array.isArray(status.boxes) ? status.boxes : [];
+    const boxKeys = new Set(boxes.map(item => `${item.r}:${item.c}`));
+    board.replaceChildren();
+    board.style.gridTemplateColumns = `repeat(${rows[0]?.length || 1}, 1fr)`;
+    board.style.gridTemplateRows = `repeat(${rows.length || 1}, 1fr)`;
+
+    rows.forEach((row, r) => {
+      Array.from(row).forEach((symbol, col) => {
+        const cell = document.createElement("div");
+        const target = symbol === "." || symbol === "+" || symbol === "*";
+        const hasBox = boxKeys.has(`${r}:${col}`);
+        cell.className = "sokoban-cell";
+        if (symbol === "#") cell.classList.add("wall");
+        if (target) cell.classList.add("target");
+        if (hasBox) cell.classList.add("box");
+        if (hasBox && target) cell.classList.add("box-on-target");
+        if (Number(status.player_row) === r && Number(status.player_col) === col) {
+          cell.classList.add("player");
+        }
+        board.appendChild(cell);
+      });
+    });
+
+    movesText.textContent = `Ходов: ${Number(status.move_count) || 0}`;
+  }
+
+  function applyStatus(data) {
+    if (!data) return;
+    setClock(data.server_now);
+    status = data;
+    renderProfile();
+    renderBoard();
+  }
+
+  async function loadStatus() {
+    if (!currentUser) return;
+    const userId = currentUser.id;
+    const ownRequest = ++requestNumber;
+    openButton.disabled = true;
+    openButton.textContent = "ЗАГРУЗКА…";
+    statusText.textContent = "Загружаем прогресс…";
+
+    const { data, error } = await supabaseClient.rpc("get_sokoban_status");
+    if (!currentUser || currentUser.id !== userId || ownRequest !== requestNumber) return;
+
+    if (error) {
+      console.error("SOKOBAN STATUS ERROR:", error);
+      status = null;
+      statusText.textContent = "Игра станет доступна после установки обновления базы.";
+      statusText.classList.add("error");
+      openButton.disabled = true;
+      openButton.textContent = "НЕДОСТУПНО";
+      return;
+    }
+
+    applyStatus(data);
+  }
+
+  async function move(direction) {
+    if (!status || busy) return;
+    busy = true;
+    directionButtons.forEach(button => button.disabled = true);
+
+    const { data, error } = await supabaseClient.rpc("move_sokoban", {
+      p_direction: direction
+    });
+
+    busy = false;
+    directionButtons.forEach(button => button.disabled = false);
+
+    if (error) {
+      console.error("SOKOBAN MOVE ERROR:", error);
+      setMessage("Не удалось сохранить ход. Попробуй ещё раз.", "error");
+      return;
+    }
+
+    if (!data?.success) {
+      if (data?.error !== "BLOCKED") setMessage("Этот ход сейчас недоступен.", "error");
+      return;
+    }
+
+    applyStatus(data);
+
+    if (data.level_completed) {
+      if (data.reward_granted) {
+        setMessage("Три уровня пройдены! Турбокисть включена на 10 минут.", "success");
+        if (typeof refreshCooldownFromServer === "function") refreshCooldownFromServer();
+      } else {
+        setMessage(
+          `Уровень пройден! До Турбокисти осталось ${3 - Number(data.completed_in_reward)}.`,
+          "success"
+        );
+      }
+    } else {
+      setMessage("Поставь все ящики на зелёные клетки.");
+    }
+  }
+
+  async function resetLevel() {
+    if (!currentUser || busy) return;
+    busy = true;
+    resetButton.disabled = true;
+    setMessage("Возвращаем ящики на исходные места…");
+
+    const { data, error } = await supabaseClient.rpc("reset_sokoban_level");
+    busy = false;
+    resetButton.disabled = false;
+
+    if (error || !data?.success) {
+      console.error("SOKOBAN RESET ERROR:", error);
+      setMessage("Не удалось начать уровень заново.", "error");
+      return;
+    }
+
+    applyStatus(data);
+    setMessage("Уровень начат заново.");
+  }
+
+  openButton.addEventListener("click", async () => {
+    if (!status) await loadStatus();
+    if (!status) return;
+    renderBoard();
+    setMessage("Нажимай стрелки. Ящик можно только толкать.");
+    if (!dialog.open) dialog.showModal();
+  });
+
+  closeButton.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+    const bounds = dialog.getBoundingClientRect();
+    if (
+      event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom
+    ) dialog.close();
+  });
+
+  directionButtons.forEach(button => {
+    button.addEventListener("click", () => move(button.dataset.sokobanDirection));
+  });
+
+  document.addEventListener("keydown", event => {
+    if (!dialog.open || busy) return;
+    const directions = {
+      ArrowUp: "up",
+      ArrowDown: "down",
+      ArrowLeft: "left",
+      ArrowRight: "right"
+    };
+    const direction = directions[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    move(direction);
+  });
+
+  resetButton.addEventListener("click", resetLevel);
+
+  setInterval(() => {
+    if (status && remainingSeconds(status.boost_until) > 0) renderProfile();
+  }, 1000);
+
+  function reset() {
+    status = null;
+    busy = false;
+    requestNumber += 1;
+    badge.textContent = "0 из 3";
+    statusText.textContent = "Загружаем прогресс…";
+    statusText.classList.remove("success", "error");
+    openButton.disabled = true;
+    openButton.textContent = "ЗАГРУЗКА…";
+    board.replaceChildren();
+    if (dialog.open) dialog.close();
+  }
+
+  return { loadStatus, reset };
 })();
 
 
