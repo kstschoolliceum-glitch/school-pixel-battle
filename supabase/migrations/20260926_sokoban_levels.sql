@@ -20,7 +20,7 @@ returns jsonb
 language sql
 immutable
 set search_path = public
-as $$
+as $sokoban_levels$
 select case p_level
     when 1 then '["#######","#     #","#  .  #","#  $  #","#  @  #","#     #","#######"]'::jsonb
     when 2 then '["#######","# .   #","# $   #","#  @  #","#     #","#     #","#######"]'::jsonb
@@ -36,7 +36,7 @@ select case p_level
     when 12 then '["#######","# . . #","#     #","# $#$ #","#  @  #","#     #","#######"]'::jsonb
     else public.sokoban_level_rows(1)
 end;
-$$;
+$sokoban_levels$;
 
 create or replace function public.sokoban_initial_state(p_level integer)
 returns jsonb
