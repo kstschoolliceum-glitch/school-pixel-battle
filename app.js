@@ -13248,6 +13248,56 @@ const sokobanGame = (() => {
 })();
 
 
+/* ---------- TASKS SECTION TABS ---------- */
+
+(() => {
+  const dailyTab = document.getElementById("tasks-daily-tab");
+  const gamesTab = document.getElementById("tasks-games-tab");
+  const dailyPanel = document.getElementById("tasks-daily-panel");
+  const gamesPanel = document.getElementById("tasks-games-panel");
+
+  if (!dailyTab || !gamesTab || !dailyPanel || !gamesPanel) return;
+
+  const tabs = [dailyTab, gamesTab];
+
+  function activate(tab) {
+    const showDaily = tab === dailyTab;
+
+    dailyPanel.hidden = !showDaily;
+    gamesPanel.hidden = showDaily;
+
+    dailyTab.classList.toggle("active", showDaily);
+    gamesTab.classList.toggle("active", !showDaily);
+
+    dailyTab.setAttribute("aria-selected", showDaily ? "true" : "false");
+    gamesTab.setAttribute("aria-selected", showDaily ? "false" : "true");
+
+    dailyTab.tabIndex = showDaily ? 0 : -1;
+    gamesTab.tabIndex = showDaily ? -1 : 0;
+
+    if (!showDaily) {
+      unblockMeGame.loadStatus();
+      sokobanGame.loadStatus();
+    }
+  }
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => activate(tab));
+
+    tab.addEventListener("keydown", event => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const next = tabs[(index + direction + tabs.length) % tabs.length];
+      activate(next);
+      next.focus();
+    });
+  });
+
+  activate(dailyTab);
+})();
+
+
 /* ---------- UNIFIED ADMIN NAVIGATION ---------- */
 
 (() => {
