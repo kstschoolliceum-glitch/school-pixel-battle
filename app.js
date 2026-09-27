@@ -13544,7 +13544,7 @@ const sokobanGame = (() => {
 /* ---------- USER AGREEMENT ---------- */
 
 (() => {
-  const AGREEMENT_VERSION = "1.0";
+  const AGREEMENT_VERSION = "1.1";
   const dialog =
     document.getElementById("user-agreement-dialog");
   const checkbox =
