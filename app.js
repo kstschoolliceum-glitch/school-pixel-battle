@@ -1356,8 +1356,13 @@ async function placePixel() {
       error
     );
 
+    const errorCode =
+      String(error.code || error.message || "SERVER_ERROR")
+        .replace(/[^A-Za-z0-9_-]/g, "")
+        .slice(0, 40) || "SERVER_ERROR";
+
     alert(
-      "Не удалось поставить пиксель."
+      `Не удалось поставить пиксель. Код: ${errorCode}`
     );
 
     updatePlaceButton();
@@ -1488,6 +1493,14 @@ function startCooldown(seconds = COOLDOWN_SECONDS) {
 
     }, 1000);
 
+}
+
+
+function resetPixelCooldownAfterReward() {
+  cooldownRemaining = 0;
+  clearInterval(cooldownTimer);
+  cooldownTimer = null;
+  updateCooldown();
 }
 
 
@@ -12380,6 +12393,7 @@ const unblockMeGame = (() => {
       server_now: data.server_now
     };
     renderProfile();
+    resetPixelCooldownAfterReward();
     message.className = "unblock-message success";
     message.textContent =
       "Победа! ⚡ Турбокисть уже включена на 10 минут. Можно возвращаться на карту.";
@@ -13304,7 +13318,7 @@ const sokobanGame = (() => {
         setTimeout(() => {
           if (dialog.open) dialog.close();
         }, 1600);
-        if (typeof refreshCooldownFromServer === "function") refreshCooldownFromServer();
+        resetPixelCooldownAfterReward();
       } else {
         setMessage(
           `Уровень пройден! До Турбокисти осталось ${3 - Number(data.completed_in_reward)}.`,
