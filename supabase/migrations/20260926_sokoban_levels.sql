@@ -405,7 +405,8 @@ $old$;
 
         union all
 
-        select s.boost_until as active_until
+        select s.boost_until as active_until,
+               1 as active_cooldown
         from public.sokoban_progress s
         where s.user_id = v_user_id
           and s.boost_until > v_now
