@@ -1361,8 +1361,14 @@ async function placePixel() {
         .replace(/[^A-Za-z0-9_-]/g, "")
         .slice(0, 40) || "SERVER_ERROR";
 
+    const errorMessage =
+      String(error.message || "")
+        .replace(/[\r\n]+/g, " ")
+        .slice(0, 180);
+
     alert(
-      `Не удалось поставить пиксель. Код: ${errorCode}`
+      `Не удалось поставить пиксель. Код: ${errorCode}` +
+      (errorMessage ? `\n${errorMessage}` : "")
     );
 
     updatePlaceButton();
