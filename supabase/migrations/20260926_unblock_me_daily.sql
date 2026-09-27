@@ -274,7 +274,8 @@ $old$;
 
         union all
 
-        select g.boost_until as active_until
+        select g.boost_until as active_until,
+               1 as active_cooldown
         from public.unblock_me_daily g
         where g.user_id = v_user_id
           and g.boost_until > v_now
