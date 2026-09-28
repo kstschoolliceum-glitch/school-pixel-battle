@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=50">
+  <link rel="stylesheet" href="style.css?v=51">
 </head>
 
 <body>
@@ -353,8 +353,20 @@
     </button>
 
     <div class="season">
-      <span id="season-info">
-        Загрузка сезона...
+      <span class="season-topline">
+        <span id="season-info">
+          Загрузка сезона...
+        </span>
+
+        <span
+          id="online-users"
+          class="online-users"
+          title="Участников онлайн"
+        >
+          <span class="online-dot"></span>
+          <span id="online-users-count">1</span>
+          <span class="online-label">онлайн</span>
+        </span>
       </span>
 
       <span id="season-countdown"></span>
@@ -372,15 +384,6 @@
 
     <span class="map-title-text">
       🎨 Карта
-    </span>
-
-    <span
-      id="online-users"
-      class="online-users"
-    >
-      <span class="online-dot"></span>
-      <span id="online-users-count">1</span>
-      онлайн
     </span>
 
     <button
