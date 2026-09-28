@@ -5959,3 +5959,41 @@ body.admin-view .mobile-nav {
     max-width: 100%;
   }
 }
+
+
+/* ---------- PIXEL INFORMATION POLISH ---------- */
+
+.pixel-owner-row {
+  min-width: 0;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.pixel-owner-row #pixel-owner {
+  min-width: 0;
+}
+
+.pixel-owner-row .pixel-report-button {
+  flex: 0 0 auto;
+  min-height: 20px;
+  margin: 0;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+@media (max-width: 650px) {
+  .pixel-owner-row {
+    gap: 4px;
+  }
+
+  .pixel-owner-row .pixel-report-button {
+    min-height: 19px;
+    padding: 2px 4px;
+    font-size: 8px;
+  }
+}
