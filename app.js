@@ -99,6 +99,16 @@ const loginError =
   document.getElementById("login-error");
 
 let currentUser = null;
+
+function enablePlayerCardLink(element, userId) {
+  if (!element || !userId) return;
+  element.classList.add("player-card-link");
+  element.dataset.playerCardUserId = String(userId);
+  element.setAttribute("role", "button");
+  element.setAttribute("tabindex", "0");
+  element.setAttribute("title", "Открыть визитку игрока");
+}
+
 let onlinePresenceChannel = null;
 let currentOnlineUserIds = [];
 let adminOnlineRefreshTimer = null;
@@ -2751,6 +2761,7 @@ async function loadStudentRanking() {
       `[${student.class_name || "—"}]`;
 
     name.appendChild(className);
+    enablePlayerCardLink(name, student.user_id);
 
     const score =
       document.createElement("strong");
@@ -3267,6 +3278,7 @@ async function loadMyReferralProfile() {
       "referral-invited-item";
     row.textContent =
       `${item.nickname} (${item.username}) · ${item.class_name ?? "без класса"}`;
+    enablePlayerCardLink(row, item.user_id);
     referralInvitedList.appendChild(row);
   }
 
@@ -3359,6 +3371,7 @@ function renderAdminOnlineUsers(rows, total) {
 
     const nickname = document.createElement("strong");
     nickname.textContent = item.nickname || "Без ника";
+    enablePlayerCardLink(nickname, item.user_id);
 
     const className = document.createElement("span");
     className.textContent = item.class_name || "Администратор";
@@ -5240,6 +5253,7 @@ function createChatMessageElement(item) {
   } else {
     author.textContent =
       `${item.nickname} [${item.class_name ?? "—"}]:`;
+    enablePlayerCardLink(author, item.user_id);
   }
 
   const classColors = [
@@ -7609,6 +7623,7 @@ function renderAdminStudents() {
 
     nickname.textContent =
       student.nickname ?? "—";
+    enablePlayerCardLink(nickname, student.user_id);
 
 
     const className =
@@ -8045,18 +8060,27 @@ async function loadAdminReferrals() {
       document.createElement("tr");
 
     const values = [
-      `${item.inviter_nickname} (${item.inviter_username})`,
-      item.inviter_class_name ?? "—",
-      `${item.invited_nickname} (${item.invited_username})`,
-      item.invited_class_name ?? "—",
-      new Date(item.created_at)
-        .toLocaleString("ru-RU")
+      {
+        value: `${item.inviter_nickname} (${item.inviter_username})`,
+        userId: item.inviter_id
+      },
+      { value: item.inviter_class_name ?? "—" },
+      {
+        value: `${item.invited_nickname} (${item.invited_username})`,
+        userId: item.invited_id
+      },
+      { value: item.invited_class_name ?? "—" },
+      {
+        value: new Date(item.created_at)
+          .toLocaleString("ru-RU")
+      }
     ];
 
-    for (const value of values) {
+    for (const itemValue of values) {
       const cell =
         document.createElement("td");
-      cell.textContent = value;
+      cell.textContent = itemValue.value;
+      enablePlayerCardLink(cell, itemValue.userId);
       row.appendChild(cell);
     }
 
@@ -12235,6 +12259,7 @@ const playerCard = (() => {
   const photoInput = document.getElementById("player-card-photo-input");
   const photoImage = document.getElementById("player-card-photo-image");
   const photoFallback = document.getElementById("player-card-photo-fallback");
+  const photoEdit = photoButton?.querySelector(".player-card-photo-edit");
   const photoDelete = document.getElementById("player-card-photo-delete");
   const photoStatus = document.getElementById("player-card-photo-status");
   const nickname = document.getElementById("player-card-nickname");
@@ -12248,6 +12273,7 @@ const playerCard = (() => {
 
   let requestNumber = 0;
   let photoObjectUrl = "";
+  let viewedUserId = "";
 
   function closePhotoObjectUrl() {
     if (photoObjectUrl) URL.revokeObjectURL(photoObjectUrl);
@@ -12263,41 +12289,48 @@ const playerCard = (() => {
     return parts.slice(0, 2).map(part => part[0]).join("").toUpperCase() || "?";
   }
 
-  function setPhoto(url = "") {
-    closePhotoObjectUrl();
+  function setPhoto(url = "", isOwn = false) {
+    if (!url) closePhotoObjectUrl();
+    photoButton.disabled = !isOwn;
+    photoButton.classList.toggle("is-readonly", !isOwn);
+    photoEdit?.classList.toggle("hidden", !isOwn);
+
     if (url) {
       photoImage.src = url;
       photoImage.classList.remove("hidden");
       photoFallback.classList.add("hidden");
-      photoDelete.classList.remove("hidden");
-      photoStatus.textContent = "Фото хранится в твоём профиле.";
+      photoDelete.classList.toggle("hidden", !isOwn);
+      photoStatus.textContent = isOwn
+        ? "Фото хранится в твоём профиле."
+        : "Фото профиля игрока.";
     } else {
       photoImage.removeAttribute("src");
       photoImage.classList.add("hidden");
       photoFallback.classList.remove("hidden");
       photoDelete.classList.add("hidden");
-      photoStatus.textContent = "Нажми на фото, чтобы добавить своё.";
+      photoStatus.textContent = isOwn
+        ? "Нажми на фото, чтобы добавить своё."
+        : "Игрок пока не добавил фото.";
     }
   }
 
-  async function loadPhoto(ownerId) {
+  async function loadPhoto(ownerId, isOwn) {
     const { data, error } = await supabaseClient.storage
       .from("profile-photos")
       .download(`${ownerId}/avatar.webp`);
 
-    if (!currentUser || currentUser.id !== ownerId) return;
+    if (!currentUser || viewedUserId !== ownerId) return;
     if (error || !data) {
-      setPhoto();
+      setPhoto("", isOwn);
       return;
     }
 
     closePhotoObjectUrl();
     photoObjectUrl = URL.createObjectURL(data);
-    photoImage.src = photoObjectUrl;
-    photoImage.classList.remove("hidden");
-    photoFallback.classList.add("hidden");
-    photoDelete.classList.remove("hidden");
-    photoStatus.textContent = "Фото хранится в твоём профиле.";
+    setPhoto(photoObjectUrl, isOwn);
+    photoObjectUrl = photoImage.src.startsWith("blob:")
+      ? photoImage.src
+      : "";
   }
 
   function renderAchievements(items = []) {
@@ -12337,38 +12370,53 @@ const playerCard = (() => {
     });
   }
 
-  async function load() {
-    if (!currentUser) return;
-    const ownerId = currentUser.id;
+  async function load(ownerId = currentUser?.id) {
+    if (!currentUser || !ownerId) return;
+    viewedUserId = String(ownerId);
+    const isOwn = viewedUserId === currentUser.id;
     const ownRequest = ++requestNumber;
     message.textContent = "";
+    username.classList.toggle("hidden", !isOwn);
+    photoDelete.classList.add("hidden");
     achievementList.innerHTML = '<p class="player-card-loading">Загрузка достижений…</p>';
 
     const [{ data, error }] = await Promise.all([
-      supabaseClient.rpc("get_my_player_card"),
-      loadPhoto(ownerId)
+      supabaseClient.rpc("get_player_card", {
+        p_user_id: viewedUserId
+      }),
+      loadPhoto(viewedUserId, isOwn)
     ]);
 
     if (
       ownRequest !== requestNumber ||
       !currentUser ||
-      currentUser.id !== ownerId
+      viewedUserId !== String(ownerId)
     ) return;
 
     if (error || !data?.success) {
       console.error("PLAYER CARD ERROR:", error || data);
-      message.textContent = "Визитка ещё не подключена. Администратору нужно выполнить новую SQL-миграцию.";
+      message.textContent = "Не удалось загрузить визитку. Администратору нужно выполнить новую SQL-миграцию.";
       achievementList.innerHTML = '<p class="player-card-loading">Достижения пока недоступны.</p>';
       return;
     }
 
     nickname.textContent = data.nickname || "Игрок";
     className.textContent = `Класс ${data.class_name || "—"}`;
-    username.textContent = `@${data.username || "—"}`;
+    username.textContent = data.username ? `@${data.username}` : "";
     photoFallback.textContent = initials(data.nickname);
     weekly.textContent = Number(data.weekly_pixels || 0).toLocaleString("ru-RU");
     total.textContent = Number(data.total_pixels || 0).toLocaleString("ru-RU");
     renderAchievements(Array.isArray(data.achievements) ? data.achievements : []);
+  }
+
+  function openCard(ownerId) {
+    if (!currentUser || !ownerId) return;
+    if (typeof dialog.showModal === "function") {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      dialog.setAttribute("open", "");
+    }
+    load(ownerId);
   }
 
   const PLAYER_PHOTO_MAX_BYTES = 256 * 1024;
@@ -12459,7 +12507,8 @@ const playerCard = (() => {
         });
       if (error) throw error;
       if (!currentUser || currentUser.id !== ownerId) return;
-      await loadPhoto(ownerId);
+      viewedUserId = ownerId;
+      await loadPhoto(ownerId, true);
       message.textContent = "Фото профиля сохранено.";
     } catch (error) {
       console.error("PLAYER PHOTO UPLOAD ERROR:", error);
@@ -12471,19 +12520,22 @@ const playerCard = (() => {
   }
 
   openButton?.addEventListener("click", () => {
-    if (!currentUser) return;
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
-    load();
+    openCard(currentUser?.id);
   });
   closeButton?.addEventListener("click", () => dialog.close());
   dialog?.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
-  photoButton?.addEventListener("click", () => photoInput.click());
+  photoButton?.addEventListener("click", () => {
+    if (viewedUserId === currentUser?.id) photoInput.click();
+  });
   photoInput?.addEventListener("change", () => uploadPhoto(photoInput.files?.[0]));
   photoDelete?.addEventListener("click", async () => {
-    if (!currentUser || !confirm("Убрать фото из визитки?")) return;
+    if (
+      !currentUser ||
+      viewedUserId !== currentUser.id ||
+      !confirm("Убрать фото из визитки?")
+    ) return;
     photoDelete.disabled = true;
     const { error } = await supabaseClient.storage
       .from("profile-photos")
@@ -12493,11 +12545,27 @@ const playerCard = (() => {
       message.textContent = "Не удалось убрать фото.";
       return;
     }
-    setPhoto();
+    setPhoto("", true);
     message.textContent = "Фото удалено.";
   });
 
-  return { load };
+  document.addEventListener("click", event => {
+    const target = event.target.closest("[data-player-card-user-id]");
+    if (!target || target.closest("#player-card-dialog")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openCard(target.dataset.playerCardUserId);
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const target = event.target.closest("[data-player-card-user-id]");
+    if (!target) return;
+    event.preventDefault();
+    openCard(target.dataset.playerCardUserId);
+  });
+
+  return { load, open: openCard };
 })();
 
 

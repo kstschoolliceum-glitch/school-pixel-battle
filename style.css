@@ -6506,3 +6506,38 @@ body.admin-view .mobile-nav {
     align-items: flex-start;
   }
 }
+
+
+/* ---------- CLICKABLE PLAYER NICKNAMES ---------- */
+
+.player-card-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: #fbbf2466;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.player-card-link:hover {
+  color: #fde68a !important;
+  text-decoration-color: #fbbf24;
+}
+
+.player-card-link:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.player-card-photo:disabled {
+  opacity: 1;
+}
+
+.player-card-photo.is-readonly {
+  cursor: default;
+}
+
+@media (max-width: 650px) {
+  .player-card-link {
+    text-underline-offset: 2px;
+  }
+}
