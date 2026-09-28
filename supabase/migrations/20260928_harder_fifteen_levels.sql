@@ -1,6 +1,7 @@
--- Делает даже первые уровни «Пятнашек» заметно сложнее.
--- Раскладки по-прежнему гарантированно решаемы: они строятся
--- только допустимыми ходами от собранного поля.
+-- Делает первые уровни «Пятнашек» заметно сложнее и задаёт
+-- постепенный рост сложности до 50-го уровня.
+-- Все раскладки гарантированно решаемы: они создаются только
+-- допустимыми ходами от собранного поля.
 
 begin;
 
@@ -13,6 +14,7 @@ as $$
 declare
     v_level integer := greatest(1, least(50, coalesce(p_level, 1)));
     v_board integer[];
+    v_best_board integer[];
     v_blank integer;
     v_previous_blank integer;
     v_target integer;
@@ -21,17 +23,19 @@ declare
     v_offset integer;
     v_step integer;
     v_attempt integer;
-    v_steps integer := 140 + v_level * 6;
+    v_steps integer := 160 + v_level * 3;
     v_seed bigint;
     v_temp integer;
     v_tile integer;
     v_distance integer;
-    v_min_distance integer := least(34, 22 + v_level / 3);
+    v_target_distance integer := 28 + ((v_level - 1) * 16 / 49);
+    v_best_difference integer := 2147483647;
+    v_difference integer;
     v_index integer;
 begin
-    -- Несколько детерминированных попыток нужны, чтобы исключить
-    -- случайно простую раскладку после длинного перемешивания.
-    for v_attempt in 1..12 loop
+    -- Генерируем несколько решаемых вариантов и выбираем тот,
+    -- чья нижняя оценка сложности ближе всего к цели уровня.
+    for v_attempt in 1..40 loop
         v_board := array[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
         v_blank := 16;
         v_previous_blank := 0;
@@ -72,8 +76,8 @@ begin
             v_blank := v_target;
         end loop;
 
-        -- Манхэттенское расстояние — нижняя оценка сложности.
-        -- Простые раскладки отбрасываются и генерируются повторно.
+        -- Манхэттенское расстояние даёт стабильную нижнюю оценку:
+        -- примерно 28 для первых уровней и до 44 для последних.
         v_distance := 0;
 
         for v_index in 1..16 loop
@@ -86,17 +90,24 @@ begin
             end if;
         end loop;
 
-        if v_distance >= v_min_distance then
-            return to_jsonb(v_board);
+        v_difference := abs(v_distance - v_target_distance);
+
+        if v_difference < v_best_difference then
+            v_best_difference := v_difference;
+            v_best_board := v_board;
+        end if;
+
+        if v_difference = 0 then
+            exit;
         end if;
     end loop;
 
-    return to_jsonb(v_board);
+    return to_jsonb(v_best_board);
 end;
 $$;
 
--- Обновляем незавершённые поля сразу, сохраняя номер уровня,
--- cooldown и уже активированную Турбокисть.
+-- Текущая незавершённая партия начинается заново на том же уровне.
+-- Номер уровня, cooldown и активная Турбокисть сохраняются.
 update public.fifteen_progress
 set board = public.fifteen_initial_board(current_level),
     move_count = 0,
