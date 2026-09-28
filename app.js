@@ -12380,12 +12380,17 @@ const playerCard = (() => {
     photoDelete.classList.add("hidden");
     achievementList.innerHTML = '<p class="player-card-loading">Загрузка достижений…</p>';
 
-    const [{ data, error }] = await Promise.all([
-      supabaseClient.rpc("get_player_card", {
+    setPhoto("", isOwn);
+    loadPhoto(viewedUserId, isOwn).catch(error => {
+      console.warn("PLAYER PHOTO LOAD ERROR:", error);
+    });
+
+    const { data, error } = await supabaseClient.rpc(
+      "get_player_card",
+      {
         p_user_id: viewedUserId
-      }),
-      loadPhoto(viewedUserId, isOwn)
-    ]);
+      }
+    );
 
     if (
       ownRequest !== requestNumber ||
@@ -12411,12 +12416,18 @@ const playerCard = (() => {
 
   function openCard(ownerId) {
     if (!currentUser || !ownerId) return;
+    const normalizedOwnerId = String(ownerId);
+
+    if (dialog.open && viewedUserId === normalizedOwnerId) {
+      return;
+    }
+
     if (typeof dialog.showModal === "function") {
       if (!dialog.open) dialog.showModal();
     } else {
       dialog.setAttribute("open", "");
     }
-    load(ownerId);
+    load(normalizedOwnerId);
   }
 
   const PLAYER_PHOTO_MAX_BYTES = 256 * 1024;
