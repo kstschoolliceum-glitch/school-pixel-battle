@@ -12371,33 +12371,58 @@ const playerCard = (() => {
     renderAchievements(Array.isArray(data.achievements) ? data.achievements : []);
   }
 
+  const PLAYER_PHOTO_MAX_BYTES = 256 * 1024;
+
+  function canvasToWebp(canvas, quality) {
+    return new Promise(resolve => {
+      canvas.toBlob(resolve, "image/webp", quality);
+    });
+  }
+
   function resizePhoto(file) {
     return new Promise((resolve, reject) => {
       const objectUrl = URL.createObjectURL(file);
       const image = new Image();
 
-      image.onload = () => {
+      image.onload = async () => {
         URL.revokeObjectURL(objectUrl);
-        const size = 480;
-        const scale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
-        const width = image.naturalWidth * scale;
-        const height = image.naturalHeight * scale;
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const context = canvas.getContext("2d");
-        context.drawImage(
-          image,
-          (size - width) / 2,
-          (size - height) / 2,
-          width,
-          height
-        );
-        canvas.toBlob(
-          blob => blob ? resolve(blob) : reject(new Error("PHOTO_CONVERT_FAILED")),
-          "image/webp",
-          0.82
-        );
+
+        try {
+          const sizes = [480, 400, 320];
+          const qualities = [0.82, 0.72, 0.62, 0.52];
+
+          for (const size of sizes) {
+            const scale = Math.max(
+              size / image.naturalWidth,
+              size / image.naturalHeight
+            );
+            const width = image.naturalWidth * scale;
+            const height = image.naturalHeight * scale;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const context = canvas.getContext("2d");
+            context.drawImage(
+              image,
+              (size - width) / 2,
+              (size - height) / 2,
+              width,
+              height
+            );
+
+            for (const quality of qualities) {
+              const blob = await canvasToWebp(canvas, quality);
+              if (blob && blob.size <= PLAYER_PHOTO_MAX_BYTES) {
+                resolve(blob);
+                return;
+              }
+            }
+          }
+
+          reject(new Error("PHOTO_TOO_LARGE"));
+        } catch (error) {
+          reject(error);
+        }
       };
 
       image.onerror = () => {
