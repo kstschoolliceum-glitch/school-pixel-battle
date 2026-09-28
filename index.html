@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=48">
+  <link rel="stylesheet" href="style.css?v=49">
 </head>
 
 <body>
@@ -397,10 +397,12 @@
 
   <span id="coordinates" class="pixel-information">
     <span id="coordinate-position">Выберите пиксель</span>
-    <span id="pixel-owner"></span>
-    <button id="pixel-report-button" class="pixel-report-button hidden" type="button">
-      🚩 Пожаловаться
-    </button>
+    <span class="pixel-owner-row">
+      <button id="pixel-report-button" class="pixel-report-button hidden" type="button">
+        🚩 Жалоба
+      </button>
+      <span id="pixel-owner"></span>
+    </span>
   </span>
 
 </div>
