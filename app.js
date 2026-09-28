@@ -12224,6 +12224,259 @@ const dailyTasks = (() => {
 
 
 /* -------------------------
+   ВИЗИТКА ИГРОКА
+------------------------- */
+
+const playerCard = (() => {
+  const openButton = document.getElementById("player-card-open-button");
+  const dialog = document.getElementById("player-card-dialog");
+  const closeButton = document.getElementById("player-card-close");
+  const photoButton = document.getElementById("player-card-photo-button");
+  const photoInput = document.getElementById("player-card-photo-input");
+  const photoImage = document.getElementById("player-card-photo-image");
+  const photoFallback = document.getElementById("player-card-photo-fallback");
+  const photoDelete = document.getElementById("player-card-photo-delete");
+  const photoStatus = document.getElementById("player-card-photo-status");
+  const nickname = document.getElementById("player-card-nickname");
+  const className = document.getElementById("player-card-class");
+  const username = document.getElementById("player-card-username");
+  const weekly = document.getElementById("player-card-weekly");
+  const total = document.getElementById("player-card-total");
+  const achievementCount = document.getElementById("player-card-achievement-count");
+  const achievementList = document.getElementById("player-card-achievement-list");
+  const message = document.getElementById("player-card-message");
+
+  let requestNumber = 0;
+  let photoObjectUrl = "";
+
+  function closePhotoObjectUrl() {
+    if (photoObjectUrl) URL.revokeObjectURL(photoObjectUrl);
+    photoObjectUrl = "";
+  }
+
+  function avatarPath() {
+    return currentUser ? `${currentUser.id}/avatar.webp` : "";
+  }
+
+  function initials(value) {
+    const parts = String(value || "Игрок").trim().split(/\s+/).filter(Boolean);
+    return parts.slice(0, 2).map(part => part[0]).join("").toUpperCase() || "?";
+  }
+
+  function setPhoto(url = "") {
+    closePhotoObjectUrl();
+    if (url) {
+      photoImage.src = url;
+      photoImage.classList.remove("hidden");
+      photoFallback.classList.add("hidden");
+      photoDelete.classList.remove("hidden");
+      photoStatus.textContent = "Фото хранится в твоём профиле.";
+    } else {
+      photoImage.removeAttribute("src");
+      photoImage.classList.add("hidden");
+      photoFallback.classList.remove("hidden");
+      photoDelete.classList.add("hidden");
+      photoStatus.textContent = "Нажми на фото, чтобы добавить своё.";
+    }
+  }
+
+  async function loadPhoto(ownerId) {
+    const { data, error } = await supabaseClient.storage
+      .from("profile-photos")
+      .download(`${ownerId}/avatar.webp`);
+
+    if (!currentUser || currentUser.id !== ownerId) return;
+    if (error || !data) {
+      setPhoto();
+      return;
+    }
+
+    closePhotoObjectUrl();
+    photoObjectUrl = URL.createObjectURL(data);
+    photoImage.src = photoObjectUrl;
+    photoImage.classList.remove("hidden");
+    photoFallback.classList.add("hidden");
+    photoDelete.classList.remove("hidden");
+    photoStatus.textContent = "Фото хранится в твоём профиле.";
+  }
+
+  function renderAchievements(items = []) {
+    achievementList.replaceChildren();
+    const unlocked = items.filter(item => item.unlocked).length;
+    achievementCount.textContent = `${unlocked} / ${items.length || 3}`;
+
+    items.forEach(item => {
+      const card = document.createElement("article");
+      card.className = "player-card-achievement";
+      card.classList.toggle("is-unlocked", Boolean(item.unlocked));
+
+      const icon = document.createElement("span");
+      icon.className = "player-card-achievement-icon";
+      icon.textContent = item.unlocked ? item.icon : "🔒";
+
+      const body = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = item.title;
+      const description = document.createElement("span");
+      description.textContent = item.description;
+
+      const progress = document.createElement("div");
+      progress.className = "player-card-achievement-progress";
+      const bar = document.createElement("i");
+      const current = Math.max(0, Number(item.progress) || 0);
+      const target = Math.max(1, Number(item.target) || 1);
+      bar.style.width = `${Math.min(100, current / target * 100)}%`;
+      progress.appendChild(bar);
+
+      const value = document.createElement("small");
+      value.textContent = `${Math.min(current, target).toLocaleString("ru-RU")} / ${target.toLocaleString("ru-RU")}`;
+
+      body.append(title, description, progress, value);
+      card.append(icon, body);
+      achievementList.appendChild(card);
+    });
+  }
+
+  async function load() {
+    if (!currentUser) return;
+    const ownerId = currentUser.id;
+    const ownRequest = ++requestNumber;
+    message.textContent = "";
+    achievementList.innerHTML = '<p class="player-card-loading">Загрузка достижений…</p>';
+
+    const [{ data, error }] = await Promise.all([
+      supabaseClient.rpc("get_my_player_card"),
+      loadPhoto(ownerId)
+    ]);
+
+    if (
+      ownRequest !== requestNumber ||
+      !currentUser ||
+      currentUser.id !== ownerId
+    ) return;
+
+    if (error || !data?.success) {
+      console.error("PLAYER CARD ERROR:", error || data);
+      message.textContent = "Визитка ещё не подключена. Администратору нужно выполнить новую SQL-миграцию.";
+      achievementList.innerHTML = '<p class="player-card-loading">Достижения пока недоступны.</p>';
+      return;
+    }
+
+    nickname.textContent = data.nickname || "Игрок";
+    className.textContent = `Класс ${data.class_name || "—"}`;
+    username.textContent = `@${data.username || "—"}`;
+    photoFallback.textContent = initials(data.nickname);
+    weekly.textContent = Number(data.weekly_pixels || 0).toLocaleString("ru-RU");
+    total.textContent = Number(data.total_pixels || 0).toLocaleString("ru-RU");
+    renderAchievements(Array.isArray(data.achievements) ? data.achievements : []);
+  }
+
+  function resizePhoto(file) {
+    return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const image = new Image();
+
+      image.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const size = 480;
+        const scale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const context = canvas.getContext("2d");
+        context.drawImage(
+          image,
+          (size - width) / 2,
+          (size - height) / 2,
+          width,
+          height
+        );
+        canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error("PHOTO_CONVERT_FAILED")),
+          "image/webp",
+          0.82
+        );
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("PHOTO_READ_FAILED"));
+      };
+      image.src = objectUrl;
+    });
+  }
+
+  async function uploadPhoto(file) {
+    if (!currentUser || !file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      message.textContent = "Выбери PNG, JPG или WebP.";
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      message.textContent = "Фото слишком большое. Максимум — 8 МБ.";
+      return;
+    }
+
+    const ownerId = currentUser.id;
+    photoButton.disabled = true;
+    message.textContent = "Сохраняем фото…";
+
+    try {
+      const blob = await resizePhoto(file);
+      const { error } = await supabaseClient.storage
+        .from("profile-photos")
+        .upload(avatarPath(), blob, {
+          contentType: "image/webp",
+          cacheControl: "3600",
+          upsert: true
+        });
+      if (error) throw error;
+      if (!currentUser || currentUser.id !== ownerId) return;
+      await loadPhoto(ownerId);
+      message.textContent = "Фото профиля сохранено.";
+    } catch (error) {
+      console.error("PLAYER PHOTO UPLOAD ERROR:", error);
+      message.textContent = "Не удалось сохранить фото.";
+    } finally {
+      photoButton.disabled = false;
+      photoInput.value = "";
+    }
+  }
+
+  openButton?.addEventListener("click", () => {
+    if (!currentUser) return;
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    else dialog.setAttribute("open", "");
+    load();
+  });
+  closeButton?.addEventListener("click", () => dialog.close());
+  dialog?.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+  photoButton?.addEventListener("click", () => photoInput.click());
+  photoInput?.addEventListener("change", () => uploadPhoto(photoInput.files?.[0]));
+  photoDelete?.addEventListener("click", async () => {
+    if (!currentUser || !confirm("Убрать фото из визитки?")) return;
+    photoDelete.disabled = true;
+    const { error } = await supabaseClient.storage
+      .from("profile-photos")
+      .remove([avatarPath()]);
+    photoDelete.disabled = false;
+    if (error) {
+      message.textContent = "Не удалось убрать фото.";
+      return;
+    }
+    setPhoto();
+    message.textContent = "Фото удалено.";
+  });
+
+  return { load };
+})();
+
+
+/* -------------------------
    ЕЖЕДНЕВНАЯ ИГРА UNBLOCK ME
 ------------------------- */
 

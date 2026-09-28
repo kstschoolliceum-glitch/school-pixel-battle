@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=51">
+  <link rel="stylesheet" href="style.css?v=52">
 </head>
 
 <body>
@@ -396,6 +396,16 @@
       🖼️ Трафарет
     </button>
 
+    <button
+      id="player-card-open-button"
+      class="player-card-open-button"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="player-card-dialog"
+    >
+      🪪 Визитка
+    </button>
+
   </span>
 
   <span id="coordinates" class="pixel-information">
@@ -479,6 +489,79 @@
         </div>
       </dialog>
 
+
+      <dialog
+        id="player-card-dialog"
+        class="player-card-dialog"
+        aria-labelledby="player-card-title"
+      >
+        <button
+          id="player-card-close"
+          class="player-card-close"
+          type="button"
+          aria-label="Закрыть визитку"
+        >×</button>
+
+        <div class="player-card-heading">
+          <span class="player-card-kicker">SCHOOL PIXEL BATTLE</span>
+          <h2 id="player-card-title">🪪 Визитка игрока</h2>
+        </div>
+
+        <div class="player-card-identity">
+          <button
+            id="player-card-photo-button"
+            class="player-card-photo"
+            type="button"
+            aria-label="Выбрать фото профиля"
+          >
+            <img id="player-card-photo-image" class="hidden" alt="Фото профиля">
+            <span id="player-card-photo-fallback" aria-hidden="true">?</span>
+            <span class="player-card-photo-edit">📷</span>
+          </button>
+          <input
+            id="player-card-photo-input"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          >
+
+          <div class="player-card-name">
+            <strong id="player-card-nickname">Игрок</strong>
+            <span id="player-card-class">Класс —</span>
+            <small id="player-card-username">@—</small>
+          </div>
+        </div>
+
+        <div class="player-card-photo-actions">
+          <span id="player-card-photo-status">Нажми на фото, чтобы добавить своё.</span>
+          <button id="player-card-photo-delete" class="hidden" type="button">Убрать фото</button>
+        </div>
+
+        <div class="player-card-stats" aria-label="Игровая статистика">
+          <div>
+            <span>За неделю</span>
+            <strong id="player-card-weekly">—</strong>
+            <small>пикселей</small>
+          </div>
+          <div>
+            <span>За всё время</span>
+            <strong id="player-card-total">—</strong>
+            <small>пикселей</small>
+          </div>
+        </div>
+
+        <section class="player-card-achievements" aria-labelledby="player-card-achievements-title">
+          <div class="player-card-section-title">
+            <h3 id="player-card-achievements-title">🏆 Достижения</h3>
+            <span id="player-card-achievement-count">0 / 3</span>
+          </div>
+          <div id="player-card-achievement-list" class="player-card-achievement-list">
+            <p class="player-card-loading">Загрузка достижений…</p>
+          </div>
+        </section>
+
+        <p id="player-card-message" class="player-card-message" role="status"></p>
+      </dialog>
 
       <div class="controls">
 
@@ -2350,7 +2433,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=82"></script>
+  <script src="app.js?v=83"></script>
 
 </body>
 </html>

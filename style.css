@@ -6173,3 +6173,336 @@ body.admin-view .mobile-nav {
     display: none;
   }
 }
+
+
+/* ---------- PLAYER CARD ---------- */
+
+.player-card-open-button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #fbbf24;
+  border-radius: 0;
+  background: #4a3210;
+  color: #fff0b5;
+  box-shadow: 2px 2px 0 #070b15;
+  font: 800 12px/1.15 "Courier New", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.player-card-open-button:hover {
+  border-color: #fde68a;
+  background: #644514;
+  color: #fff;
+}
+
+.player-card-dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(90dvh, 760px);
+  overflow: auto;
+  padding: 22px;
+  border: 2px solid #fbbf24;
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, #17223a 0%, #10192b 55%, #251a35 100%);
+  color: #f8fafc;
+  box-shadow: 8px 8px 0 #050912;
+}
+
+.player-card-dialog::backdrop {
+  background: #030916df;
+  backdrop-filter: blur(3px);
+}
+
+.player-card-close {
+  float: right;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #64748b;
+  background: #182338;
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.player-card-heading {
+  padding-right: 46px;
+}
+
+.player-card-kicker {
+  display: block;
+  color: #fbbf24;
+  font: 800 10px/1 "Courier New", monospace;
+  letter-spacing: 1.5px;
+}
+
+.player-card-heading h2 {
+  margin: 7px 0 18px;
+  font: 900 22px/1.2 "Courier New", monospace;
+}
+
+.player-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 15px;
+  border: 1px solid #40506b;
+  background: #0d1526b8;
+}
+
+.player-card-photo {
+  position: relative;
+  flex: 0 0 92px;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  padding: 0;
+  border: 3px solid #fbbf24;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #7c3aed, #2563eb);
+  color: #fff;
+  font: 900 34px/1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.player-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-card-photo-edit {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  background: #111827e8;
+  font-size: 13px;
+}
+
+.player-card-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.player-card-name strong {
+  overflow: hidden;
+  color: #fff;
+  font: 900 23px/1.15 "Courier New", monospace;
+  text-overflow: ellipsis;
+}
+
+.player-card-name span {
+  color: #a7f3d0;
+  font-weight: 800;
+}
+
+.player-card-name small {
+  color: #94a3b8;
+}
+
+.player-card-photo-actions {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 2px 0;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.player-card-photo-actions button {
+  padding: 5px 8px;
+  border: 1px solid #7f1d1d;
+  background: #3f1218;
+  color: #fecaca;
+  font: 800 10px/1.1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.player-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.player-card-stats > div {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px solid #334155;
+  background: #0b1322aa;
+  text-align: center;
+}
+
+.player-card-stats span,
+.player-card-stats small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.player-card-stats strong {
+  color: #67e8f9;
+  font: 900 24px/1 "Courier New", monospace;
+}
+
+.player-card-achievements {
+  margin-top: 18px;
+}
+
+.player-card-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.player-card-section-title h3 {
+  margin: 0;
+  font: 900 16px/1.2 "Courier New", monospace;
+}
+
+.player-card-section-title span {
+  padding: 4px 7px;
+  border: 1px solid #6b4e12;
+  background: #352709;
+  color: #fde68a;
+  font: 800 11px/1 "Courier New", monospace;
+}
+
+.player-card-achievement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.player-card-achievement {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #2f3b50;
+  background: #0b1322b8;
+  opacity: 0.62;
+}
+
+.player-card-achievement.is-unlocked {
+  border-color: #a87813;
+  background: #2f240cbd;
+  opacity: 1;
+}
+
+.player-card-achievement-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #475569;
+  background: #111b2d;
+  font-size: 22px;
+}
+
+.player-card-achievement.is-unlocked .player-card-achievement-icon {
+  border-color: #fbbf24;
+  background: #523a0c;
+}
+
+.player-card-achievement > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+}
+
+.player-card-achievement strong,
+.player-card-achievement span {
+  grid-column: 1 / -1;
+}
+
+.player-card-achievement strong {
+  font-size: 13px;
+}
+
+.player-card-achievement span {
+  color: #aebbd0;
+  font-size: 11px;
+}
+
+.player-card-achievement small {
+  color: #94a3b8;
+  font-size: 9px;
+  text-align: right;
+}
+
+.player-card-achievement-progress {
+  align-self: center;
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  background: #050a13;
+}
+
+.player-card-achievement-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #fbbf24);
+}
+
+.player-card-message,
+.player-card-loading {
+  margin: 10px 0 0;
+  color: #aebbd0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 650px) {
+  .map-title {
+    gap: 5px;
+  }
+
+  .stencil-open-button,
+  .player-card-open-button {
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .player-card-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 15px;
+    box-shadow: 4px 4px 0 #050912;
+  }
+
+  .player-card-identity {
+    gap: 11px;
+    padding: 11px;
+  }
+
+  .player-card-photo {
+    flex-basis: 76px;
+    width: 76px;
+    height: 76px;
+  }
+
+  .player-card-name strong {
+    font-size: 18px;
+  }
+
+  .player-card-photo-actions {
+    align-items: flex-start;
+  }
+}
