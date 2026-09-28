@@ -770,6 +770,26 @@
         ЗАГРУЗКА…
       </button>
     </section>
+
+    <section
+      id="fifteen-profile"
+      class="unblock-profile-card fifteen-profile-card"
+      aria-labelledby="fifteen-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="fifteen-profile-title">🧩 Пятнашки</h3>
+          <p>Собери плитки от 1 до 15 и получи Турбокисть на 10 минут. Новая игра — через 5 часов.</p>
+        </div>
+        <span id="fifteen-badge">Уровень 1</span>
+      </div>
+      <div id="fifteen-profile-status" class="unblock-profile-status" aria-live="polite">
+        Загружаем головоломку…
+      </div>
+      <button id="fifteen-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
+    </section>
       </section>
     </div>
 
@@ -2216,6 +2236,36 @@
   </div>
 </dialog>
 
+<dialog
+  id="fifteen-dialog"
+  class="unblock-dialog fifteen-dialog"
+  aria-labelledby="fifteen-title"
+>
+  <button
+    id="fifteen-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="fifteen-title">🧩 Пятнашки</h2>
+      <p>Расставь числа по порядку. Нажимать можно только на плитку рядом с пустой клеткой.</p>
+      <button id="fifteen-reset" class="fifteen-reset-top" type="button">
+        ↻ НАЧАТЬ ЗАНОВО
+      </button>
+    </div>
+    <span id="fifteen-moves">Ходов: 0</span>
+  </div>
+
+  <div id="fifteen-board" class="fifteen-board" aria-label="Игровое поле Пятнашки"></div>
+
+  <p id="fifteen-message" class="unblock-message" aria-live="polite">
+    Собери последовательность от 1 до 15.
+  </p>
+</dialog>
+
 
 <nav class="mobile-nav" style="grid-template-columns:repeat(5,minmax(0,1fr))">
 
@@ -2275,7 +2325,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=79"></script>
+  <script src="app.js?v=80"></script>
 
 </body>
 </html>
