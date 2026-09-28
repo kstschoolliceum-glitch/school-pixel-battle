@@ -3390,12 +3390,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 
 .chat-message.system {
-  border-left: 3px solid #76f5c5;
+  margin: 2px 0;
+  padding: 3px 6px;
+  gap: 5px;
+  border-left: 2px solid #76f5c5;
+  border-radius: 4px;
   background: #102927;
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .chat-message.system .chat-message-content {
   color: #c9fbea;
+}
+
+.chat-message.system .chat-message-author {
+  font-size: 10px;
+}
+
+.chat-message.system .chat-message-time {
+  font-size: 9px;
 }
 
 @media (max-width: 650px) {
