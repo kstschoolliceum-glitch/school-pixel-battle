@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=49">
+  <link rel="stylesheet" href="style.css?v=50">
 </head>
 
 <body>
@@ -984,10 +984,36 @@
 
   </div>
 
+  <div class="chat-feed-tabs" role="tablist" aria-label="Разделы чата">
+    <button
+      id="chat-user-tab"
+      class="chat-feed-tab active"
+      type="button"
+      role="tab"
+      aria-selected="true"
+      aria-controls="chat-messages"
+    >
+      💬 Сообщения
+    </button>
+    <button
+      id="chat-events-tab"
+      class="chat-feed-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="chat-messages"
+      tabindex="-1"
+    >
+      🏆 События
+      <span id="chat-events-badge" class="chat-events-badge hidden">0</span>
+    </button>
+  </div>
 
   <div
     id="chat-messages"
     class="chat-messages"
+    role="tabpanel"
+    aria-live="polite"
   >
 
     <div class="chat-empty">
@@ -2329,7 +2355,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=81"></script>
+  <script src="app.js?v=82"></script>
 
 </body>
 </html>
