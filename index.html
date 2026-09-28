@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=54">
+  <link rel="stylesheet" href="style.css?v=55">
 </head>
 
 <body>
@@ -516,7 +516,6 @@
           >
             <img id="player-card-photo-image" class="hidden" alt="Фото профиля">
             <span id="player-card-photo-fallback" aria-hidden="true">?</span>
-            <span class="player-card-photo-edit">📷</span>
           </button>
           <input
             id="player-card-photo-input"
@@ -529,6 +528,7 @@
             <strong id="player-card-nickname">Игрок</strong>
             <span id="player-card-class">Класс —</span>
             <small id="player-card-username">@—</small>
+            <small id="player-card-last-seen" class="player-card-last-seen">Был(-а) в сети: —</small>
           </div>
         </div>
 
@@ -557,6 +557,17 @@
           </div>
           <div id="player-card-achievement-list" class="player-card-achievement-list">
             <p class="player-card-loading">Загрузка достижений…</p>
+          </div>
+          <div id="player-achievement-popup" class="player-achievement-popup hidden" role="dialog" aria-modal="true" aria-labelledby="player-achievement-popup-title">
+            <div class="player-achievement-popup-panel">
+              <button id="player-achievement-popup-close" class="player-achievement-popup-close" type="button" aria-label="Закрыть описание достижения">×</button>
+              <span id="player-achievement-popup-icon" class="player-achievement-popup-icon">🏆</span>
+              <h4 id="player-achievement-popup-title">Достижение</h4>
+              <p id="player-achievement-popup-description"></p>
+              <div class="player-achievement-popup-progress"><i id="player-achievement-popup-bar"></i></div>
+              <strong id="player-achievement-popup-percent"></strong>
+              <small id="player-achievement-popup-value"></small>
+            </div>
           </div>
         </section>
 
@@ -2433,7 +2444,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=87"></script>
+  <script src="app.js?v=88"></script>
 
 </body>
 </html>

@@ -6555,3 +6555,160 @@ body.admin-view .mobile-nav {
     box-shadow: 3px 3px 0 #050912;
   }
 }
+
+
+/* ---------- PLAYER CARD BADGES AND LAST SEEN ---------- */
+.player-card-last-seen {
+  display: block;
+  margin-top: 5px;
+  color: #8fa5c4 !important;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.player-card-achievement-list {
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 9px;
+}
+
+.player-card-achievement-badge {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  background: #111b2d;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.58;
+}
+
+.player-card-achievement-badge.is-unlocked {
+  border-color: #fbbf24;
+  background: radial-gradient(circle at 50% 35%, #5e4310 0%, #2d220d 66%, #171207 100%);
+  box-shadow: inset 0 0 0 1px #7c5a13;
+  opacity: 1;
+}
+
+.player-card-achievement-badge:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
+
+.player-card-achievement-badge-icon {
+  font-size: clamp(23px, 8vw, 34px);
+  filter: grayscale(0.8);
+}
+
+.player-card-achievement-badge.is-unlocked .player-card-achievement-badge-icon {
+  filter: none;
+}
+
+.player-card-achievement-lock {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  font-size: 11px;
+}
+
+.player-achievement-popup {
+  position: fixed;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #030916c7;
+}
+
+.player-achievement-popup.hidden { display: none; }
+
+.player-achievement-popup-panel {
+  position: relative;
+  width: min(360px, 100%);
+  padding: 22px;
+  border: 2px solid #fbbf24;
+  background: #111a2c;
+  box-shadow: 6px 6px 0 #050912;
+  text-align: center;
+}
+
+.player-achievement-popup-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #64748b;
+  background: #182338;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.player-achievement-popup-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  place-items: center;
+  border: 2px solid #fbbf24;
+  background: #4d370c;
+  font-size: 38px;
+}
+
+.player-achievement-popup-panel h4 {
+  margin: 0 34px 8px;
+  color: #fde68a;
+  font: 900 18px/1.2 "Courier New", monospace;
+}
+
+.player-achievement-popup-panel p {
+  margin: 0 0 16px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.player-achievement-popup-progress {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid #475569;
+  background: #050a13;
+}
+
+.player-achievement-popup-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #fbbf24);
+}
+
+.player-achievement-popup-percent,
+.player-achievement-popup-value { display: block; }
+
+.player-achievement-popup-percent {
+  margin-top: 11px;
+  color: #67e8f9;
+  font-size: 14px;
+}
+
+.player-achievement-popup-value {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .player-card-achievement-badge { max-height: 86px; }
+  .player-achievement-popup-panel {
+    padding: 20px 15px;
+    box-shadow: 3px 3px 0 #050912;
+  }
+}

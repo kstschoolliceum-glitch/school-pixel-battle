@@ -3527,11 +3527,40 @@ async function checkAdminStatus() {
   return currentUserIsAdmin;
 
 }
+let playerActivityHeartbeatTimer = null;
+
+async function touchPlayerActivity() {
+  if (!currentUser || document.hidden) return;
+
+  const { error } = await supabaseClient.rpc(
+    "touch_player_activity"
+  );
+
+  if (error && error.code !== "PGRST202" && error.code !== "42883") {
+    console.warn("PLAYER ACTIVITY ERROR:", error);
+  }
+}
+
+function startPlayerActivityHeartbeat() {
+  clearInterval(playerActivityHeartbeatTimer);
+  touchPlayerActivity();
+  playerActivityHeartbeatTimer = setInterval(
+    touchPlayerActivity,
+    5 * 60 * 1000
+  );
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && currentUser) touchPlayerActivity();
+});
+
 async function startOnlinePresence() {
 
   if (!currentUser) {
     return;
   }
+
+  startPlayerActivityHeartbeat();
 
 
   if (onlinePresenceChannel) {
@@ -12259,16 +12288,24 @@ const playerCard = (() => {
   const photoInput = document.getElementById("player-card-photo-input");
   const photoImage = document.getElementById("player-card-photo-image");
   const photoFallback = document.getElementById("player-card-photo-fallback");
-  const photoEdit = photoButton?.querySelector(".player-card-photo-edit");
   const photoDelete = document.getElementById("player-card-photo-delete");
   const photoStatus = document.getElementById("player-card-photo-status");
   const nickname = document.getElementById("player-card-nickname");
   const className = document.getElementById("player-card-class");
   const username = document.getElementById("player-card-username");
+  const lastSeen = document.getElementById("player-card-last-seen");
   const weekly = document.getElementById("player-card-weekly");
   const total = document.getElementById("player-card-total");
   const achievementCount = document.getElementById("player-card-achievement-count");
   const achievementList = document.getElementById("player-card-achievement-list");
+  const achievementPopup = document.getElementById("player-achievement-popup");
+  const achievementPopupClose = document.getElementById("player-achievement-popup-close");
+  const achievementPopupIcon = document.getElementById("player-achievement-popup-icon");
+  const achievementPopupTitle = document.getElementById("player-achievement-popup-title");
+  const achievementPopupDescription = document.getElementById("player-achievement-popup-description");
+  const achievementPopupBar = document.getElementById("player-achievement-popup-bar");
+  const achievementPopupPercent = document.getElementById("player-achievement-popup-percent");
+  const achievementPopupValue = document.getElementById("player-achievement-popup-value");
   const message = document.getElementById("player-card-message");
 
   // Диалог должен быть вне скрываемых вкладок, иначе showModal()
@@ -12299,7 +12336,6 @@ const playerCard = (() => {
     if (!url) closePhotoObjectUrl();
     photoButton.disabled = !isOwn;
     photoButton.classList.toggle("is-readonly", !isOwn);
-    photoEdit?.classList.toggle("hidden", !isOwn);
 
     if (url) {
       photoImage.src = url;
@@ -12339,41 +12375,82 @@ const playerCard = (() => {
       : "";
   }
 
+  function hideAchievementPopup() {
+    achievementPopup.classList.add("hidden");
+  }
+
+  function showAchievementPopup(item) {
+    const current = Math.max(0, Number(item.progress) || 0);
+    const target = Math.max(1, Number(item.target) || 1);
+    const percent = Math.min(100, Math.round(current / target * 100));
+    const remaining = Math.max(0, 100 - percent);
+    achievementPopupIcon.textContent = item.icon || "🏆";
+    achievementPopupTitle.textContent = item.title || "Достижение";
+    achievementPopupDescription.textContent = item.description || "";
+    achievementPopupBar.style.width = `${percent}%`;
+    achievementPopupPercent.textContent = item.unlocked
+      ? "Выполнено на 100%"
+      : `Осталось выполнить: ${remaining}%`;
+    achievementPopupValue.textContent =
+      `Прогресс: ${Math.min(current, target).toLocaleString("ru-RU")} из ${target.toLocaleString("ru-RU")}`;
+    achievementPopup.classList.remove("hidden");
+  }
+
   function renderAchievements(items = []) {
     achievementList.replaceChildren();
     const unlocked = items.filter(item => item.unlocked).length;
     achievementCount.textContent = `${unlocked} / ${items.length || 3}`;
 
     items.forEach(item => {
-      const card = document.createElement("article");
-      card.className = "player-card-achievement";
-      card.classList.toggle("is-unlocked", Boolean(item.unlocked));
+      const badge = document.createElement("button");
+      badge.type = "button";
+      badge.className = "player-card-achievement-badge";
+      badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
+      badge.setAttribute("aria-label", `${item.title}. Посмотреть прогресс`);
 
       const icon = document.createElement("span");
-      icon.className = "player-card-achievement-icon";
-      icon.textContent = item.unlocked ? item.icon : "🔒";
+      icon.className = "player-card-achievement-badge-icon";
+      icon.textContent = item.icon || "🏆";
+      badge.appendChild(icon);
 
-      const body = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = item.title;
-      const description = document.createElement("span");
-      description.textContent = item.description;
+      if (!item.unlocked) {
+        const lock = document.createElement("small");
+        lock.className = "player-card-achievement-lock";
+        lock.textContent = "🔒";
+        badge.appendChild(lock);
+      }
 
-      const progress = document.createElement("div");
-      progress.className = "player-card-achievement-progress";
-      const bar = document.createElement("i");
-      const current = Math.max(0, Number(item.progress) || 0);
-      const target = Math.max(1, Number(item.target) || 1);
-      bar.style.width = `${Math.min(100, current / target * 100)}%`;
-      progress.appendChild(bar);
-
-      const value = document.createElement("small");
-      value.textContent = `${Math.min(current, target).toLocaleString("ru-RU")} / ${target.toLocaleString("ru-RU")}`;
-
-      body.append(title, description, progress, value);
-      card.append(icon, body);
-      achievementList.appendChild(card);
+      badge.addEventListener("click", () => showAchievementPopup(item));
+      achievementList.appendChild(badge);
     });
+  }
+
+  function formatPlayerLastSeen(value, ownerId) {
+    if (currentOnlineUserIds.includes(String(ownerId))) {
+      return "Был(-а) в сети: сейчас";
+    }
+    if (!value) return "Был(-а) в сети: нет данных";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Был(-а) в сети: нет данных";
+
+    const now = new Date();
+    const sameDay =
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    if (sameDay) return `Был(-а) в сети: сегодня в ${time}`;
+
+    return `Был(-а) в сети: ${date.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    })} в ${time}`;
   }
 
   async function load(ownerId = currentUser?.id) {
@@ -12382,6 +12459,7 @@ const playerCard = (() => {
     const isOwn = viewedUserId === currentUser.id;
     const ownRequest = ++requestNumber;
     message.textContent = "";
+    hideAchievementPopup();
     username.classList.toggle("hidden", !isOwn);
     photoDelete.classList.add("hidden");
     achievementList.innerHTML = '<p class="player-card-loading">Загрузка достижений…</p>';
@@ -12414,6 +12492,7 @@ const playerCard = (() => {
     nickname.textContent = data.nickname || "Игрок";
     className.textContent = `Класс ${data.class_name || "—"}`;
     username.textContent = data.username ? `@${data.username}` : "";
+    lastSeen.textContent = formatPlayerLastSeen(data.last_seen_at, viewedUserId);
     photoFallback.textContent = initials(data.nickname);
     weekly.textContent = Number(data.weekly_pixels || 0).toLocaleString("ru-RU");
     total.textContent = Number(data.total_pixels || 0).toLocaleString("ru-RU");
@@ -12539,7 +12618,14 @@ const playerCard = (() => {
   openButton?.addEventListener("click", () => {
     openCard(currentUser?.id);
   });
-  closeButton?.addEventListener("click", () => dialog.close());
+  closeButton?.addEventListener("click", () => {
+    hideAchievementPopup();
+    dialog.close();
+  });
+  achievementPopupClose?.addEventListener("click", hideAchievementPopup);
+  achievementPopup?.addEventListener("click", event => {
+    if (event.target === achievementPopup) hideAchievementPopup();
+  });
   dialog?.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
