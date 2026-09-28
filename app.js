@@ -3773,23 +3773,15 @@ function closeTelegramPopup() {
 }
 
 
-function closeTelegramPopupAndStartMusic() {
-  document.dispatchEvent(
-    new Event("pixel-battle:start-music")
-  );
-  closeTelegramPopup();
-}
-
-
 telegramLaterButton?.addEventListener(
   "click",
-  closeTelegramPopupAndStartMusic
+  closeTelegramPopup
 );
 
 
 telegramJoinButton?.addEventListener(
   "click",
-  closeTelegramPopupAndStartMusic
+  closeTelegramPopup
 );
 
 
@@ -13120,13 +13112,6 @@ const promoCodes = (() => {
     }
     updateButton();
   }
-
-  document.addEventListener(
-    "pixel-battle:start-music",
-    () => {
-      if (audio.paused) startMusic();
-    }
-  );
 
   button.addEventListener("click", async () => {
     if (audio.paused) {
