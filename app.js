@@ -12271,6 +12271,12 @@ const playerCard = (() => {
   const achievementList = document.getElementById("player-card-achievement-list");
   const message = document.getElementById("player-card-message");
 
+  // Диалог должен быть вне скрываемых вкладок, иначе showModal()
+  // блокирует страницу, но само окно остаётся невидимым.
+  if (dialog?.parentElement !== document.body) {
+    document.body.appendChild(dialog);
+  }
+
   let requestNumber = 0;
   let photoObjectUrl = "";
   let viewedUserId = "";
