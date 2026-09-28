@@ -5134,45 +5134,113 @@ function hideChatUnreadDot() {
 
 }
 
+const chatUserTab =
+  document.getElementById("chat-user-tab");
+const chatEventsTab =
+  document.getElementById("chat-events-tab");
+const chatEventsBadge =
+  document.getElementById("chat-events-badge");
+
+let chatActiveFeed = "user";
+let chatEventsUnread = 0;
+let chatLoadRequest = 0;
+
+function updateChatEventsBadge() {
+  if (!chatEventsBadge) return;
+  chatEventsBadge.textContent =
+    String(Math.min(chatEventsUnread, 99));
+  chatEventsBadge.classList.toggle(
+    "hidden",
+    chatEventsUnread === 0
+  );
+}
+
+function chatDateKey(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function chatDateLabel(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const messageDay = new Date(date);
+  messageDay.setHours(0, 0, 0, 0);
+
+  const difference =
+    Math.round((today - messageDay) / 86400000);
+
+  if (difference === 0) return "Сегодня";
+  if (difference === 1) return "Вчера";
+
+  const label = date.toLocaleDateString(
+    "ru-RU",
+    {
+      day: "numeric",
+      month: "long",
+      year:
+        date.getFullYear() === today.getFullYear()
+          ? undefined
+          : "numeric"
+    }
+  );
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function createChatDateSeparator(item) {
+  const separator = document.createElement("div");
+  separator.className = "chat-date-separator";
+
+  const label = document.createElement("span");
+  label.textContent = chatDateLabel(item.created_at);
+
+  separator.appendChild(label);
+  return separator;
+}
+
 function createChatMessageElement(item) {
+  const row = document.createElement("div");
+  row.className = "chat-message";
 
-  const row =
-    document.createElement("div");
+  const content = document.createElement("span");
+  content.className = "chat-message-content";
 
-  row.className =
-    "chat-message";
-
-
-  const content =
-    document.createElement("span");
-
-  content.className =
-    "chat-message-content";
-
-
-  const author =
-    document.createElement("strong");
-
-  author.className =
-    "chat-message-author";
+  const author = document.createElement("strong");
+  author.className = "chat-message-author";
 
   const isSystemMessage =
     item.message_type === "system";
 
   if (isSystemMessage) {
     row.classList.add("system");
+    row.tabIndex = 0;
+    row.title = "Нажмите, чтобы раскрыть событие";
     author.textContent = "СИСТЕМА:";
     author.style.color = "#76f5c5";
+
+    const toggleExpanded = () => {
+      row.classList.toggle("expanded");
+    };
+
+    row.addEventListener("click", toggleExpanded);
+    row.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleExpanded();
+    });
   } else {
     author.textContent =
       `${item.nickname} [${item.class_name ?? "—"}]:`;
   }
-
-
-  /*
-   * Цвет зависит от класса.
-   * Один класс всегда получает один цвет.
-   */
 
   const classColors = [
     "#f87171",
@@ -5185,77 +5253,39 @@ function createChatMessageElement(item) {
     "#f472b6"
   ];
 
-  const className =
-    item.class_name ?? "—";
-
+  const className = item.class_name ?? "—";
   let hash = 0;
 
-  for (
-    let i = 0;
-    i < className.length;
-    i++
-  ) {
-
+  for (let i = 0; i < className.length; i++) {
     hash =
       className.charCodeAt(i) +
       ((hash << 5) - hash);
-
   }
-
-  const colorIndex =
-    Math.abs(hash) %
-    classColors.length;
 
   if (!isSystemMessage) {
     author.style.color =
-      classColors[colorIndex];
+      classColors[Math.abs(hash) % classColors.length];
   }
 
+  const text = document.createElement("span");
+  text.textContent = ` ${item.message}`;
+  content.append(author, text);
 
-  const text =
-    document.createElement("span");
-
-  text.textContent =
-    ` ${item.message}`;
-
-
-  content.append(
-    author,
-    text
-  );
-
-
-  /*
-   * Время сообщения.
-   */
-
-  const time =
-    document.createElement("span");
-
-  time.className =
-    "chat-message-time";
-
+  const time = document.createElement("span");
+  time.className = "chat-message-time";
 
   if (item.created_at) {
-
     time.textContent =
-      new Date(
-        item.created_at
-      ).toLocaleTimeString(
+      new Date(item.created_at).toLocaleTimeString(
         "ru-RU",
         {
           hour: "2-digit",
           minute: "2-digit"
         }
       );
-
   }
 
-
-  row.append(
-    content,
-    time
-  );
+  row.append(content, time);
 
   if (
     !isSystemMessage &&
@@ -5265,11 +5295,16 @@ function createChatMessageElement(item) {
   ) {
     const reportButton =
       document.createElement("button");
+
     reportButton.type = "button";
     reportButton.className = "chat-report-button";
     reportButton.textContent = "🚩";
     reportButton.title = "Пожаловаться на сообщение";
-    reportButton.setAttribute("aria-label", "Пожаловаться на сообщение");
+    reportButton.setAttribute(
+      "aria-label",
+      "Пожаловаться на сообщение"
+    );
+
     reportButton.addEventListener("click", () => {
       window.openModerationReportDialog?.({
         type: "chat",
@@ -5277,110 +5312,177 @@ function createChatMessageElement(item) {
         label: `${item.nickname}: ${item.message}`
       });
     });
+
     row.appendChild(reportButton);
   }
 
   return row;
 }
 
+function renderChatMessages(messages) {
+  chatMessages.replaceChildren();
 
-async function loadChatMessages() {
-
-  if (!currentUser) {
+  if (!messages.length) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty";
+    empty.textContent =
+      chatActiveFeed === "system"
+        ? "Событий пока нет"
+        : "Сообщений пока нет";
+    chatMessages.appendChild(empty);
     return;
   }
 
+  let previousDate = "";
 
-  let {
-    data,
-    error
-  } = await supabaseClient.rpc(
-    "get_chat_messages_v2",
-    {
-      p_limit: 50
+  for (const item of messages) {
+    const dateKey = chatDateKey(item.created_at);
+
+    if (dateKey && dateKey !== previousDate) {
+      chatMessages.appendChild(
+        createChatDateSeparator(item)
+      );
+      previousDate = dateKey;
     }
-  );
 
-  // Safe rollout: until the small chat migration is installed,
-  // ordinary chat continues through the previous RPC.
+    chatMessages.appendChild(
+      createChatMessageElement(item)
+    );
+  }
+
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+}
+
+async function loadChatMessages() {
+  if (!currentUser) return;
+
+  const requestedFeed = chatActiveFeed;
+  const ownRequest = ++chatLoadRequest;
+
+  let { data, error } =
+    await supabaseClient.rpc(
+      "get_chat_messages_by_type",
+      {
+        p_message_type: requestedFeed,
+        p_limit: 50
+      }
+    );
+
   if (
     error &&
     (
       error.code === "PGRST202" ||
       error.code === "42883" ||
-      String(error.message || "").includes("get_chat_messages_v2")
+      String(error.message || "").includes(
+        "get_chat_messages_by_type"
+      )
     )
   ) {
-    ({ data, error } = await supabaseClient.rpc(
-      "get_chat_messages",
-      {
-        p_limit: 50
-      }
-    ));
+    ({ data, error } =
+      await supabaseClient.rpc(
+        "get_chat_messages_v2",
+        { p_limit: 100 }
+      ));
+
+    if (!error) {
+      data = (data ?? []).filter(item =>
+        requestedFeed === "system"
+          ? item.message_type === "system"
+          : item.message_type !== "system"
+      );
+    }
   }
-
-
-  if (error) {
-
-    console.error(
-      "CHAT LOAD ERROR:",
-      error
-    );
-
-    chatMessages.textContent =
-      "Не удалось загрузить сообщения";
-
-    return;
-  }
-
-
-  chatMessages.innerHTML = "";
-
 
   if (
-    !data ||
-    data.length === 0
+    ownRequest !== chatLoadRequest ||
+    requestedFeed !== chatActiveFeed
   ) {
-
-    const empty =
-      document.createElement("div");
-
-    empty.className =
-      "chat-empty";
-
-    empty.textContent =
-      "Сообщений пока нет";
-
-    chatMessages.appendChild(
-      empty
-    );
-
     return;
   }
 
-
-  /*
-   * Сервер отдаёт сначала новые.
-   * На экране показываем:
-   * старые сверху → новые снизу.
-   */
-
-  const messages =
-    [...data].reverse();
-
-
-  for (const item of messages) {
-
-    chatMessages.appendChild(
-      createChatMessageElement(item)
-    );
-
+  if (error) {
+    console.error("CHAT LOAD ERROR:", error);
+    chatMessages.textContent =
+      "Не удалось загрузить сообщения";
+    return;
   }
 
-
-  chatMessages.scrollTop =
-    chatMessages.scrollHeight;
+  renderChatMessages(
+    [...(data ?? [])].reverse()
+  );
 }
+
+function setChatFeed(feed) {
+  chatActiveFeed =
+    feed === "system" ? "system" : "user";
+
+  const showEvents =
+    chatActiveFeed === "system";
+
+  chatUserTab?.classList.toggle(
+    "active",
+    !showEvents
+  );
+  chatEventsTab?.classList.toggle(
+    "active",
+    showEvents
+  );
+
+  chatUserTab?.setAttribute(
+    "aria-selected",
+    showEvents ? "false" : "true"
+  );
+  chatEventsTab?.setAttribute(
+    "aria-selected",
+    showEvents ? "true" : "false"
+  );
+
+  if (chatUserTab) {
+    chatUserTab.tabIndex = showEvents ? -1 : 0;
+  }
+  if (chatEventsTab) {
+    chatEventsTab.tabIndex = showEvents ? 0 : -1;
+  }
+
+  chatForm.hidden = showEvents;
+
+  if (showEvents) {
+    chatEventsUnread = 0;
+    updateChatEventsBadge();
+  }
+
+  loadChatMessages();
+}
+
+chatUserTab?.addEventListener(
+  "click",
+  () => setChatFeed("user")
+);
+
+chatEventsTab?.addEventListener(
+  "click",
+  () => setChatFeed("system")
+);
+
+[chatUserTab, chatEventsTab].forEach((tab, index, tabs) => {
+  tab?.addEventListener("keydown", event => {
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight"
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const next = tabs[index === 0 ? 1 : 0];
+    next?.click();
+    next?.focus();
+  });
+});
+
+updateChatEventsBadge();
+
 
 /* -------------------------
    REALTIME ЧАТ
@@ -5397,35 +5499,33 @@ function subscribeToChat() {
         schema: "public",
         table: "chat_messages"
       },
-      async () => {
+      async payload => {
+        const incomingType =
+          payload.new?.message_type === "system"
+            ? "system"
+            : "user";
 
-  const chatIsOpen =
-    document.body.classList.contains(
-      "mobile-chat-view"
-    );
+        const chatIsOpen =
+          document.body.classList.contains(
+            "mobile-chat-view"
+          );
 
+        if (
+          incomingType === "system" &&
+          chatActiveFeed !== "system"
+        ) {
+          chatEventsUnread += 1;
+          updateChatEventsBadge();
+        }
 
-  if (chatIsOpen) {
-
-    /*
-     * Чат сейчас открыт —
-     * сразу показываем сообщение.
-     */
-
-    await loadChatMessages();
-
-  } else {
-
-    /*
-     * Пользователь находится
-     * в другом разделе.
-     */
-
-    showChatUnreadDot();
-
-  }
-
-}
+        if (chatIsOpen) {
+          if (incomingType === chatActiveFeed) {
+            await loadChatMessages();
+          }
+        } else if (incomingType === "user") {
+          showChatUnreadDot();
+        }
+      }
     )
     .subscribe((status) => {
 
