@@ -13283,10 +13283,10 @@ const sokobanGame = (() => {
     if (error) {
       console.error("SOKOBAN STATUS ERROR:", error);
       status = null;
-      statusText.textContent = "Игра станет доступна после установки обновления базы.";
+      statusText.textContent = "Не удалось загрузить игру. Проверь обновление базы и попробуй снова.";
       statusText.classList.add("error");
-      openButton.disabled = true;
-      openButton.textContent = "НЕДОСТУПНО";
+      openButton.disabled = false;
+      openButton.textContent = "↻ ПОВТОРИТЬ ЗАГРУЗКУ";
       return;
     }
 
@@ -13366,6 +13366,7 @@ const sokobanGame = (() => {
   openButton.addEventListener("click", async () => {
     if (!status) await loadStatus();
     if (!status || remainingSeconds(status.next_available_at) > 0) return;
+    document.getElementById("fifteen-dialog")?.close();
     renderBoard();
     setMessage("Нажимай стрелки. Ящик можно только толкать.");
     if (!dialog.open) dialog.showModal();
@@ -13669,6 +13670,8 @@ const fifteenGame = (() => {
   openButton.addEventListener("click", async () => {
     if (!status) await loadStatus();
     if (!status || remainingSeconds(status.next_available_at) > 0) return;
+    document.getElementById("sokoban-dialog")?.close();
+    document.getElementById("unblock-me-dialog")?.close();
     renderBoard();
     setMessage("Нажимай на плитку рядом с пустой клеткой.");
     if (!dialog.open) dialog.showModal();
