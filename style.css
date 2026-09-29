@@ -6750,3 +6750,67 @@ body.admin-view .mobile-nav {
     font-size: 27px;
   }
 }
+
+/* ---------- CHAT MENTIONS ---------- */
+
+.chat-mention-button {
+  width: 20px;
+  height: 20px;
+  margin: 0 3px;
+  padding: 0;
+  border: 1px solid #52657f;
+  border-radius: 4px;
+  background: #17243a;
+  color: #93c5fd;
+  font: 900 15px/1 "Courier New", monospace;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.chat-mention-button:hover,
+.chat-mention-button:focus-visible {
+  border-color: #7dd3fc;
+  background: #1d3554;
+  color: #ffffff;
+}
+
+.chat-message.is-mentioned {
+  margin: 2px 0;
+  padding: 8px 7px;
+  border-left: 3px solid #fbbf24;
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(251, 191, 36, 0.18),
+      rgba(139, 92, 246, 0.1)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(251, 191, 36, 0.16);
+}
+
+.chat-message.is-mentioned .chat-message-content {
+  color: #fff7d6;
+}
+
+.chat-report-button {
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  font-size: 10px;
+}
+
+@media (max-width: 650px) {
+  .chat-mention-button {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+  }
+
+  .chat-report-button {
+    width: 22px;
+    height: 22px;
+    opacity: 0.85;
+  }
+}
+

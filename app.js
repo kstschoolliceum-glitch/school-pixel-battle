@@ -2810,6 +2810,10 @@ async function loadMyProfile() {
   if (!currentUser || currentUser.id !== profileUserId) return;
   const profile =
     data[0];
+  currentChatNickname =
+    normalizeChatMentionName(
+      profile.nickname
+    );
   dailyTasks.setProfile(profile, profileUserId);
 
 
@@ -5090,6 +5094,7 @@ logoutButton.addEventListener(
 }
     clearStencilView();
     currentUser = null;
+    currentChatNickname = "";
     dailyTasks.reset();
     unblockMeGame.reset();
     sokobanGame.reset();
@@ -5148,6 +5153,79 @@ const chatSendButton =
   document.getElementById(
     "chat-send-button"
   );
+
+let currentChatNickname = "";
+
+function normalizeChatMentionName(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^@+/, "")
+    .replace(/\s+/g, " ");
+}
+
+function chatMessageMentionsCurrentUser(message) {
+  const nickname =
+    normalizeChatMentionName(
+      currentChatNickname
+    ).toLocaleLowerCase("ru-RU");
+
+  if (!nickname) return false;
+
+  const source = ` ${String(message || "")
+    .toLocaleLowerCase("ru-RU")
+    .replace(/\s+/g, " ")}`;
+
+  const needle = ` @${nickname}`;
+  let position = source.indexOf(needle);
+
+  while (position !== -1) {
+    const after =
+      source[position + needle.length];
+
+    if (
+      !after ||
+      /[\s.,!?;:…]/u.test(after)
+    ) {
+      return true;
+    }
+
+    position = source.indexOf(
+      needle,
+      position + needle.length
+    );
+  }
+
+  return false;
+}
+
+function insertChatMention(nickname) {
+  const name =
+    normalizeChatMentionName(
+      nickname
+    );
+
+  if (!name || !chatInput) return;
+
+  const mention = `@${name}`;
+  const currentText =
+    chatInput.value.trimStart();
+
+  chatInput.value = (
+    currentText
+      ? `${mention} ${currentText}`
+      : `${mention} `
+  ).slice(0, 200);
+
+  chatInput.focus();
+
+  const caret =
+    chatInput.value.length;
+
+  chatInput.setSelectionRange(
+    caret,
+    caret
+  );
+}
 
 function showChatUnreadDot() {
 
@@ -5281,7 +5359,7 @@ function createChatMessageElement(item) {
     });
   } else {
     author.textContent =
-      `${item.nickname} [${item.class_name ?? "—"}]:`;
+      `${item.nickname} [${item.class_name ?? "—"}]`;
     enablePlayerCardLink(author, item.user_id);
   }
 
@@ -5310,9 +5388,58 @@ function createChatMessageElement(item) {
       classColors[Math.abs(hash) % classColors.length];
   }
 
+  if (
+    !isSystemMessage &&
+    chatMessageMentionsCurrentUser(
+      item.message
+    )
+  ) {
+    row.classList.add("is-mentioned");
+  }
+
   const text = document.createElement("span");
-  text.textContent = ` ${item.message}`;
-  content.append(author, text);
+  text.textContent = isSystemMessage
+    ? ` ${item.message}`
+    : `: ${item.message}`;
+
+  content.appendChild(author);
+
+  if (
+    !isSystemMessage &&
+    item.user_id &&
+    item.user_id !== currentUser?.id
+  ) {
+    const mentionButton =
+      document.createElement("button");
+
+    mentionButton.type = "button";
+    mentionButton.className =
+      "chat-mention-button";
+    mentionButton.textContent = "»";
+    mentionButton.title =
+      `Обратиться к ${item.nickname}`;
+    mentionButton.setAttribute(
+      "aria-label",
+      `Обратиться к ${item.nickname}`
+    );
+
+    mentionButton.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        event.stopPropagation();
+        insertChatMention(
+          item.nickname
+        );
+      }
+    );
+
+    content.appendChild(
+      mentionButton
+    );
+  }
+
+  content.appendChild(text);
 
   const time = document.createElement("span");
   time.className = "chat-message-time";
