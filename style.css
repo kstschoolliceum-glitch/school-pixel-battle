@@ -6712,3 +6712,41 @@ body.admin-view .mobile-nav {
     box-shadow: 3px 3px 0 #050912;
   }
 }
+
+
+/* ---------- ACHIEVEMENT BADGE LABELS ---------- */
+
+.player-card-achievement-badge {
+  grid-template-rows: 1fr auto;
+  gap: 4px;
+  min-height: 88px;
+  aspect-ratio: auto;
+}
+
+.player-card-achievement-badge-label {
+  display: -webkit-box;
+  width: 100%;
+  min-height: 22px;
+  overflow: hidden;
+  color: #cbd5e1;
+  font: 700 9px/1.15 Arial, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.player-card-achievement-badge.is-unlocked .player-card-achievement-badge-label {
+  color: #fde68a;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-badge {
+    min-height: 82px;
+    padding: 6px 4px;
+  }
+
+  .player-card-achievement-badge-icon {
+    font-size: 27px;
+  }
+}

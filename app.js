@@ -12384,15 +12384,23 @@ const playerCard = (() => {
     const target = Math.max(1, Number(item.target) || 1);
     const percent = Math.min(100, Math.round(current / target * 100));
     const remaining = Math.max(0, 100 - percent);
-    achievementPopupIcon.textContent = item.icon || "🏆";
-    achievementPopupTitle.textContent = item.title || "Достижение";
-    achievementPopupDescription.textContent = item.description || "";
-    achievementPopupBar.style.width = `${percent}%`;
-    achievementPopupPercent.textContent = item.unlocked
-      ? "Выполнено на 100%"
-      : `Осталось выполнить: ${remaining}%`;
-    achievementPopupValue.textContent =
-      `Прогресс: ${Math.min(current, target).toLocaleString("ru-RU")} из ${target.toLocaleString("ru-RU")}`;
+    const secretLocked = Boolean(item.secret && !item.unlocked);
+    achievementPopupIcon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+    achievementPopupTitle.textContent = secretLocked
+      ? "Секретное достижение"
+      : (item.title || "Достижение");
+    achievementPopupDescription.textContent = secretLocked
+      ? "Продолжай играть — условие этого достижения пока скрыто."
+      : (item.description || "");
+    achievementPopupBar.style.width = secretLocked ? "0%" : `${percent}%`;
+    achievementPopupPercent.textContent = secretLocked
+      ? "Прогресс скрыт"
+      : item.unlocked
+        ? "Выполнено на 100%"
+        : `Осталось выполнить: ${remaining}%`;
+    achievementPopupValue.textContent = secretLocked
+      ? ""
+      : `Прогресс: ${Math.min(current, target).toLocaleString("ru-RU")} из ${target.toLocaleString("ru-RU")}`;
     achievementPopup.classList.remove("hidden");
   }
 
@@ -12408,10 +12416,18 @@ const playerCard = (() => {
       badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
       badge.setAttribute("aria-label", `${item.title}. Посмотреть прогресс`);
 
+      const secretLocked = Boolean(item.secret && !item.unlocked);
       const icon = document.createElement("span");
       icon.className = "player-card-achievement-badge-icon";
-      icon.textContent = item.icon || "🏆";
-      badge.appendChild(icon);
+      icon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+
+      const label = document.createElement("span");
+      label.className = "player-card-achievement-badge-label";
+      label.textContent = secretLocked
+        ? "Секретное"
+        : (item.title || "Достижение");
+
+      badge.append(icon, label);
 
       if (!item.unlocked) {
         const lock = document.createElement("small");
