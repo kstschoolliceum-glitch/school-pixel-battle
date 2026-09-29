@@ -34,75 +34,74 @@ as $$
     ]::text[]);
 $$;
 
-do $patch_active_referrals$
-declare
-    v_definition text;
-    v_old text :=
-        E'select count(*)::bigint\n'
-        || E'    into v_referrals\n'
-        || E'    from public.student_referrals sr\n'
-        || '    where sr.inviter_id = p_user_id;';
-    v_new text :=
-        E'select count(*)::bigint\n'
-        || E'    into v_referrals\n'
-        || E'    from public.student_referrals sr\n'
-        || E'    join public.profiles invited on invited.id = sr.invited_id\n'
-        || E'    left join public.classes invited_class on invited_class.id = invited.class_id\n'
-        || E'    where sr.inviter_id = p_user_id\n'
-        || E'      and coalesce(invited.banned, false) = false\n'
-        || E'      and upper(btrim(coalesce(invited_class.name, ''''))) <> ''МОДЕРАТОР''\n'
-        || E'      and exists (\n'
-        || E'          select 1\n'
-        || E'          from public.pixel_history referral_pixels\n'
-        || E'          where referral_pixels.user_id = sr.invited_id\n'
-        || E'          group by referral_pixels.user_id\n'
-        || E'          having count(*) >= 50\n'
-        || E'             and count(distinct (\n'
-        || E'                 referral_pixels.created_at at time zone ''Asia/Almaty''\n'
-        || E'             )::date) >= 3\n'
-        || E'      );';
-begin
-    if to_regprocedure('public.get_medium_achievements(uuid)') is null then
-        raise exception 'MEDIUM_ACHIEVEMENTS_MIGRATION_REQUIRED';
-    end if;
+create or replace function public.get_active_referral_count(p_user_id uuid)
+returns bigint
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select count(*)::bigint
+    from public.student_referrals sr
+    join public.profiles invited on invited.id = sr.invited_id
+    left join public.classes invited_class on invited_class.id = invited.class_id
+    where sr.inviter_id = p_user_id
+      and coalesce(invited.banned, false) = false
+      and upper(btrim(coalesce(invited_class.name, ''))) <> 'МОДЕРАТОР'
+      and exists (
+          select 1
+          from public.pixel_history referral_pixels
+          where referral_pixels.user_id = sr.invited_id
+          group by referral_pixels.user_id
+          having count(*) >= 50
+             and count(distinct (
+                 referral_pixels.created_at at time zone 'Asia/Almaty'
+             )::date) >= 3
+      );
+$$;
 
-    select pg_get_functiondef(
-        'public.get_medium_achievements(uuid)'::regprocedure
+create or replace function public.apply_active_referral_progress(
+    p_items jsonb,
+    p_active_count bigint
+)
+returns jsonb
+language sql
+stable
+set search_path = public
+as $$
+    select coalesce(
+        jsonb_agg(
+            case
+                when item.value ->> 'id' in (
+                    'referral_2_medium',
+                    'referral_3_medium',
+                    'referral_5_medium',
+                    'referral_10_medium'
+                ) then
+                    item.value || jsonb_build_object(
+                        'description',
+                        format(
+                            'Пригласи %s активных учеников: каждому нужно 50 пикселей в 3 разные дни',
+                            item.value ->> 'target'
+                        ),
+                        'unlocked',
+                        coalesce(p_active_count, 0)
+                            >= (item.value ->> 'target')::bigint,
+                        'progress',
+                        least(
+                            coalesce(p_active_count, 0),
+                            (item.value ->> 'target')::bigint
+                        )
+                    )
+                else item.value
+            end
+            order by item.ordinality
+        ),
+        '[]'::jsonb
     )
-    into v_definition;
-
-    if position('having count(*) >= 50' in v_definition) = 0 then
-        if position(v_old in v_definition) = 0 then
-            raise exception 'REFERRAL_ACHIEVEMENT_MARKER_CHANGED';
-        end if;
-
-        v_definition := replace(v_definition, v_old, v_new);
-    end if;
-
-    v_definition := replace(
-        v_definition,
-        'Пригласи 2 учеников по реферальной ссылке',
-        'Пригласи 2 активных учеников: каждому нужно 50 пикселей в 3 разные дни'
-    );
-    v_definition := replace(
-        v_definition,
-        'Пригласи 3 учеников по реферальной ссылке',
-        'Пригласи 3 активных учеников: каждому нужно 50 пикселей в 3 разные дни'
-    );
-    v_definition := replace(
-        v_definition,
-        'Пригласи 5 учеников по реферальной ссылке',
-        'Пригласи 5 активных учеников: каждому нужно 50 пикселей в 3 разные дни'
-    );
-    v_definition := replace(
-        v_definition,
-        'Пригласи 10 учеников по реферальной ссылке',
-        'Пригласи 10 активных учеников: каждому нужно 50 пикселей в 3 разные дни'
-    );
-
-    execute v_definition;
-end;
-$patch_active_referrals$;
+    from jsonb_array_elements(coalesce(p_items, '[]'::jsonb))
+        with ordinality as item(value, ordinality);
+$$;
 
 create or replace function public.get_long_term_achievements(p_user_id uuid)
 returns jsonb
@@ -161,24 +160,8 @@ begin
 
     v_minigames := v_unblock + v_sokoban + v_fifteen;
 
-    select count(*)::bigint
-    into v_active_referrals
-    from public.student_referrals sr
-    join public.profiles invited on invited.id = sr.invited_id
-    left join public.classes invited_class on invited_class.id = invited.class_id
-    where sr.inviter_id = p_user_id
-      and coalesce(invited.banned, false) = false
-      and upper(btrim(coalesce(invited_class.name, ''))) <> 'МОДЕРАТОР'
-      and exists (
-          select 1
-          from public.pixel_history referral_pixels
-          where referral_pixels.user_id = sr.invited_id
-          group by referral_pixels.user_id
-          having count(*) >= 50
-             and count(distinct (
-                 referral_pixels.created_at at time zone 'Asia/Almaty'
-             )::date) >= 3
-      );
+    v_active_referrals :=
+        public.get_active_referral_count(p_user_id);
 
     v_legend_steps :=
         (case when v_total_pixels >= 5000 then 1 else 0 end)
@@ -375,7 +358,13 @@ begin
             coalesce(public.get_fun_achievements(p_user_id), '[]'::jsonb)
         )
         || public.filter_redundant_achievements(
-            coalesce(public.get_medium_achievements(p_user_id), '[]'::jsonb)
+            public.apply_active_referral_progress(
+                coalesce(
+                    public.get_medium_achievements(p_user_id),
+                    '[]'::jsonb
+                ),
+                public.get_active_referral_count(p_user_id)
+            )
         )
         || coalesce(public.get_long_term_achievements(p_user_id), '[]'::jsonb);
 
@@ -389,6 +378,10 @@ end;
 $$;
 
 revoke all on function public.filter_redundant_achievements(jsonb)
+    from public, anon, authenticated;
+revoke all on function public.get_active_referral_count(uuid)
+    from public, anon, authenticated;
+revoke all on function public.apply_active_referral_progress(jsonb, bigint)
     from public, anon, authenticated;
 revoke all on function public.get_long_term_achievements(uuid)
     from public, anon, authenticated;
