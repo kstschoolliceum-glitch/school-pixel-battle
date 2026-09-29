@@ -13383,44 +13383,107 @@ const playerCard = (() => {
     achievementPopup.classList.remove("hidden");
   }
 
+  const ACHIEVEMENT_CATEGORY_ORDER = Object.freeze([
+    "Карта",
+    "Сезоны",
+    "Чат",
+    "Ежедневные задания",
+    "Мини-игры",
+    "Команда",
+    "Секретные"
+  ]);
+
+  function achievementCategory(item) {
+    if (item.secret) return "Секретные";
+    if (item.category) return String(item.category);
+
+    const id = String(item.id || "");
+    if (id.startsWith("season") || id.startsWith("seasons")) return "Сезоны";
+    if (id.startsWith("chat") || id === "first_message") return "Чат";
+    if (id.startsWith("daily")) return "Ежедневные задания";
+    if (
+      id.startsWith("unblock") ||
+      id.startsWith("sokoban") ||
+      id.startsWith("fifteen") ||
+      id.startsWith("minigame") ||
+      id === "all_games"
+    ) return "Мини-игры";
+    if (id.startsWith("referral")) return "Команда";
+    return "Карта";
+  }
+
+  function createAchievementBadge(item) {
+    const badge = document.createElement("button");
+    badge.type = "button";
+    badge.className = "player-card-achievement-badge";
+    badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
+    const secretLocked = Boolean(item.secret && !item.unlocked);
+    badge.setAttribute(
+      "aria-label",
+      secretLocked
+        ? "Секретное достижение. Посмотреть подсказку"
+        : `${item.title}. Посмотреть прогресс`
+    );
+
+    const icon = document.createElement("span");
+    icon.className = "player-card-achievement-badge-icon";
+    icon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+
+    const label = document.createElement("span");
+    label.className = "player-card-achievement-badge-label";
+    label.textContent = secretLocked
+      ? "Секретное"
+      : (item.title || "Достижение");
+
+    badge.append(icon, label);
+
+    if (!item.unlocked) {
+      const lock = document.createElement("small");
+      lock.className = "player-card-achievement-lock";
+      lock.textContent = "🔒";
+      badge.appendChild(lock);
+    }
+
+    badge.addEventListener("click", () => showAchievementPopup(item));
+    return badge;
+  }
+
   function renderAchievements(items = []) {
     achievementList.replaceChildren();
     const unlocked = items.filter(item => item.unlocked).length;
     achievementCount.textContent = `${unlocked} / ${items.length || 3}`;
 
+    const grouped = new Map();
     items.forEach(item => {
-      const badge = document.createElement("button");
-      badge.type = "button";
-      badge.className = "player-card-achievement-badge";
-      badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
-      const secretLocked = Boolean(item.secret && !item.unlocked);
-      badge.setAttribute(
-        "aria-label",
-        secretLocked
-          ? "Секретное достижение. Посмотреть подсказку"
-          : `${item.title}. Посмотреть прогресс`
-      );
-      const icon = document.createElement("span");
-      icon.className = "player-card-achievement-badge-icon";
-      icon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+      const category = achievementCategory(item);
+      if (!grouped.has(category)) grouped.set(category, []);
+      grouped.get(category).push(item);
+    });
 
-      const label = document.createElement("span");
-      label.className = "player-card-achievement-badge-label";
-      label.textContent = secretLocked
-        ? "Секретное"
-        : (item.title || "Достижение");
+    const categories = [
+      ...ACHIEVEMENT_CATEGORY_ORDER,
+      ...[...grouped.keys()].filter(
+        category => !ACHIEVEMENT_CATEGORY_ORDER.includes(category)
+      )
+    ];
 
-      badge.append(icon, label);
+    categories.forEach(category => {
+      const categoryItems = grouped.get(category);
+      if (!categoryItems?.length) return;
 
-      if (!item.unlocked) {
-        const lock = document.createElement("small");
-        lock.className = "player-card-achievement-lock";
-        lock.textContent = "🔒";
-        badge.appendChild(lock);
-      }
+      const section = document.createElement("section");
+      section.className = "player-card-achievement-category";
 
-      badge.addEventListener("click", () => showAchievementPopup(item));
-      achievementList.appendChild(badge);
+      const heading = document.createElement("h4");
+      heading.className = "player-card-achievement-category-title";
+      heading.textContent = category;
+
+      const grid = document.createElement("div");
+      grid.className = "player-card-achievement-category-grid";
+      categoryItems.forEach(item => grid.appendChild(createAchievementBadge(item)));
+
+      section.append(heading, grid);
+      achievementList.appendChild(section);
     });
   }
 

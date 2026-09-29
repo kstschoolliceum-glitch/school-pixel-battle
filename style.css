@@ -7161,3 +7161,41 @@ body.admin-view .mobile-nav {
   }
 }
 
+
+
+/* ---------- ACHIEVEMENT CATEGORIES ---------- */
+.player-card-achievement-category {
+  min-width: 0;
+}
+
+.player-card-achievement-category + .player-card-achievement-category {
+  margin-top: 14px;
+}
+
+.player-card-achievement-category-title {
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  border-left: 3px solid #fbbf24;
+  background: #101a2b;
+  color: #fde68a;
+  font: 900 13px/1.2 "Courier New", monospace;
+}
+
+.player-card-achievement-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 9px;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .player-card-achievement-category-title {
+    position: sticky;
+    top: -1px;
+    z-index: 1;
+  }
+}
