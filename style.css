@@ -7105,3 +7105,59 @@ body.admin-view .mobile-nav {
   }
 }
 
+/* ---------- LARGE PALETTE CATEGORIES ---------- */
+
+.color-palette-tabs {
+  margin: 0 0 14px;
+  padding: 3px 2px 7px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.color-palette-tab {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 5px 9px;
+  border: 1px solid #40506b;
+  border-radius: 2px;
+  background: #101a2d;
+  color: #aab8ce;
+  font: 800 10px/1.1 "Courier New", monospace;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+
+.color-palette-tab:hover,
+.color-palette-tab:focus-visible {
+  border-color: #a78bfa;
+  color: #ffffff;
+}
+
+.color-palette-tab.active {
+  border-color: #fbbf24;
+  background: #33264b;
+  color: #fde68a;
+  box-shadow:
+    inset 0 -2px 0 #fbbf24;
+}
+
+.color-palette-group[hidden] {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .color-palette-tabs {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .color-palette-tab {
+    min-height: 34px;
+    padding: 6px 9px;
+  }
+}
+

@@ -187,27 +187,126 @@ const pixelOwners =
  */
 const classNamesById =
   new Map();
-const COLORS = [
-  "#ffffff",
-  "#ef4444",
-  "#f97316",
-  "#facc15",
-  "#22c55e",
-  "#06b6d4",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ec4899",
-  "#111111",
+const PIXEL_COLOR_DATA = Object.freeze([
+  { color: "#ffffff", name: "Белый", group: "Основные" },
+  { color: "#ef4444", name: "Красный", group: "Основные" },
+  { color: "#f97316", name: "Оранжевый", group: "Основные" },
+  { color: "#facc15", name: "Жёлтый", group: "Основные" },
+  { color: "#22c55e", name: "Зелёный", group: "Основные" },
+  { color: "#06b6d4", name: "Бирюзовый", group: "Основные" },
+  { color: "#3b82f6", name: "Синий", group: "Основные" },
+  { color: "#8b5cf6", name: "Фиолетовый", group: "Основные" },
+  { color: "#ec4899", name: "Розовый", group: "Основные" },
+  { color: "#111111", name: "Чёрный", group: "Основные" },
+  { color: "#92400e", name: "Коричневый", group: "Основные" },
+  { color: "#fb923c", name: "Светло-оранжевый", group: "Основные" },
+  { color: "#f472b6", name: "Светло-розовый", group: "Основные" },
+  { color: "#a78bfa", name: "Сиреневый", group: "Основные" },
+  { color: "#38bdf8", name: "Голубой", group: "Основные" },
+  { color: "#84cc16", name: "Лаймовый", group: "Основные" },
+  { color: "#cbd5e1", name: "Светло-серый", group: "Основные" },
+  { color: "#475569", name: "Тёмно-серый", group: "Основные" },
+  { color: "#fff1f2", name: "Красный 50", group: "Красные" },
+  { color: "#ffe4e6", name: "Красный 100", group: "Красные" },
+  { color: "#fecdd3", name: "Красный 200", group: "Красные" },
+  { color: "#fda4af", name: "Красный 300", group: "Красные" },
+  { color: "#fb7185", name: "Красный 400", group: "Красные" },
+  { color: "#e11d48", name: "Малиновый 600", group: "Красные" },
+  { color: "#be123c", name: "Малиновый 700", group: "Красные" },
+  { color: "#881337", name: "Бордовый", group: "Красные" },
+  { color: "#fee2e2", name: "Алый 100", group: "Красные" },
+  { color: "#fecaca", name: "Алый 200", group: "Красные" },
+  { color: "#fca5a5", name: "Алый 300", group: "Красные" },
+  { color: "#f87171", name: "Алый 400", group: "Красные" },
+  { color: "#dc2626", name: "Алый 600", group: "Красные" },
+  { color: "#b91c1c", name: "Алый 700", group: "Красные" },
+  { color: "#7f1d1d", name: "Тёмно-красный", group: "Красные" },
+  { color: "#fff7ed", name: "Оранжевый 50", group: "Тёплые" },
+  { color: "#ffedd5", name: "Оранжевый 100", group: "Тёплые" },
+  { color: "#fed7aa", name: "Оранжевый 200", group: "Тёплые" },
+  { color: "#fdba74", name: "Оранжевый 300", group: "Тёплые" },
+  { color: "#ea580c", name: "Оранжевый 600", group: "Тёплые" },
+  { color: "#c2410c", name: "Оранжевый 700", group: "Тёплые" },
+  { color: "#7c2d12", name: "Тёмно-оранжевый", group: "Тёплые" },
+  { color: "#fefce8", name: "Жёлтый 50", group: "Тёплые" },
+  { color: "#fef9c3", name: "Жёлтый 100", group: "Тёплые" },
+  { color: "#fef08a", name: "Жёлтый 200", group: "Тёплые" },
+  { color: "#fde047", name: "Жёлтый 300", group: "Тёплые" },
+  { color: "#eab308", name: "Жёлтый 500", group: "Тёплые" },
+  { color: "#ca8a04", name: "Жёлтый 600", group: "Тёплые" },
+  { color: "#854d0e", name: "Тёмно-жёлтый", group: "Тёплые" },
+  { color: "#f0fdf4", name: "Зелёный 50", group: "Зелёные" },
+  { color: "#dcfce7", name: "Зелёный 100", group: "Зелёные" },
+  { color: "#bbf7d0", name: "Зелёный 200", group: "Зелёные" },
+  { color: "#86efac", name: "Зелёный 300", group: "Зелёные" },
+  { color: "#4ade80", name: "Зелёный 400", group: "Зелёные" },
+  { color: "#16a34a", name: "Зелёный 600", group: "Зелёные" },
+  { color: "#15803d", name: "Зелёный 700", group: "Зелёные" },
+  { color: "#14532d", name: "Тёмно-зелёный", group: "Зелёные" },
+  { color: "#ecfccb", name: "Лайм 100", group: "Зелёные" },
+  { color: "#d9f99d", name: "Лайм 200", group: "Зелёные" },
+  { color: "#bef264", name: "Лайм 300", group: "Зелёные" },
+  { color: "#65a30d", name: "Лайм 600", group: "Зелёные" },
+  { color: "#3f6212", name: "Тёмный лайм", group: "Зелёные" },
+  { color: "#ecfeff", name: "Бирюзовый 50", group: "Холодные" },
+  { color: "#cffafe", name: "Бирюзовый 100", group: "Холодные" },
+  { color: "#a5f3fc", name: "Бирюзовый 200", group: "Холодные" },
+  { color: "#67e8f9", name: "Бирюзовый 300", group: "Холодные" },
+  { color: "#22d3ee", name: "Бирюзовый 400", group: "Холодные" },
+  { color: "#0891b2", name: "Бирюзовый 600", group: "Холодные" },
+  { color: "#155e75", name: "Тёмно-бирюзовый", group: "Холодные" },
+  { color: "#f0f9ff", name: "Небесный 50", group: "Холодные" },
+  { color: "#e0f2fe", name: "Небесный 100", group: "Холодные" },
+  { color: "#bae6fd", name: "Небесный 200", group: "Холодные" },
+  { color: "#7dd3fc", name: "Небесный 300", group: "Холодные" },
+  { color: "#0ea5e9", name: "Небесный 500", group: "Холодные" },
+  { color: "#0284c7", name: "Небесный 600", group: "Холодные" },
+  { color: "#075985", name: "Тёмно-голубой", group: "Холодные" },
+  { color: "#eff6ff", name: "Синий 50", group: "Холодные" },
+  { color: "#dbeafe", name: "Синий 100", group: "Холодные" },
+  { color: "#bfdbfe", name: "Синий 200", group: "Холодные" },
+  { color: "#93c5fd", name: "Синий 300", group: "Холодные" },
+  { color: "#60a5fa", name: "Синий 400", group: "Холодные" },
+  { color: "#2563eb", name: "Синий 600", group: "Холодные" },
+  { color: "#1d4ed8", name: "Синий 700", group: "Холодные" },
+  { color: "#1e3a8a", name: "Тёмно-синий", group: "Холодные" },
+  { color: "#f5f3ff", name: "Фиолетовый 50", group: "Фиолетовые" },
+  { color: "#ede9fe", name: "Фиолетовый 100", group: "Фиолетовые" },
+  { color: "#ddd6fe", name: "Фиолетовый 200", group: "Фиолетовые" },
+  { color: "#c4b5fd", name: "Фиолетовый 300", group: "Фиолетовые" },
+  { color: "#7c3aed", name: "Фиолетовый 600", group: "Фиолетовые" },
+  { color: "#6d28d9", name: "Фиолетовый 700", group: "Фиолетовые" },
+  { color: "#4c1d95", name: "Тёмно-фиолетовый", group: "Фиолетовые" },
+  { color: "#fdf2f8", name: "Розовый 50", group: "Фиолетовые" },
+  { color: "#fce7f3", name: "Розовый 100", group: "Фиолетовые" },
+  { color: "#fbcfe8", name: "Розовый 200", group: "Фиолетовые" },
+  { color: "#f9a8d4", name: "Розовый 300", group: "Фиолетовые" },
+  { color: "#db2777", name: "Розовый 600", group: "Фиолетовые" },
+  { color: "#be185d", name: "Розовый 700", group: "Фиолетовые" },
+  { color: "#831843", name: "Тёмно-розовый", group: "Фиолетовые" },
+  { color: "#fffbeb", name: "Золотой 50", group: "Земляные" },
+  { color: "#fef3c7", name: "Золотой 100", group: "Земляные" },
+  { color: "#fde68a", name: "Золотой 200", group: "Земляные" },
+  { color: "#fbbf24", name: "Золотой 400", group: "Земляные" },
+  { color: "#f59e0b", name: "Янтарный 500", group: "Земляные" },
+  { color: "#d97706", name: "Янтарный 600", group: "Земляные" },
+  { color: "#b45309", name: "Коричневый 600", group: "Земляные" },
+  { color: "#78350f", name: "Коричневый 800", group: "Земляные" },
+  { color: "#451a03", name: "Тёмно-коричневый", group: "Земляные" },
+  { color: "#f8fafc", name: "Холодный белый", group: "Нейтральные" },
+  { color: "#f1f5f9", name: "Серый 100", group: "Нейтральные" },
+  { color: "#e2e8f0", name: "Серый 200", group: "Нейтральные" },
+  { color: "#94a3b8", name: "Серый 400", group: "Нейтральные" },
+  { color: "#64748b", name: "Серый 500", group: "Нейтральные" },
+  { color: "#334155", name: "Серый 700", group: "Нейтральные" },
+  { color: "#1e293b", name: "Серый 800", group: "Нейтральные" },
+  { color: "#0f172a", name: "Серый 900", group: "Нейтральные" }
+]);
 
-  "#92400e",
-  "#fb923c",
-  "#f472b6",
-  "#a78bfa",
-  "#38bdf8",
-  "#84cc16",
-  "#cbd5e1",
-  "#475569"
-];
+const COLORS =
+  PIXEL_COLOR_DATA.map(
+    item => item.color
+  );
 
 let selectedColor = "#ef4444";
 
@@ -1217,41 +1316,35 @@ window.addEventListener("pagehide", () => {
    ПАЛИТРА
 ------------------------- */
 
-const PALETTE_COLOR_GROUPS = [
-  {
-    title: "Основные",
-    colors: [
-      ["#ef4444", "Красный"],
-      ["#f97316", "Оранжевый"],
-      ["#facc15", "Жёлтый"],
-      ["#22c55e", "Зелёный"],
-      ["#06b6d4", "Бирюзовый"],
-      ["#3b82f6", "Синий"],
-      ["#8b5cf6", "Фиолетовый"],
-      ["#ec4899", "Розовый"]
-    ]
-  },
-  {
-    title: "Дополнительные",
-    colors: [
-      ["#92400e", "Коричневый"],
-      ["#fb923c", "Светло-оранжевый"],
-      ["#f472b6", "Светло-розовый"],
-      ["#a78bfa", "Сиреневый"],
-      ["#38bdf8", "Голубой"],
-      ["#84cc16", "Лаймовый"]
-    ]
-  },
-  {
-    title: "Нейтральные",
-    colors: [
-      ["#ffffff", "Белый"],
-      ["#cbd5e1", "Светло-серый"],
-      ["#475569", "Тёмно-серый"],
-      ["#111111", "Чёрный"]
-    ]
-  }
+const PALETTE_GROUP_ORDER = [
+  "Основные",
+  "Красные",
+  "Тёплые",
+  "Зелёные",
+  "Холодные",
+  "Фиолетовые",
+  "Земляные",
+  "Нейтральные"
 ];
+
+const PALETTE_COLOR_GROUPS =
+  PALETTE_GROUP_ORDER.map(
+    title => ({
+      title,
+      colors:
+        PIXEL_COLOR_DATA
+          .filter(
+            item =>
+              item.group === title
+          )
+          .map(
+            item => [
+              item.color,
+              item.name
+            ]
+          )
+    })
+  );
 
 const PALETTE_RECENT_KEY =
   "pixelBattleRecentColors";
@@ -1288,6 +1381,11 @@ const colorPaletteClose =
 const colorPaletteGroups =
   document.getElementById(
     "color-palette-groups"
+  );
+
+const colorPaletteTabs =
+  document.getElementById(
+    "color-palette-tabs"
   );
 
 const colorPaletteRecentSection =
@@ -1552,15 +1650,96 @@ function selectPaletteColor(
   }
 }
 
+let activePaletteGroup =
+  "Основные";
+
+function activatePaletteGroup(
+  groupTitle
+) {
+  if (
+    !PALETTE_GROUP_ORDER.includes(
+      groupTitle
+    )
+  ) {
+    groupTitle = "Основные";
+  }
+
+  activePaletteGroup =
+    groupTitle;
+
+  document
+    .querySelectorAll(
+      "[data-palette-group]"
+    )
+    .forEach(section => {
+      section.hidden =
+        section.dataset.paletteGroup !==
+        activePaletteGroup;
+    });
+
+  document
+    .querySelectorAll(
+      "[data-palette-tab]"
+    )
+    .forEach(button => {
+      const active =
+        button.dataset.paletteTab ===
+        activePaletteGroup;
+
+      button.classList.toggle(
+        "active",
+        active
+      );
+
+      button.setAttribute(
+        "aria-selected",
+        active ? "true" : "false"
+      );
+    });
+}
+
 for (
   const group
   of PALETTE_COLOR_GROUPS
 ) {
+  const tab =
+    document.createElement("button");
+
+  tab.type = "button";
+  tab.className =
+    "color-palette-tab";
+  tab.dataset.paletteTab =
+    group.title;
+  tab.setAttribute(
+    "role",
+    "tab"
+  );
+  tab.textContent =
+    group.title;
+
+  tab.addEventListener(
+    "click",
+    () => {
+      activatePaletteGroup(
+        group.title
+      );
+    }
+  );
+
+  colorPaletteTabs?.appendChild(
+    tab
+  );
+
   const section =
     document.createElement("section");
 
   section.className =
     "color-palette-group";
+  section.dataset.paletteGroup =
+    group.title;
+  section.hidden =
+    group.title !==
+    activePaletteGroup;
 
   const title =
     document.createElement("h3");
@@ -1627,6 +1806,18 @@ colorPaletteOpen?.addEventListener(
     renderRecentPaletteColors();
     updatePaletteSelection();
 
+    const selectedData =
+      PIXEL_COLOR_DATA.find(
+        item =>
+          item.color ===
+          selectedColor
+      );
+
+    activatePaletteGroup(
+      selectedData?.group ||
+      activePaletteGroup
+    );
+
     if (!colorPaletteDialog.open) {
       colorPaletteDialog.showModal();
     }
@@ -1653,6 +1844,9 @@ colorPaletteDialog?.addEventListener(
 );
 
 renderRecentPaletteColors();
+activatePaletteGroup(
+  activePaletteGroup
+);
 updatePaletteSelection();
 
 
