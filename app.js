@@ -12415,7 +12415,7 @@ const playerCard = (() => {
       : (item.description || "");
     achievementPopupBar.style.width = secretLocked ? "0%" : `${percent}%`;
     achievementPopupPercent.textContent = secretLocked
-      ? "Прогресс скрыт"
+      ? `${Math.min(current, target).toLocaleString("ru-RU")} / ${target.toLocaleString("ru-RU")}`
       : item.unlocked
         ? "Выполнено на 100%"
         : `Осталось выполнить: ${remaining}%`;
