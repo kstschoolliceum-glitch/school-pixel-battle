@@ -6750,39 +6750,3 @@ body.admin-view .mobile-nav {
     font-size: 27px;
   }
 }
-
-/* ---------- INSTALL APP BUTTON ---------- */
-
-.install-app-button {
-  min-height: 32px;
-  padding: 6px 9px;
-  border: 1px solid #34d399;
-  border-radius: 0;
-  background: #123d35;
-  color: #c9ffed;
-  box-shadow: 2px 2px 0 #070b15;
-  font: 800 12px/1.15 "Courier New", monospace;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.install-app-button:hover,
-.install-app-button:focus-visible {
-  border-color: #86efac;
-  background: #185548;
-  color: #ffffff;
-}
-
-.install-app-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-@media (max-width: 650px) {
-  .install-app-button {
-    min-height: 30px;
-    padding: 5px 7px;
-    font-size: 10px;
-  }
-}
-
