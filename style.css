@@ -7164,12 +7164,17 @@ body.admin-view .mobile-nav {
 
 
 /* ---------- ACHIEVEMENT CATEGORIES ---------- */
+.player-card-achievement-list {
+  display: block;
+}
+
 .player-card-achievement-category {
+  width: 100%;
   min-width: 0;
 }
 
 .player-card-achievement-category + .player-card-achievement-category {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .player-card-achievement-category-title {
@@ -7183,19 +7188,48 @@ body.admin-view .mobile-nav {
 
 .player-card-achievement-category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
   gap: 9px;
 }
 
 @media (max-width: 650px) {
-  .player-card-achievement-category-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
+  .player-card-achievement-category + .player-card-achievement-category {
+    margin-top: 13px;
   }
 
   .player-card-achievement-category-title {
     position: sticky;
     top: -1px;
     z-index: 1;
+    margin-bottom: 7px;
+    padding: 7px 8px;
+    box-shadow: 0 3px 0 rgba(5, 9, 18, 0.72);
+    font-size: 12px;
+  }
+
+  .player-card-achievement-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .player-card-achievement-badge {
+    width: 100%;
+    min-height: 80px;
+    padding: 6px 3px;
+  }
+
+  .player-card-achievement-badge-label {
+    font-size: 8px;
   }
 }
+
+@media (max-width: 360px) {
+  .player-card-achievement-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .player-card-achievement-badge-label {
+    font-size: 9px;
+  }
+}
+
