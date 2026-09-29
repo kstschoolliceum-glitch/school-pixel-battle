@@ -100,6 +100,107 @@ const loginError =
 
 let currentUser = null;
 
+const installAppButton =
+  document.getElementById(
+    "install-app-button"
+  );
+
+let deferredInstallPrompt = null;
+
+function updateInstallAppButton() {
+  if (!installAppButton) return;
+
+  const installed =
+    isStandaloneApp();
+
+  installAppButton.classList.toggle(
+    "hidden",
+    installed
+  );
+
+  installAppButton.disabled = false;
+}
+
+async function installPixelBattleApp() {
+  if (!installAppButton) return;
+
+  if (isStandaloneApp()) {
+    installAppButton.classList.add(
+      "hidden"
+    );
+    return;
+  }
+
+  if (deferredInstallPrompt) {
+    const promptEvent =
+      deferredInstallPrompt;
+
+    deferredInstallPrompt = null;
+    installAppButton.disabled = true;
+
+    try {
+      await promptEvent.prompt();
+
+      const choice =
+        await promptEvent.userChoice;
+
+      if (choice?.outcome === "accepted") {
+        installAppButton.classList.add(
+          "hidden"
+        );
+      } else {
+        installAppButton.disabled = false;
+      }
+    } catch (error) {
+      console.warn(
+        "APP INSTALL PROMPT ERROR:",
+        error
+      );
+
+      installAppButton.disabled = false;
+    }
+
+    return;
+  }
+
+  if (isIosDevice()) {
+    alert(
+      "На iPhone или iPad нажмите «Поделиться», затем выберите «На экран Домой» и подтвердите добавление."
+    );
+    return;
+  }
+
+  alert(
+    "Откройте меню браузера ⋮ и выберите «Установить приложение» или «Добавить на главный экран»."
+  );
+}
+
+window.addEventListener(
+  "beforeinstallprompt",
+  event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallAppButton();
+  }
+);
+
+window.addEventListener(
+  "appinstalled",
+  () => {
+    deferredInstallPrompt = null;
+    installAppButton?.classList.add(
+      "hidden"
+    );
+  }
+);
+
+installAppButton?.addEventListener(
+  "click",
+  installPixelBattleApp
+);
+
+updateInstallAppButton();
+
 function enablePlayerCardLink(element, userId) {
   if (!element || !userId) return;
   element.classList.add("player-card-link");
@@ -11136,8 +11237,14 @@ function setNotificationStatus(
 
 function isIosDevice() {
 
-  return /iPad|iPhone|iPod/.test(
-    navigator.userAgent
+  return (
+    /iPad|iPhone|iPod/.test(
+      navigator.userAgent
+    ) ||
+    (
+      navigator.platform === "MacIntel" &&
+      navigator.maxTouchPoints > 1
+    )
   );
 
 }
