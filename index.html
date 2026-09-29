@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=59">
+  <link rel="stylesheet" href="style.css?v=60">
 </head>
 
 <body>
@@ -671,12 +671,63 @@
 </button>
 
 <button
-  class="color"
-  data-color="#475569"
-  style="background:#475569">
+  id="color-palette-open"
+  class="color-palette-open"
+  type="button"
+  aria-haspopup="dialog"
+  aria-controls="color-palette-dialog"
+  aria-label="Открыть палитру цветов"
+  title="Открыть палитру цветов"
+>
+  <span aria-hidden="true">🎨</span>
+  <i id="color-palette-button-swatch" aria-hidden="true"></i>
 </button>
 
         </div>
+
+        <dialog
+          id="color-palette-dialog"
+          class="color-palette-dialog"
+          aria-labelledby="color-palette-title"
+        >
+          <button
+            id="color-palette-close"
+            class="color-palette-close"
+            type="button"
+            aria-label="Закрыть палитру"
+          >×</button>
+
+          <div class="color-palette-heading">
+            <span>PIXEL COLORS</span>
+            <h2 id="color-palette-title">🎨 Выберите цвет</h2>
+            <p>Нажмите на цвет — палитра закроется, и можно ставить пиксель.</p>
+          </div>
+
+          <div class="color-palette-selected">
+            <i id="color-palette-selected-swatch" aria-hidden="true"></i>
+            <div>
+              <small>Выбранный цвет</small>
+              <strong id="color-palette-selected-name">Красный</strong>
+              <span id="color-palette-selected-code">#EF4444</span>
+            </div>
+          </div>
+
+          <section
+            id="color-palette-recent-section"
+            class="color-palette-group hidden"
+          >
+            <h3>Недавние</h3>
+            <div
+              id="color-palette-recent"
+              class="color-palette-grid color-palette-grid-recent"
+            ></div>
+          </section>
+
+          <div
+            id="color-palette-groups"
+            class="color-palette-groups"
+          ></div>
+        </dialog>
 
 
         <button id="place-button" disabled>
@@ -2444,7 +2495,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=95"></script>
+  <script src="app.js?v=96"></script>
 
 </body>
 </html>
