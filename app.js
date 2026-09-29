@@ -12375,6 +12375,27 @@ const playerCard = (() => {
       : "";
   }
 
+  const SECRET_ACHIEVEMENT_HINTS = Object.freeze({
+    night_artist: "Некоторые художники просыпаются, когда школа спит.",
+    before_bell: "Иногда лучший штрих появляется ещё до первого звонка.",
+    map_edge: "Карта заканчивается, но художник — нет.",
+    map_center: "Самое важное место может быть точно посередине.",
+    lucky_seven: "Две семёрки могут принести удачу.",
+    unlucky_thirteen: "Это число не всем приносит удачу.",
+    four_corners: "Компас укажет сразу четыре направления.",
+    repaint_five: "Настоящий художник иногда меняет решение снова и снова.",
+    one_pixel_day: "Оставь почти незаметный след — и исчезни.",
+    productive_day: "Попробуй успеть всё за один день.",
+    wall_friend: "Иногда стена тоже заслуживает внимания.",
+    restart_five: "Если не получилось — начни снова. И ещё раз.",
+    fast_unblock: "Пробка исчезает быстрее, если видеть путь заранее.",
+    long_fifteen: "Даже очень долгий путь может закончиться победой.",
+    long_sokoban: "Большой переезд требует очень много шагов.",
+    ten_restarts_win: "Упрямство иногда сильнее идеального плана.",
+    all_games_day: "Три разных испытания ждут одного героя.",
+    return_week: "Иногда нужно надолго уйти, чтобы красиво вернуться."
+  });
+
   function hideAchievementPopup() {
     achievementPopup.classList.add("hidden");
   }
@@ -12390,7 +12411,7 @@ const playerCard = (() => {
       ? "Секретное достижение"
       : (item.title || "Достижение");
     achievementPopupDescription.textContent = secretLocked
-      ? "Продолжай играть — условие этого достижения пока скрыто."
+      ? `Подсказка: ${SECRET_ACHIEVEMENT_HINTS[item.id] || "Продолжай играть и пробуй необычные действия."}`
       : (item.description || "");
     achievementPopupBar.style.width = secretLocked ? "0%" : `${percent}%`;
     achievementPopupPercent.textContent = secretLocked
@@ -12414,9 +12435,13 @@ const playerCard = (() => {
       badge.type = "button";
       badge.className = "player-card-achievement-badge";
       badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
-      badge.setAttribute("aria-label", `${item.title}. Посмотреть прогресс`);
-
       const secretLocked = Boolean(item.secret && !item.unlocked);
+      badge.setAttribute(
+        "aria-label",
+        secretLocked
+          ? "Секретное достижение. Посмотреть подсказку"
+          : `${item.title}. Посмотреть прогресс`
+      );
       const icon = document.createElement("span");
       icon.className = "player-card-achievement-badge-icon";
       icon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
