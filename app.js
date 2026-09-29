@@ -5985,6 +5985,12 @@ const chatSendButton =
     "chat-send-button"
   );
 
+const chatSendStatus =
+  document.getElementById(
+    "chat-send-status"
+  );
+
+let chatSendCooldownTimer = null;
 let currentChatNickname = "";
 
 function normalizeChatMentionName(value) {
@@ -6538,30 +6544,101 @@ function subscribeToChat() {
     });
 
 }
+function setChatSendStatus(text = "", isError = false) {
+  if (!chatSendStatus) return;
+  chatSendStatus.textContent = text;
+  chatSendStatus.classList.toggle("error", isError);
+  chatSendStatus.classList.toggle("hidden", !text);
+}
+
+function startChatSendCooldown(seconds) {
+  clearInterval(chatSendCooldownTimer);
+  let remaining = Math.max(1, Math.ceil(Number(seconds) || 1));
+
+  const render = () => {
+    chatSendButton.disabled = true;
+    chatSendButton.textContent = String(remaining);
+    setChatSendStatus(
+      `Подожди ${remaining} сек. перед следующим сообщением.`,
+      true
+    );
+  };
+
+  render();
+  chatSendCooldownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining > 0) {
+      render();
+      return;
+    }
+
+    clearInterval(chatSendCooldownTimer);
+    chatSendCooldownTimer = null;
+    chatSendButton.disabled = false;
+    chatSendButton.textContent = "➤";
+    setChatSendStatus("");
+  }, 1000);
+}
+
+function chatSendErrorMessage(error) {
+  const source = String(error?.message || "");
+
+  const waitMatch = source.match(
+    /CHAT_(?:WAIT|RATE_LIMIT):(\d+)/i
+  );
+  if (waitMatch) {
+    return {
+      text: "Слишком много сообщений.",
+      wait: Number(waitMatch[1])
+    };
+  }
+
+  if (source.includes("CHAT_DUPLICATE")) {
+    return {
+      text: "Такое сообщение уже было. Напиши что-нибудь другое.",
+      wait: 0
+    };
+  }
+
+  if (source.includes("CHAT_TOO_SHORT")) {
+    return {
+      text: "Сообщение должно содержать хотя бы 2 символа.",
+      wait: 0
+    };
+  }
+
+  return {
+    text: "Не удалось отправить сообщение. Попробуй ещё раз.",
+    wait: 0
+  };
+}
+
+chatInput.addEventListener("input", () => {
+  if (!chatSendCooldownTimer) setChatSendStatus("");
+});
+
 chatForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
-
 
     const message =
       chatInput.value.trim();
 
-
-    if (!message) {
+    if (!message || chatSendCooldownTimer) {
       return;
     }
-
 
     if (message.length > 200) {
+      setChatSendStatus(
+        "Сообщение не должно быть длиннее 200 символов.",
+        true
+      );
       return;
     }
 
-
-    chatSendButton.disabled =
-      true;
-
+    chatSendButton.disabled = true;
+    setChatSendStatus("");
 
     const {
       error
@@ -6573,32 +6650,35 @@ chatForm.addEventListener(
         }
       );
 
-
-    chatSendButton.disabled =
-      false;
-
-
     if (error) {
-
       console.error(
         "CHAT SEND ERROR:",
         error
       );
 
+      const result =
+        chatSendErrorMessage(error);
+
+      if (result.wait > 0) {
+        startChatSendCooldown(result.wait);
+      } else {
+        chatSendButton.disabled = false;
+        chatSendButton.textContent = "➤";
+        setChatSendStatus(result.text, true);
+      }
       return;
     }
 
-
+    chatSendButton.disabled = false;
+    chatSendButton.textContent = "➤";
     chatInput.value = "";
-
+    setChatSendStatus("");
 
     await loadChatMessages();
-
-
     chatInput.focus();
-
   }
 );
+
 const mobileMapButton =
   document.getElementById(
     "mobile-map-button"
