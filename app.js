@@ -1468,7 +1468,7 @@ async function placePixel() {
   startCooldown(Number(data.cooldown) || COOLDOWN_SECONDS);
 
   scheduleRankingRefresh();
-  loadMyProfile();
+  updateDisplayedProfileAfterPixel();
 }
 
 placeButton.addEventListener(
@@ -2851,6 +2851,38 @@ async function loadMyProfile() {
     ).toLocaleString("ru-RU");
 
 }
+
+function incrementDisplayedProfilePixelCount(
+  elementId
+) {
+  const element =
+    document.getElementById(
+      elementId
+    );
+
+  if (!element) return;
+
+  const current =
+    Number(
+      String(element.textContent || "")
+        .replace(/[^0-9]/g, "")
+    );
+
+  element.textContent =
+    (Number.isFinite(current) ? current + 1 : 1)
+      .toLocaleString("ru-RU");
+}
+
+function updateDisplayedProfileAfterPixel() {
+  incrementDisplayedProfilePixelCount(
+    "profile-weekly-pixels"
+  );
+
+  incrementDisplayedProfilePixelCount(
+    "profile-total-pixels"
+  );
+}
+
 let activeSeason = null;
 let seasonCountdownTimer = null;
 let seasonCheckTimer = null;
@@ -3045,7 +3077,10 @@ async function loadActiveSeason() {
 }
 async function checkForSeasonChange() {
 
-  if (!currentUser) {
+  if (
+    !currentUser ||
+    document.hidden
+  ) {
     return;
   }
 
@@ -3181,9 +3216,7 @@ async function checkForSeasonChange() {
   await loadClassRanking();
   await loadMyProfile();
   await dailyTasks.load();
-  await unblockMeGame.loadStatus();
-  await sokobanGame.loadStatus();
-      fifteenGame.loadStatus();
+
 
 
   drawMap();
@@ -3202,17 +3235,15 @@ function startSeasonWatcher() {
 
 
   /*
-   * Проверяем раз в минуту.
-   *
-   * Cron переключает сезон максимум
-   * раз в 5 минут, поэтому чаще
-   * проверять нет необходимости.
+   * Переключатель сезона работает с шагом до 5 минут.
+   * Синхронизируемся с этим интервалом и не опрашиваем
+   * базу чаще без необходимости.
    */
 
   seasonCheckTimer =
     setInterval(
       checkForSeasonChange,
-      60000
+      5 * 60 * 1000
     );
 
 }
@@ -3507,9 +3538,6 @@ async function checkAdminStatus() {
     );
 
     scheduleAdminOnlineUsersRefresh();
-    unblockMeGame.loadStatus();
-    sokobanGame.loadStatus();
-      fifteenGame.loadStatus();
 
   } else {
 
@@ -3555,7 +3583,15 @@ function startPlayerActivityHeartbeat() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && currentUser) touchPlayerActivity();
+  if (
+    document.hidden ||
+    !currentUser
+  ) {
+    return;
+  }
+
+  touchPlayerActivity();
+  checkForSeasonChange();
 });
 
 async function startOnlinePresence() {
@@ -3928,9 +3964,7 @@ async function initializeAuth() {
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
-    await unblockMeGame.loadStatus();
-  await sokobanGame.loadStatus();
-      fifteenGame.loadStatus();
+
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -4020,9 +4054,7 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
-    await unblockMeGame.loadStatus();
-  await sokobanGame.loadStatus();
-      fifteenGame.loadStatus();
+
     await checkAdminStatus();
     await updatePushNotificationStatus();
 
@@ -4065,6 +4097,189 @@ async function loadClassNames() {
   }
 
 }
+function decodeMapSnapshotBytes(
+  encoded,
+  expectedLength
+) {
+  const normalized =
+    String(encoded || "")
+      .replace(/\s+/g, "");
+
+  const binary =
+    atob(normalized);
+
+  if (binary.length !== expectedLength) {
+    throw new Error(
+      "MAP_SNAPSHOT_LENGTH_MISMATCH"
+    );
+  }
+
+  const output =
+    new Uint8Array(expectedLength);
+
+  for (
+    let index = 0;
+    index < expectedLength;
+    index++
+  ) {
+    output[index] =
+      binary.charCodeAt(index);
+  }
+
+  return output;
+}
+
+async function loadPixelsFromSnapshot(
+  seasonId
+) {
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_map_snapshot_v1",
+      {
+        p_season_id: seasonId
+      }
+    );
+
+  if (error) {
+    if (
+      error.code !== "PGRST202" &&
+      error.code !== "42883"
+    ) {
+      console.warn(
+        "MAP SNAPSHOT ERROR, USING FALLBACK:",
+        error
+      );
+    }
+
+    return false;
+  }
+
+  if (!data?.success) {
+    return false;
+  }
+
+  const width =
+    Number(data.width);
+
+  const height =
+    Number(data.height);
+
+  if (
+    width !== MAP_WIDTH ||
+    height !== MAP_HEIGHT
+  ) {
+    console.warn(
+      "MAP SNAPSHOT SIZE MISMATCH:",
+      width,
+      height
+    );
+
+    return false;
+  }
+
+  try {
+    const cellCount =
+      MAP_WIDTH * MAP_HEIGHT;
+
+    const colorBytes =
+      decodeMapSnapshotBytes(
+        data.colors,
+        cellCount
+      );
+
+    const ownerBytes =
+      decodeMapSnapshotBytes(
+        data.owners,
+        cellCount
+      );
+
+    const classNamesByCode = [];
+
+    for (
+      const item
+      of Array.isArray(data.classes)
+        ? data.classes
+        : []
+    ) {
+      const code =
+        Number(item.code);
+
+      const name =
+        String(item.name || "");
+
+      if (
+        code > 0 &&
+        code <= 255 &&
+        name
+      ) {
+        classNamesByCode[code] =
+          name;
+
+        if (item.id !== null &&
+            item.id !== undefined) {
+          classNamesById.set(
+            String(item.id),
+            name
+          );
+        }
+      }
+    }
+
+    pixelOwners.fill(null);
+
+    for (
+      let position = 0;
+      position < cellCount;
+      position++
+    ) {
+      const colorIndex =
+        colorBytes[position];
+
+      pixels[position] =
+        colorIndex < COLORS.length
+          ? colorIndex
+          : 0;
+
+      const ownerCode =
+        ownerBytes[position];
+
+      pixelOwners[position] =
+        ownerCode > 0
+          ? classNamesByCode[ownerCode] ?? null
+          : null;
+    }
+
+    pixelCount =
+      Math.max(
+        0,
+        Number(data.pixel_count) || 0
+      );
+
+    pixelCountText.textContent =
+      pixelCount.toLocaleString(
+        "ru-RU"
+      );
+
+    console.log(
+      `Карта загружена компактным снимком: ${pixelCount} пикселей`
+    );
+
+    drawMap();
+
+    return true;
+  } catch (snapshotError) {
+    console.warn(
+      "MAP SNAPSHOT DECODE ERROR, USING FALLBACK:",
+      snapshotError
+    );
+
+    return false;
+  }
+}
+
 async function loadPixels() {
 
   if (!activeSeason) {
@@ -4084,6 +4299,15 @@ async function loadPixels() {
 
   const seasonId =
     activeSeason.id;
+
+
+  if (
+    await loadPixelsFromSnapshot(
+      seasonId
+    )
+  ) {
+    return;
+  }
 
 
   /*
@@ -5025,9 +5249,7 @@ easyStartButton.addEventListener(
 
     await loadMyProfile();
     await dailyTasks.load();
-    await unblockMeGame.loadStatus();
-  await sokobanGame.loadStatus();
-      fifteenGame.loadStatus();
+
 
     await checkAdminStatus();
 
