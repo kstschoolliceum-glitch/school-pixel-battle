@@ -1930,6 +1930,20 @@ function getColorIndex(color) {
 }
 
 
+function showPixelUnchangedMessage() {
+  cooldownText.textContent =
+    "Этот цвет уже установлен";
+
+  updatePlaceButton();
+
+  window.setTimeout(() => {
+    if (cooldownRemaining <= 0) {
+      updateCooldown();
+    }
+  }, 1600);
+}
+
+
 async function placePixel() {
 
   if (
@@ -1944,6 +1958,19 @@ async function placePixel() {
 
     alert("Сначала войдите в аккаунт.");
 
+    return;
+  }
+
+
+  const selectedIndex =
+    selectedY * MAP_WIDTH +
+    selectedX;
+
+  if (
+    COLORS[pixels[selectedIndex]] ===
+    selectedColor
+  ) {
+    showPixelUnchangedMessage();
     return;
   }
 
@@ -2002,6 +2029,17 @@ async function placePixel() {
    */
 
   if (!data.success) {
+
+    if (
+      data.reason === "PIXEL_UNCHANGED"
+    ) {
+      if (data.daily_tasks) {
+        dailyTasks.applyStatus(data.daily_tasks);
+      }
+
+      showPixelUnchangedMessage();
+      return;
+    }
 
     if (
       data.reason === "COOLDOWN"
