@@ -13904,13 +13904,12 @@ const unblockMeGame = (() => {
   }
 
   function formatDuration(seconds) {
-    const safe = Math.max(0, Math.ceil(Number(seconds) || 0));
-    const hours = Math.floor(safe / 3600);
-    const minutes = Math.floor((safe % 3600) / 60);
-    const tail = `${String(minutes).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+    const totalMinutes = Math.max(1, Math.ceil((Number(seconds) || 0) / 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     return hours > 0
-      ? `${String(hours).padStart(2, "0")}:${tail}`
-      : tail;
+      ? `${hours} ч. ${minutes} мин.`
+      : `${minutes} мин.`;
   }
 
   function setProfileMessage(text, type = "") {
@@ -14922,10 +14921,12 @@ const sokobanGame = (() => {
   }
 
   function formatDuration(totalSeconds) {
-    const seconds = Math.max(0, Number(totalSeconds) || 0);
-    const minutes = Math.floor(seconds / 60);
-    const tail = String(seconds % 60).padStart(2, "0");
-    return minutes > 0 ? `${minutes}:${tail}` : `0:${tail}`;
+    const totalMinutes = Math.max(1, Math.ceil((Number(totalSeconds) || 0) / 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return hours > 0
+      ? `${hours} ч. ${minutes} мин.`
+      : `${minutes} мин.`;
   }
 
   function setMessage(text, type = "") {
@@ -15227,13 +15228,12 @@ const fifteenGame = (() => {
   }
 
   function formatDuration(totalSeconds) {
-    const seconds = Math.max(0, Number(totalSeconds) || 0);
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const tail = String(seconds % 60).padStart(2, "0");
+    const totalMinutes = Math.max(1, Math.ceil((Number(totalSeconds) || 0) / 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     return hours > 0
-      ? `${hours}:${String(minutes).padStart(2, "0")}:${tail}`
-      : `${minutes}:${tail}`;
+      ? `${hours} ч. ${minutes} мин.`
+      : `${minutes} мин.`;
   }
 
   function setMessage(text, type = "") {
