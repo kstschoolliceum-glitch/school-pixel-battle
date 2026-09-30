@@ -4226,9 +4226,41 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 /* ---------- ADMIN STUDENT IP REVIEW ---------- */
 
 .student-ip-cell {
-  min-width: 230px;
-  max-width: 330px;
+  min-width: 155px;
+  max-width: 260px;
   vertical-align: top;
+}
+
+.student-ip-details {
+  width: 100%;
+}
+
+.student-ip-summary {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 1px solid #3b4b68;
+  background: #111a2d;
+  color: #dbeafe;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  list-style-position: inside;
+}
+
+.student-ip-summary::marker {
+  color: #60a5fa;
+}
+
+.student-ip-details[open] .student-ip-summary {
+  border-color: #60a5fa;
+}
+
+.student-ip-details-content {
+  padding-top: 7px;
 }
 
 .student-ip-address {
@@ -4239,7 +4271,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   word-break: break-all;
 }
 
-.student-ip-warning {
+.student-ip-warning,
+.student-risk-warning {
   margin-top: 6px;
   padding: 6px 8px;
   border: 1px solid;
@@ -4248,16 +4281,73 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   word-break: break-word;
 }
 
-.student-ip-warning.exact {
+.student-ip-warning.exact,
+.student-risk-warning.high {
   border-color: #ef4444;
   background: rgba(127, 29, 29, 0.35);
   color: #fecaca;
 }
 
-.student-ip-warning.similar {
+.student-ip-warning.similar,
+.student-risk-warning.medium {
   border-color: #f59e0b;
   background: rgba(120, 53, 15, 0.3);
   color: #fde68a;
+}
+
+.student-risk-warning.low {
+  border-color: #475569;
+  background: rgba(30, 41, 59, 0.62);
+  color: #cbd5e1;
+}
+
+.student-risk-badge {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.student-risk-badge.high {
+  background: #991b1b;
+  color: #fee2e2;
+}
+
+.student-risk-badge.medium {
+  background: #92400e;
+  color: #fef3c7;
+}
+
+.student-risk-badge.low {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.student-risk-player {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-weight: 800;
+}
+
+.student-risk-player:hover,
+.student-risk-player:focus-visible {
+  color: #dbeafe;
+  text-decoration: underline;
+}
+
+.student-risk-reasons {
+  color: inherit;
+  opacity: 0.9;
 }
 
 
@@ -4610,7 +4700,13 @@ body.admin-view .mobile-nav {
   }
 
   .student-ip-cell {
-    min-width: 190px;
+    min-width: 145px;
+    max-width: 220px;
+  }
+
+  .student-ip-summary {
+    min-height: 34px;
+    padding: 6px;
   }
 
   .student-action-button {
