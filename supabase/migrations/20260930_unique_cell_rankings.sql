@@ -1,15 +1,21 @@
--- Prevent ranking inflation by repainting the same cell with different colors.
--- Map updates and pixel_history stay unchanged so Realtime and daily color tasks keep working.
--- A student can score a coordinate only once per season.
--- A class can score a coordinate only once per season, regardless of which class member painted it.
+-- Prevent ranking inflation and make the weekly class ranking reflect current ownership.
+-- Only cells painted during the active season participate, so a carried map does not
+-- bring the previous week's score into the new week.
+--
+-- When another class repaints a participating cell, the previous class loses one
+-- point and the new owner gains one point. Repainting it back reverses the point.
+-- Student all-time ranking still counts a coordinate only once per student per season.
 
 begin;
 
 create index if not exists pixel_history_user_season_cell_idx
     on public.pixel_history (user_id, season_id, x, y);
 
-create index if not exists pixel_history_class_season_cell_idx
-    on public.pixel_history (class_id, season_id, x, y);
+create index if not exists pixel_history_season_cell_idx
+    on public.pixel_history (season_id, x, y);
+
+create index if not exists pixels_season_class_cell_idx
+    on public.pixels (season_id, class_id, x, y);
 
 create or replace function public.get_class_ranking()
 returns table (
@@ -30,20 +36,31 @@ as $$
           and s.ends_at > clock_timestamp()
         order by s.starts_at desc
         limit 1
+    ),
+    painted_this_season as (
+        select distinct ph.season_id, ph.x, ph.y
+        from public.pixel_history ph
+        join active_season active on active.id = ph.season_id
+    ),
+    current_owned_cells as (
+        select px.class_id, count(*)::bigint as pixels_count
+        from public.pixels px
+        join active_season active on active.id = px.season_id
+        join painted_this_season painted
+          on painted.season_id = px.season_id
+         and painted.x = px.x
+         and painted.y = px.y
+        group by px.class_id
     )
     select
         c.name::text as class_name,
-        count(distinct (ph.x, ph.y))::bigint as pixels_count
+        coalesce(owned.pixels_count, 0)::bigint as pixels_count
     from public.classes c
-    cross join active_season active
-    left join public.pixel_history ph
-      on ph.class_id = c.id
-     and ph.season_id = active.id
+    left join current_owned_cells owned on owned.class_id = c.id
     where c.is_active = true
       and upper(btrim(c.name)) <> 'МОДЕРАТОР'
-    group by c.id, c.name
     order by
-        count(distinct (ph.x, ph.y)) desc,
+        coalesce(owned.pixels_count, 0) desc,
         c.name asc;
 $$;
 
@@ -107,6 +124,7 @@ notify pgrst, 'reload schema';
 commit;
 
 select jsonb_build_object(
-    'class_ranking_unique_cells', true,
+    'class_ranking_current_ownership', true,
+    'carried_cells_excluded_until_repainted', true,
     'student_ranking_unique_cells', true
 ) as result;
