@@ -8371,6 +8371,7 @@ const studentsStatusFilter =
 
 let adminStudents = [];
 let adminStudentIps = [];
+let adminMultiaccountRisks = [];
 
 async function loadAdminStudents() {
 
@@ -8378,13 +8379,20 @@ async function loadAdminStudents() {
     return;
   }
 
-  const [studentsResult, ipsResult] =
+  const [
+    studentsResult,
+    ipsResult,
+    risksResult
+  ] =
     await Promise.all([
       supabaseClient.rpc(
         "admin_get_students"
       ),
       supabaseClient.rpc(
         "admin_get_student_ips"
+      ),
+      supabaseClient.rpc(
+        "admin_get_multiaccount_risk"
       )
     ]);
 
@@ -8410,6 +8418,19 @@ async function loadAdminStudents() {
     ipsResult.error
       ? []
       : (ipsResult.data ?? []);
+
+  if (risksResult.error) {
+    console.warn(
+      "ADMIN MULTIACCOUNT RISK ERROR:",
+      risksResult.error
+    );
+  }
+
+  adminMultiaccountRisks =
+    risksResult.error ||
+    !Array.isArray(risksResult.data)
+      ? []
+      : risksResult.data;
 
   fillStudentsClassFilter();
   renderAdminStudents();
@@ -8530,6 +8551,54 @@ function getStudentIpMatches(student) {
   };
 }
 
+function getStudentRiskMatches(student) {
+  return adminMultiaccountRisks
+    .filter(item =>
+      String(item.user_a_id) ===
+        String(student.user_id) ||
+      String(item.user_b_id) ===
+        String(student.user_id)
+    )
+    .map(item => {
+      const ownIsA =
+        String(item.user_a_id) ===
+        String(student.user_id);
+
+      return {
+        ...item,
+        otherId: ownIsA
+          ? item.user_b_id
+          : item.user_a_id,
+        otherUsername: ownIsA
+          ? item.user_b_username
+          : item.user_a_username,
+        otherNickname: ownIsA
+          ? item.user_b_nickname
+          : item.user_a_nickname,
+        otherClass: ownIsA
+          ? item.user_b_class
+          : item.user_a_class
+      };
+    })
+    .sort(
+      (a, b) =>
+        Number(b.risk_score || 0) -
+        Number(a.risk_score || 0)
+    );
+}
+
+function getRiskLabel(level) {
+  if (level === "high") {
+    return "Высокий риск";
+  }
+
+  if (level === "medium") {
+    return "Средний риск";
+  }
+
+  return "Низкий риск";
+}
+
 function createStudentIpCell(student) {
   const cell =
     document.createElement("td");
@@ -8539,12 +8608,56 @@ function createStudentIpCell(student) {
 
   const records =
     getStudentIpRecords(student.user_id);
+  const riskMatches =
+    getStudentRiskMatches(student);
 
-  if (records.length === 0) {
+  if (
+    records.length === 0 &&
+    riskMatches.length === 0
+  ) {
     cell.textContent =
       "Нет данных";
     return cell;
   }
+
+  const details =
+    document.createElement("details");
+  details.className =
+    "student-ip-details";
+
+  const summary =
+    document.createElement("summary");
+  summary.className =
+    "student-ip-summary";
+
+  const summaryText =
+    document.createElement("span");
+  summaryText.textContent =
+    records.length > 0
+      ? `${records.length} IP`
+      : "Без IP";
+
+  summary.appendChild(summaryText);
+
+  if (riskMatches.length > 0) {
+    const topRisk = riskMatches[0];
+    const badge =
+      document.createElement("span");
+
+    badge.className =
+      `student-risk-badge ${topRisk.risk_level || "low"}`;
+    badge.textContent =
+      getRiskLabel(topRisk.risk_level);
+
+    summary.appendChild(badge);
+  }
+
+  details.appendChild(summary);
+
+  const content =
+    document.createElement("div");
+  content.className =
+    "student-ip-details-content";
 
   for (const record of records) {
     const address =
@@ -8565,7 +8678,7 @@ function createStudentIpCell(student) {
         ? ` · ${lastSeen}`
         : "");
 
-    cell.appendChild(address);
+    content.appendChild(address);
   }
 
   const matches =
@@ -8581,7 +8694,7 @@ function createStudentIpCell(student) {
     warning.textContent =
       `⚠ Совпадает: ${matches.exact.join(", ")}`;
 
-    cell.appendChild(warning);
+    content.appendChild(warning);
   }
 
   if (matches.similar.length > 0) {
@@ -8594,8 +8707,62 @@ function createStudentIpCell(student) {
     warning.textContent =
       `≈ Похожая сеть: ${matches.similar.join(", ")}`;
 
-    cell.appendChild(warning);
+    content.appendChild(warning);
   }
+
+  for (const risk of riskMatches) {
+    const warning =
+      document.createElement("div");
+
+    warning.className =
+      `student-risk-warning ${risk.risk_level || "low"}`;
+
+    const heading =
+      document.createElement("strong");
+    heading.textContent =
+      `${getRiskLabel(risk.risk_level)} · ${Number(risk.risk_score || 0)}/100`;
+
+    const player =
+      document.createElement("button");
+    player.type = "button";
+    player.className =
+      "student-risk-player";
+    player.textContent =
+      [
+        risk.otherNickname ||
+          risk.otherUsername ||
+          "Аккаунт",
+        risk.otherClass
+          ? `[${risk.otherClass}]`
+          : "",
+        risk.otherUsername
+          ? `(${risk.otherUsername})`
+          : ""
+      ].filter(Boolean).join(" ");
+    enablePlayerCardLink(
+      player,
+      risk.otherId
+    );
+
+    const reasons =
+      document.createElement("div");
+    reasons.className =
+      "student-risk-reasons";
+    reasons.textContent =
+      Array.isArray(risk.reasons)
+        ? risk.reasons.join(" · ")
+        : "Есть связанные признаки";
+
+    warning.append(
+      heading,
+      player,
+      reasons
+    );
+    content.appendChild(warning);
+  }
+
+  details.appendChild(content);
+  cell.appendChild(details);
 
   return cell;
 }
