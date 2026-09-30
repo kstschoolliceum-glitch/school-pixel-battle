@@ -24,6 +24,12 @@ create index if not exists student_device_signals_installation_idx
 create index if not exists student_device_signals_fingerprint_idx
     on public.student_device_signals (fingerprint_hash, last_seen desc);
 
+create index if not exists pixel_history_multiaccount_recent_idx
+    on public.pixel_history (user_id, created_at desc, season_id, x, y);
+
+create index if not exists pixel_history_multiaccount_cell_idx
+    on public.pixel_history (season_id, x, y, created_at, user_id);
+
 alter table public.student_device_signals enable row level security;
 
 revoke all on table public.student_device_signals
