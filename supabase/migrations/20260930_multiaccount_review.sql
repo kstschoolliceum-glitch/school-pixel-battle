@@ -32,9 +32,13 @@ begin
 
     with
     recent_ips as (
-        select *
-        from public.student_ip_addresses
-        where last_seen >= clock_timestamp() - interval '90 days'
+        select
+            addresses.*,
+            count(*) over (
+                partition by addresses.ip_address
+            ) as account_count
+        from public.student_ip_addresses addresses
+        where addresses.last_seen >= clock_timestamp() - interval '90 days'
     ),
     profile_names as (
         select
@@ -58,6 +62,9 @@ begin
         join recent_ips b
           on b.ip_address = a.ip_address
          and a.user_id < b.user_id
+        -- A school Wi-Fi/mobile gateway shared by many pupils is not evidence.
+        where a.account_count <= 4
+          and b.account_count <= 4
 
         union all
 
