@@ -6233,6 +6233,13 @@ function createChatMessageElement(item) {
 
   const isSystemMessage =
     item.message_type === "system";
+  const isAdminMessage =
+    !isSystemMessage &&
+    item.is_admin === true;
+
+  if (isAdminMessage) {
+    row.classList.add("admin");
+  }
 
   if (isSystemMessage) {
     row.classList.add("system");
@@ -6278,8 +6285,9 @@ function createChatMessageElement(item) {
   }
 
   if (!isSystemMessage) {
-    author.style.color =
-      classColors[Math.abs(hash) % classColors.length];
+    author.style.color = isAdminMessage
+      ? "#60a5fa"
+      : classColors[Math.abs(hash) % classColors.length];
   }
 
   if (
