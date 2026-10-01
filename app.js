@@ -15340,7 +15340,7 @@ const sokobanGame = (() => {
 
     if (data.level_completed) {
       if (data.reward_granted) {
-        setMessage("Три уровня пройдены! Турбокисть включена на 10 минут. Новая игра — через 4 часа.", "success");
+        setMessage("Три уровня пройдены! Турбокисть включена на 15 минут. Новая игра — через 4 часа.", "success");
         setTimeout(() => {
           if (dialog.open) dialog.close();
         }, 1600);
@@ -15643,7 +15643,7 @@ const fifteenGame = (() => {
     applyStatus(data);
 
     if (data.level_completed) {
-      setMessage("Головоломка собрана! Турбокисть включена на 10 минут.", "success");
+      setMessage("Головоломка собрана! Турбокисть включена на 20 минут.", "success");
       resetPixelCooldownAfterReward();
       setTimeout(() => {
         if (dialog.open) dialog.close();
