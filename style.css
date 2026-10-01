@@ -3389,6 +3389,22 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   color: #f3ecff;
 }
 
+.chat-message.admin {
+  margin: 3px 0;
+  padding: 7px 8px;
+  border-left: 3px solid #60a5fa;
+  border-radius: 5px;
+  background: rgba(30, 64, 175, 0.26);
+}
+
+.chat-message.admin .chat-message-content {
+  color: #dbeafe;
+}
+
+.chat-message.admin .chat-message-time {
+  color: #93c5fd;
+}
+
 .chat-message.system {
   margin: 2px 0;
   padding: 3px 6px;
