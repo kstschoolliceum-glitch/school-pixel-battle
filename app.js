@@ -795,9 +795,63 @@ function updateTransform() {
    ПОЛЬЗОВАТЕЛЬСКИЙ ТРАФАРЕТ
 ------------------------- */
 
+let pixelOwnerRequestNumber = 0;
+
+async function loadAdminPixelOwner(
+  x,
+  y,
+  owner,
+  requestNumber
+) {
+  if (
+    !currentUserIsAdmin ||
+    !activeSeason?.id
+  ) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "admin_get_pixel_owner",
+      {
+        p_season_id: activeSeason.id,
+        p_x: x,
+        p_y: y
+      }
+    );
+
+  if (
+    error ||
+    requestNumber !== pixelOwnerRequestNumber ||
+    selectedX !== x ||
+    selectedY !== y
+  ) {
+    if (error) {
+      console.warn(
+        "ADMIN PIXEL OWNER ERROR:",
+        error
+      );
+    }
+    return;
+  }
+
+  if (data?.success && data.nickname) {
+    pixelOwner.textContent =
+      `🏫 ${owner} · 👤 ${data.nickname}`;
+    pixelOwner.title =
+      data.username
+        ? `${data.nickname} (${data.username})`
+        : data.nickname;
+  }
+}
+
 function setPixelInformation(x = null, y = null, owner = "") {
   const reportButton =
     document.getElementById("pixel-report-button");
+  const requestNumber =
+    ++pixelOwnerRequestNumber;
+
+  pixelOwner.title = "";
 
   if (x === null || y === null) {
     coordinatePosition.textContent = "Выберите пиксель";
@@ -811,6 +865,15 @@ function setPixelInformation(x = null, y = null, owner = "") {
     ? `🏫 ${owner}`
     : "Свободная клетка";
   reportButton?.classList.toggle("hidden", !owner);
+
+  if (owner && currentUserIsAdmin) {
+    loadAdminPixelOwner(
+      x,
+      y,
+      owner,
+      requestNumber
+    );
+  }
 }
 
 stencilOpenButton.addEventListener("click", () => {
