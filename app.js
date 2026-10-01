@@ -6233,12 +6233,19 @@ function createChatMessageElement(item) {
 
   const isSystemMessage =
     item.message_type === "system";
+  const isAdminAnnouncement =
+    !isSystemMessage &&
+    item.is_admin_announcement === true;
   const isAdminMessage =
     !isSystemMessage &&
     item.is_admin === true;
 
   if (isAdminMessage) {
     row.classList.add("admin");
+  }
+
+  if (isAdminAnnouncement) {
+    row.classList.add("admin-announcement");
   }
 
   if (isSystemMessage) {
@@ -6258,7 +6265,7 @@ function createChatMessageElement(item) {
       event.preventDefault();
       toggleExpanded();
     });
-  } else {
+  } else if (!isAdminAnnouncement) {
     author.textContent =
       `${item.nickname} [${item.class_name ?? "—"}]`;
     enablePlayerCardLink(author, item.user_id);
@@ -6284,7 +6291,7 @@ function createChatMessageElement(item) {
       ((hash << 5) - hash);
   }
 
-  if (!isSystemMessage) {
+  if (!isSystemMessage && !isAdminAnnouncement) {
     author.style.color = isAdminMessage
       ? "#60a5fa"
       : classColors[Math.abs(hash) % classColors.length];
@@ -6292,6 +6299,7 @@ function createChatMessageElement(item) {
 
   if (
     !isSystemMessage &&
+    !isAdminAnnouncement &&
     chatMessageMentionsCurrentUser(
       item.message
     )
@@ -6300,14 +6308,18 @@ function createChatMessageElement(item) {
   }
 
   const text = document.createElement("span");
-  text.textContent = isSystemMessage
-    ? ` ${item.message}`
-    : `: ${item.message}`;
+  text.textContent =
+    isSystemMessage || isAdminAnnouncement
+      ? ` ${item.message}`
+      : `: ${item.message}`;
 
-  content.appendChild(author);
+  if (!isAdminAnnouncement) {
+    content.appendChild(author);
+  }
 
   if (
     !isSystemMessage &&
+    !isAdminAnnouncement &&
     item.user_id &&
     item.user_id !== currentUser?.id
   ) {
@@ -6361,6 +6373,7 @@ function createChatMessageElement(item) {
 
   if (
     !isSystemMessage &&
+    !isAdminAnnouncement &&
     item.id &&
     item.user_id &&
     item.user_id !== currentUser?.id
@@ -9046,7 +9059,7 @@ banButton.addEventListener(
       error
     } =
       await supabaseClient.rpc(
-        "admin_set_student_banned",
+        "admin_set_student_banned_with_announcement",
         {
           p_user_id:
             student.user_id,
