@@ -3420,6 +3420,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   color: #fca5a5;
 }
 
+.chat-message.admin-announcement.admin-announcement-unban {
+  border-left-color: #22c55e;
+  background: rgba(20, 83, 45, 0.48);
+}
+
+.chat-message.admin-announcement.admin-announcement-unban .chat-message-content {
+  color: #dcfce7;
+}
+
+.chat-message.admin-announcement.admin-announcement-unban .chat-message-time {
+  color: #86efac;
+}
+
 .chat-message.system {
   margin: 2px 0;
   padding: 3px 6px;

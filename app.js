@@ -6276,6 +6276,10 @@ function createChatMessageElement(item) {
 
   if (isAdminAnnouncement) {
     row.classList.add("admin-announcement");
+
+    if (item.admin_announcement_kind === "unban") {
+      row.classList.add("admin-announcement-unban");
+    }
   }
 
   if (isSystemMessage) {
