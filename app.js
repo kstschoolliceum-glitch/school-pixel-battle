@@ -3195,7 +3195,7 @@ async function loadQuarterRanking() {
  * запрашиваем не чаще одного раза в 7 секунд.
  */
 
-const RANKING_REFRESH_DELAY = 7000;
+const RANKING_REFRESH_DELAY = 30000;
 
 let rankingRefreshTimer = null;
 let rankingRefreshInProgress = false;
@@ -3203,8 +3203,14 @@ let rankingRefreshInProgress = false;
 
 function scheduleRankingRefresh() {
 
+  const mobileRankingHidden =
+    window.matchMedia("(max-width: 900px)").matches &&
+    !document.body.classList.contains("mobile-ranking-view");
+
   if (
     !currentUser ||
+    document.hidden ||
+    mobileRankingHidden ||
     rankingRefreshTimer
   ) {
     return;
@@ -3722,14 +3728,19 @@ async function loadActiveSeason() {
   return activeSeason;
 
 }
-async function checkForSeasonChange() {
+let lastSeasonCheckAt = 0;
+
+async function checkForSeasonChange(force = false) {
 
   if (
     !currentUser ||
-    document.hidden
+    document.hidden ||
+    (!force && Date.now() - lastSeasonCheckAt < 2 * 60 * 1000)
   ) {
     return;
   }
+
+  lastSeasonCheckAt = Date.now();
 
 
   const {
@@ -3876,23 +3887,25 @@ async function checkForSeasonChange() {
 }
 function startSeasonWatcher() {
 
-  clearInterval(
-    seasonCheckTimer
+  clearTimeout(seasonCheckTimer);
+
+  const fallbackDelay = 30 * 60 * 1000;
+  const endsAt = Date.parse(activeSeason?.ends_at || "");
+  const untilSeasonEnd = Number.isFinite(endsAt)
+    ? endsAt - Date.now() + 5000
+    : fallbackDelay;
+  const delay = Math.max(
+    30000,
+    Math.min(fallbackDelay, untilSeasonEnd)
   );
 
-
-  /*
-   * Переключатель сезона работает с шагом до 5 минут.
-   * Синхронизируемся с этим интервалом и не опрашиваем
-   * базу чаще без необходимости.
-   */
-
-  seasonCheckTimer =
-    setInterval(
-      checkForSeasonChange,
-      5 * 60 * 1000
-    );
-
+  seasonCheckTimer = setTimeout(
+    async () => {
+      await checkForSeasonChange(true);
+      startSeasonWatcher();
+    },
+    delay
+  );
 }
 const referralProfileStatus =
   document.getElementById("referral-profile-status");
@@ -4210,9 +4223,16 @@ async function checkAdminStatus() {
 
 }
 let playerActivityHeartbeatTimer = null;
+let lastPlayerActivityTouchAt = 0;
 
-async function touchPlayerActivity() {
-  if (!currentUser || document.hidden) return;
+async function touchPlayerActivity(force = false) {
+  if (
+    !currentUser ||
+    document.hidden ||
+    (!force && Date.now() - lastPlayerActivityTouchAt < 10 * 60 * 1000)
+  ) return;
+
+  lastPlayerActivityTouchAt = Date.now();
 
   const { error } = await supabaseClient.rpc(
     "touch_player_activity"
@@ -4225,10 +4245,10 @@ async function touchPlayerActivity() {
 
 function startPlayerActivityHeartbeat() {
   clearInterval(playerActivityHeartbeatTimer);
-  touchPlayerActivity();
+  touchPlayerActivity(true);
   playerActivityHeartbeatTimer = setInterval(
     touchPlayerActivity,
-    5 * 60 * 1000
+    15 * 60 * 1000
   );
 }
 
@@ -4576,6 +4596,13 @@ async function recordCurrentUserIp() {
     return;
   }
 
+  const storageKey = `pixel-battle-ip-recorded:${currentUser.id}`;
+  const lastRecordedAt = Number(localStorage.getItem(storageKey) || 0);
+
+  if (Date.now() - lastRecordedAt < 6 * 60 * 60 * 1000) {
+    return;
+  }
+
   try {
     const { error } =
       await supabaseClient.functions.invoke(
@@ -4585,7 +4612,10 @@ async function recordCurrentUserIp() {
 
     if (error) {
       console.warn("IP RECORD ERROR:", error);
+      return;
     }
+
+    localStorage.setItem(storageKey, String(Date.now()));
   } catch (error) {
     console.warn("IP RECORD REQUEST ERROR:", error);
   }
@@ -6404,7 +6434,22 @@ function createChatMessageElement(item) {
   return row;
 }
 
+const chatAuthorCache = new Map();
+let chatRenderedMessages = [];
+
 function renderChatMessages(messages) {
+  chatRenderedMessages = messages.slice(-50);
+
+  chatRenderedMessages.forEach(item => {
+    if (item.user_id && item.nickname) {
+      chatAuthorCache.set(String(item.user_id), {
+        nickname: item.nickname,
+        class_name: item.class_name || null,
+        is_admin: Boolean(item.is_admin)
+      });
+    }
+  });
+
   chatMessages.replaceChildren();
 
   if (!messages.length) {
@@ -6420,7 +6465,7 @@ function renderChatMessages(messages) {
 
   let previousDate = "";
 
-  for (const item of messages) {
+  for (const item of chatRenderedMessages) {
     const dateKey = chatDateKey(item.created_at);
 
     if (dateKey && dateKey !== previousDate) {
@@ -6604,8 +6649,32 @@ function subscribeToChat() {
         }
 
         if (chatIsOpen) {
-          if (incomingType === chatActiveFeed) {
-            await loadChatMessages();
+          if (incomingType === chatActiveFeed && payload.new) {
+            const author =
+              chatAuthorCache.get(String(payload.new.user_id)) || {};
+            const isAnnouncement =
+              Boolean(payload.new.is_admin_announcement);
+            const incomingMessage = {
+              ...payload.new,
+              nickname: isAnnouncement
+                ? ""
+                : (author.nickname || "Ученик"),
+              class_name: isAnnouncement
+                ? null
+                : (author.class_name || null),
+              is_admin: Boolean(author.is_admin)
+            };
+
+            if (
+              !chatRenderedMessages.some(
+                item => String(item.id) === String(incomingMessage.id)
+              )
+            ) {
+              renderChatMessages([
+                ...chatRenderedMessages,
+                incomingMessage
+              ].slice(-50));
+            }
           }
         } else if (incomingType === "user") {
           showChatUnreadDot();
@@ -6755,7 +6824,6 @@ chatForm.addEventListener(
     chatInput.value = "";
     setChatSendStatus("");
 
-    await loadChatMessages();
     chatInput.focus();
   }
 );
