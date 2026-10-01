@@ -8560,7 +8560,8 @@ async function loadAdminStudents() {
   const [
     studentsResult,
     ipsResult,
-    risksResult
+    risksResult,
+    temporaryBansResult
   ] =
     await Promise.all([
       supabaseClient.rpc(
@@ -8571,6 +8572,9 @@ async function loadAdminStudents() {
       ),
       supabaseClient.rpc(
         "admin_get_multiaccount_risk"
+      ),
+      supabaseClient.rpc(
+        "admin_get_temporary_bans"
       )
     ]);
 
@@ -8589,8 +8593,34 @@ async function loadAdminStudents() {
     );
   }
 
+  const temporaryBans =
+    new Map(
+      (temporaryBansResult.error
+        ? []
+        : (temporaryBansResult.data ?? [])
+      ).map(item => [
+        String(item.user_id),
+        item.banned_until
+      ])
+    );
+
+  if (temporaryBansResult.error) {
+    console.warn(
+      "ADMIN TEMPORARY BANS ERROR:",
+      temporaryBansResult.error
+    );
+  }
+
   adminStudents =
-    studentsResult.data ?? [];
+    (studentsResult.data ?? []).map(
+      student => ({
+        ...student,
+        banned_until:
+          temporaryBans.get(
+            String(student.user_id)
+          ) || null
+      })
+    );
 
   adminStudentIps =
     ipsResult.error
@@ -9112,7 +9142,19 @@ function renderAdminStudents() {
     if (student.banned) {
 
       statusCell.textContent =
-        "🔴 Заблокирован";
+        student.banned_until
+          ? `🔴 До ${new Date(
+              student.banned_until
+            ).toLocaleString(
+              "ru-RU",
+              {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              }
+            )}`
+          : "🔴 Заблокирован";
 
       statusCell.classList.add(
         "student-status-banned"
@@ -9240,6 +9282,96 @@ banButton.addEventListener(
   }
 );
 
+
+if (!student.banned) {
+  const temporaryBanButton =
+    document.createElement("button");
+
+  temporaryBanButton.type = "button";
+  temporaryBanButton.className =
+    "student-action-button ban";
+  temporaryBanButton.textContent =
+    "⏱ На время";
+
+  temporaryBanButton.addEventListener(
+    "click",
+    async () => {
+      const hoursText = prompt(
+        "На сколько часов заблокировать?",
+        "1"
+      );
+
+      if (hoursText === null) return;
+
+      const minutesText = prompt(
+        "Дополнительные минуты (0–59):",
+        "0"
+      );
+
+      if (minutesText === null) return;
+
+      const hours = Number(hoursText);
+      const minutes = Number(minutesText);
+
+      if (
+        !Number.isInteger(hours) ||
+        !Number.isInteger(minutes) ||
+        hours < 0 ||
+        minutes < 0 ||
+        minutes > 59 ||
+        hours * 60 + minutes < 1 ||
+        hours * 60 + minutes > 43200
+      ) {
+        alert(
+          "Укажите целые часы и минуты. Максимальный срок — 30 дней."
+        );
+        return;
+      }
+
+      const totalMinutes =
+        hours * 60 + minutes;
+      const confirmed = confirm(
+        `Заблокировать ${student.nickname} (${student.username}) на ` +
+        `${hours} ч. ${minutes} мин.?`
+      );
+
+      if (!confirmed) return;
+
+      temporaryBanButton.disabled = true;
+      temporaryBanButton.textContent =
+        "БЛОКИРОВКА...";
+
+      const { data, error } =
+        await supabaseClient.rpc(
+          "admin_set_student_temporary_ban",
+          {
+            p_user_id: student.user_id,
+            p_duration_minutes: totalMinutes
+          }
+        );
+
+      if (error || !data?.success) {
+        console.error(
+          "TEMPORARY BAN ERROR:",
+          error || data
+        );
+        alert(
+          "Не удалось временно заблокировать ученика."
+        );
+        temporaryBanButton.disabled = false;
+        temporaryBanButton.textContent =
+          "⏱ На время";
+        return;
+      }
+
+      await loadAdminStudents();
+    }
+  );
+
+  actionsCell.appendChild(
+    temporaryBanButton
+  );
+}
 
 actionsCell.appendChild(
   banButton
