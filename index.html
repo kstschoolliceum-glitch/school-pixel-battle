@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=68">
+  <link rel="stylesheet" href="style.css?v=69">
 </head>
 
 <body>
@@ -1235,6 +1235,10 @@
         data-admin-target="admin-students-content" aria-controls="admin-students-content" aria-selected="false">
         👥 Ученики
       </button>
+      <button id="admin-violations-tab" class="admin-tab" type="button"
+        data-admin-target="admin-violations-content" aria-controls="admin-violations-content" aria-selected="false">
+        ⚠️ Нарушения
+      </button>
       <button id="admin-referrals-tab" class="admin-tab" type="button"
         data-admin-target="admin-referrals-content" aria-controls="admin-referrals-content" aria-selected="false">
         🤝 Рефералы
@@ -1435,6 +1439,44 @@
   </div>
 
 </div>
+
+  <div id="admin-violations-content" data-admin-panel class="admin-violations-content hidden">
+    <div class="admin-section-title">
+      <h2>⚠️ Нарушения</h2>
+      <p>Автоматические сигналы для проверки администратором. Решение о блокировке принимает человек.</p>
+    </div>
+    <div class="admin-violations-toolbar">
+      <label>
+        Тип
+        <select id="admin-violations-type">
+          <option value="all">Все нарушения</option>
+          <option value="profanity">Мат в чате</option>
+          <option value="referral_multiaccount">Реферальное мультоводство</option>
+        </select>
+      </label>
+      <button id="admin-violations-refresh" type="button">↻ ОБНОВИТЬ</button>
+      <span>Найдено: <strong id="admin-violations-count">0</strong></span>
+    </div>
+    <div class="admin-violations-table-wrapper">
+      <table class="admin-violations-table">
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Ученик</th>
+            <th>Класс</th>
+            <th>Нарушение</th>
+            <th>Доказательство</th>
+            <th>Статус</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody id="admin-violations-body">
+          <tr><td colspan="7">Откройте вкладку для загрузки нарушений.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="admin-violations-note">IP-адрес и реферальная связь сами по себе не считаются нарушением. Сигнал появляется только при дополнительных совпадениях.</p>
+  </div>
 
   <div
   id="admin-classes-content" data-admin-panel
@@ -2509,7 +2551,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=106"></script>
+  <script src="app.js?v=107"></script>
 
 </body>
 </html>

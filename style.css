@@ -7390,3 +7390,144 @@ body.admin-view .mobile-nav {
     font-size: 10px;
   }
 }
+
+/* ---------- ADMIN RULE VIOLATIONS ---------- */
+
+.admin-violations-content {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-violations-content.hidden {
+  display: none;
+}
+
+.admin-violations-toolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-violations-toolbar label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-violations-toolbar select,
+.admin-violations-toolbar button {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #455a7d;
+  background: #111a2b;
+  color: var(--text);
+  font: inherit;
+}
+
+.admin-violations-toolbar button {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-violations-toolbar span {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.admin-violations-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #354665;
+  background: #10182b;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-violations-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+}
+
+.admin-violations-table th,
+.admin-violations-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #273247;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-violations-table th {
+  color: #d5c5ff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-violations-table td {
+  font-size: 13px;
+}
+
+.admin-violation-evidence {
+  min-width: 260px;
+  max-width: 420px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #cbd5e1;
+}
+
+.admin-violation-status {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-violation-status.open {
+  color: #facc15;
+}
+
+.admin-violation-status.banned {
+  color: #f87171;
+}
+
+.admin-violation-ban {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #ef4444;
+  background: #3f1018;
+  color: #fecaca;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-violation-ban:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.admin-violations-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+  .admin-violations-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-violations-toolbar label,
+  .admin-violations-toolbar select,
+  .admin-violations-toolbar button {
+    width: 100%;
+  }
+
+  .admin-violations-toolbar span {
+    margin-left: 0;
+  }
+
+  .admin-violations-table th,
+  .admin-violations-table td {
+    padding: 9px 10px;
+  }
+}
