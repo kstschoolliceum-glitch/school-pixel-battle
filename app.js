@@ -4135,6 +4135,7 @@ async function checkAdminStatus() {
   if (!currentUser) {
 
     currentUserIsAdmin = false;
+    syncChatMessageLimit();
 
     adminButton.classList.add(
       "hidden"
@@ -4163,6 +4164,7 @@ async function checkAdminStatus() {
     );
 
     currentUserIsAdmin = false;
+    syncChatMessageLimit();
 
     adminButton.classList.add(
       "hidden"
@@ -4177,6 +4179,7 @@ async function checkAdminStatus() {
   currentUserIsAdmin =
     data === true;
 
+  syncChatMessageLimit();
 
   if (currentUserIsAdmin) {
 
@@ -6028,6 +6031,22 @@ const chatSendStatus =
     "chat-send-status"
   );
 
+function syncChatMessageLimit() {
+  if (!chatInput) {
+    return;
+  }
+
+  if (currentUserIsAdmin) {
+    chatInput.removeAttribute("maxlength");
+    chatInput.placeholder =
+      "Сообщение администратора...";
+  } else {
+    chatInput.maxLength = 200;
+    chatInput.placeholder =
+      "Напишите сообщение...";
+  }
+}
+
 let chatSendCooldownTimer = null;
 let currentChatNickname = "";
 
@@ -6667,7 +6686,10 @@ chatForm.addEventListener(
       return;
     }
 
-    if (message.length > 200) {
+    if (
+      !currentUserIsAdmin &&
+      message.length > 200
+    ) {
       setChatSendStatus(
         "Сообщение не должно быть длиннее 200 символов.",
         true
