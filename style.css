@@ -3407,12 +3407,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 
 .chat-message.admin-announcement {
   border-left-width: 4px;
-  background: rgba(29, 78, 216, 0.38);
+  border-left-color: #ef4444;
+  background: rgba(127, 29, 29, 0.48);
   font-weight: 800;
 }
 
 .chat-message.admin-announcement .chat-message-content {
-  color: #eff6ff;
+  color: #fee2e2;
+}
+
+.chat-message.admin-announcement .chat-message-time {
+  color: #fca5a5;
 }
 
 .chat-message.system {
