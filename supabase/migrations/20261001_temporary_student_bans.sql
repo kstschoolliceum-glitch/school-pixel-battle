@@ -41,7 +41,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public
-as $
+as $ban_status$
 declare
     v_admin_id uuid := auth.uid();
     v_was_banned boolean;
@@ -133,7 +133,7 @@ begin
         'announcement_kind', v_announcement_kind
     );
 end;
-$;
+$ban_status$;
 
 create or replace function public.admin_set_student_temporary_ban(
     p_user_id uuid,
