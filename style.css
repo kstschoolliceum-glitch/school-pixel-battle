@@ -7613,3 +7613,12 @@ body.admin-view .mobile-nav {
 .pi-pixel-tasks{margin-top:16px;padding-top:14px;border-top:2px dashed #465574}.pi-pixel-tasks-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.pi-pixel-tasks-heading strong{color:#fde68a}.pi-pixel-tasks-heading span,.pi-pixel-tasks>p{color:#94a3b8;font-size:11px}.pi-pixel-tasks>p{margin:6px 0 10px}
 .pi-pixel-task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:8px;padding:10px;border:1px solid #394967;background:#0d1627}.pi-pixel-task>div{min-width:0;display:grid;gap:4px}.pi-pixel-task span{color:#fde68a;font-size:11px}.pi-pixel-task progress{width:100%;height:8px;accent-color:#fbbf24}.pi-pixel-task button{min-width:112px;min-height:36px;padding:6px 9px;border:1px solid #fbbf24;background:#5b3c08;color:#fff7cf;font:800 10px/1.15 "Courier New",monospace;cursor:pointer}.pi-pixel-task button:disabled{border-color:#475569;background:#202b3d;color:#94a3b8;cursor:not-allowed}.pi-pixel-task.ready{border-color:#fbbf24}.pi-pixel-task.claimed{border-color:#22c55e}
 @media(max-width:650px){.pi-pixel-task{grid-template-columns:1fr}.pi-pixel-task button{width:100%}}
+
+/* ---------- PI COIN EARN TAB AND SHOP LIMITS ---------- */
+.tasks-panel-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pi-earn-section{border-color:#b78318;background:linear-gradient(145deg,rgba(180,122,15,.2),#0d1627)}
+.pi-earn-section .pi-pixel-tasks{margin-top:14px;padding-top:0;border-top:0}
+.pi-shop-limit{display:block;margin-top:7px;color:#94a3b8;font-size:11px}.pi-shop-limit b{color:#86efac}
+.placement-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+.placement-actions #place-button,.placement-actions .map-items-open{width:100%;min-width:0}
+@media(max-width:650px){.tasks-panel-tab{font-size:9px}.placement-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}

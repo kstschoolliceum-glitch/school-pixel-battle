@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=77">
+  <link rel="stylesheet" href="style.css?v=78">
 </head>
 
 <body>
@@ -755,12 +755,12 @@
 
 
         <div class="placement-actions">
-          <button id="place-button" disabled>
-            ПОСТАВИТЬ ПИКСЕЛЬ
-          </button>
           <button id="map-items-open" class="map-items-open" type="button"
             aria-haspopup="dialog" aria-controls="map-items-dialog">
             🎒 ПРЕДМЕТЫ
+          </button>
+          <button id="place-button" disabled>
+            ПОСТАВИТЬ ПИКСЕЛЬ
           </button>
         </div>
 
@@ -893,6 +893,17 @@
           📅 Ежедневные задания
         </button>
         <button
+          id="tasks-earn-tab"
+          class="tasks-panel-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tasks-earn-panel"
+          tabindex="-1"
+        >
+          🪙 Заработать piCoin
+        </button>
+        <button
           id="tasks-games-tab"
           class="tasks-panel-tab"
           type="button"
@@ -926,6 +937,22 @@
             📋 0/3
           </button>
         </div>
+      </section>
+
+      <section
+        id="tasks-earn-panel"
+        class="tasks-section pi-earn-section"
+        role="tabpanel"
+        aria-labelledby="tasks-earn-tab"
+        hidden
+      >
+        <div class="tasks-section-heading">
+          <div>
+            <h3>🪙 Заработать piCoin</h3>
+            <p>Ставь пиксели и забирай награды за этапы текущего дня.</p>
+          </div>
+        </div>
+        <div id="pi-earn-tasks" aria-live="polite"></div>
       </section>
 
       <section
@@ -2433,10 +2460,10 @@
   <h2 id="pi-shop-title">🛒 Магазин piCoin</h2>
   <p class="pi-shop-balance">Баланс: <strong id="pi-shop-balance">0</strong> 🪙</p>
   <div class="pi-shop-list">
-    <article class="pi-shop-item"><div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p></div><strong>160 🪙</strong><button id="pi-buy-turbo" type="button">КУПИТЬ</button></article>
-    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ · <span data-item-stock="detector">0</span> ШТ.</button></article>
-    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ · <span data-item-stock="beacon">0</span> ШТ.</button></article>
-    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 145 пикселей. Автор виден только администратору.</p></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ · <span data-item-stock="bomb">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p><small class="pi-shop-limit">Сегодня: без лимита</small></div><strong>160 🪙</strong><button id="pi-buy-turbo" type="button">КУПИТЬ</button></article>
+    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="detector">10</b></small></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ · <span data-item-stock="detector">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="beacon">2</b></small></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ · <span data-item-stock="beacon">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 145 пикселей. Автор виден только администратору.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="bomb">1</b></small></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ · <span data-item-stock="bomb">0</span> ШТ.</button></article>
   </div>
   <p id="pi-shop-message" class="pi-shop-message" aria-live="polite"></p>
 </dialog>
@@ -2625,7 +2652,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=119"></script>
+  <script src="app.js?v=120"></script>
 
 </body>
 </html>

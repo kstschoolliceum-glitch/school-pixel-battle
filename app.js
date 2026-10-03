@@ -13457,6 +13457,7 @@ const dailyTasks = (() => {
   const dialogContent = document.getElementById("daily-tasks-dialog-content");
   const profileHost = document.getElementById("daily-tasks-profile");
   const careerHost = document.getElementById("player-career-profile");
+  const piEarnHost = document.getElementById("pi-earn-tasks");
 
   let status = null;
   let profile = null;
@@ -13678,7 +13679,6 @@ const dailyTasks = (() => {
     host.append(intro);
 
     (status.tasks || []).forEach((task, index) => host.append(makeTaskCard(task, index)));
-    renderPiCoinTasks(host);
 
     if (message) {
       const feedback = document.createElement("p");
@@ -13757,6 +13757,10 @@ const dailyTasks = (() => {
     }
     if (dialogContent) renderTaskList(dialogContent, true);
     if (profileHost) renderTaskList(profileHost, true);
+    if (piEarnHost) {
+      piEarnHost.replaceChildren();
+      renderPiCoinTasks(piEarnHost);
+    }
     renderCareer();
   }
 
@@ -13909,6 +13913,7 @@ const dailyTasks = (() => {
   });
   dialogContent?.addEventListener("click", handleAction);
   profileHost?.addEventListener("click", handleAction);
+  piEarnHost?.addEventListener("click", handleAction);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && currentUser) load();
   });
@@ -15420,7 +15425,7 @@ const mapItems=(()=>{
  const output=document.getElementById("map-item-message"),key=(x,y)=>x+":"+y;
  const beaconLayer=document.getElementById("beacon-layer"),beaconDialog=document.getElementById("beacon-dialog"),beaconLabel=document.getElementById("beacon-dialog-label"),beaconClass=document.getElementById("beacon-dialog-class"),beaconRemove=document.getElementById("beacon-remove-button"),beaconStatus=document.getElementById("beacon-dialog-status");
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
- function applyStatus(data){if(!data)return;const inv=data.inventory||{};Object.keys(counts).forEach(type=>{counts[type]=Number(inv[type]||0);document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);const el=document.getElementById("map-"+type+"-count");if(el)el.textContent=counts[type];document.querySelector('[data-map-item-row="'+type+'"]')?.classList.toggle("hidden",counts[type]<1)});document.getElementById("map-items-empty")?.classList.toggle("hidden",Object.values(counts).some(Boolean));if(data.balance!==undefined){document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU")}beacons=Array.isArray(data.beacons)?data.beacons:[];bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));renderBeaconButtons();drawMap()}
+ function applyStatus(data){if(!data)return;const inv=data.inventory||{};Object.keys(counts).forEach(type=>{counts[type]=Number(inv[type]||0);document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);const el=document.getElementById("map-"+type+"-count");if(el)el.textContent=counts[type];document.querySelector('[data-map-item-row="'+type+'"]')?.classList.toggle("hidden",counts[type]<1)});document.getElementById("map-items-empty")?.classList.toggle("hidden",Object.values(counts).some(Boolean));const remaining=data.purchase_remaining||{};Object.keys(counts).forEach(type=>{document.querySelectorAll('[data-item-remaining="'+type+'"]').forEach(el=>el.textContent=Number(remaining[type]??0))});if(data.balance!==undefined){document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU")}beacons=Array.isArray(data.beacons)?data.beacons:[];bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));renderBeaconButtons();drawMap()}
  async function load(){if(!currentUser||!activeSeason?.id)return;const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
  async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);say("Предмет куплен!")}
  async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;
@@ -16150,30 +16155,29 @@ const fifteenGame = (() => {
 
 (() => {
   const dailyTab = document.getElementById("tasks-daily-tab");
+  const earnTab = document.getElementById("tasks-earn-tab");
   const gamesTab = document.getElementById("tasks-games-tab");
   const dailyPanel = document.getElementById("tasks-daily-panel");
+  const earnPanel = document.getElementById("tasks-earn-panel");
   const gamesPanel = document.getElementById("tasks-games-panel");
 
-  if (!dailyTab || !gamesTab || !dailyPanel || !gamesPanel) return;
+  if (!dailyTab || !earnTab || !gamesTab || !dailyPanel || !earnPanel || !gamesPanel) return;
 
-  const tabs = [dailyTab, gamesTab];
+  const tabs = [dailyTab, earnTab, gamesTab];
+  const panels = [dailyPanel, earnPanel, gamesPanel];
 
   function activate(tab) {
-    const showDaily = tab === dailyTab;
+    const activeIndex = tabs.indexOf(tab);
+    tabs.forEach((item, index) => {
+      const active = index === activeIndex;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", active ? "true" : "false");
+      item.tabIndex = active ? 0 : -1;
+      panels[index].hidden = !active;
+    });
 
-    dailyPanel.hidden = !showDaily;
-    gamesPanel.hidden = showDaily;
-
-    dailyTab.classList.toggle("active", showDaily);
-    gamesTab.classList.toggle("active", !showDaily);
-
-    dailyTab.setAttribute("aria-selected", showDaily ? "true" : "false");
-    gamesTab.setAttribute("aria-selected", showDaily ? "false" : "true");
-
-    dailyTab.tabIndex = showDaily ? 0 : -1;
-    gamesTab.tabIndex = showDaily ? -1 : 0;
-
-    if (!showDaily) {
+    if (tab === earnTab) dailyTasks.load();
+    if (tab === gamesTab) {
       unblockMeGame.loadStatus();
       sokobanGame.loadStatus();
       fifteenGame.loadStatus();
@@ -16182,7 +16186,6 @@ const fifteenGame = (() => {
 
   tabs.forEach((tab, index) => {
     tab.addEventListener("click", () => activate(tab));
-
     tab.addEventListener("keydown", event => {
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
       event.preventDefault();
