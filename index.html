@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=70">
+  <link rel="stylesheet" href="style.css?v=71">
 </head>
 
 <body>
@@ -341,15 +341,11 @@
       👑 <span>PIXEL <b>BATTLE</b></span>
     </div>
 
-    <button
-      id="music-toggle"
-      class="music-toggle"
-      type="button"
-      aria-pressed="false"
-      title="Включить музыку — Lofi Tunes of Capy"
-    >
-      <span aria-hidden="true">🔇</span>
-      <span class="music-toggle-label">Музыка</span>
+    <button id="pi-balance-button" class="pi-balance-button" type="button"
+      aria-haspopup="dialog" aria-controls="pi-shop-dialog" title="Открыть магазин">
+      <span aria-hidden="true">🪙</span>
+      <strong id="pi-balance">0</strong>
+      <span class="pi-balance-label">piCoin</span>
     </button>
 
     <div class="season">
@@ -404,6 +400,11 @@
       aria-controls="player-card-dialog"
     >
       🪪 Визитка
+    </button>
+
+    <button id="pi-shop-open-button" class="pi-shop-open-button" type="button"
+      aria-haspopup="dialog" aria-controls="pi-shop-dialog">
+      🛒 Магазин
     </button>
 
   </span>
@@ -1002,11 +1003,13 @@
       </div>
     </section>
 
-    <section
-      id="player-career-profile"
-      class="daily-profile-card"
-    >
-      <p>Загружаем достижения…</p>
+    <section id="pi-daily-card" class="daily-profile-card pi-daily-card"
+      aria-labelledby="pi-daily-title">
+      <h3 id="pi-daily-title">🪙 Ежедневный бонус</h3>
+      <p>Заходи каждый день: серия растёт, а награды становятся больше.</p>
+      <div id="pi-daily-days" class="pi-daily-days"><span>Загрузка…</span></div>
+      <button id="pi-daily-claim" type="button" disabled>ЗАГРУЗКА…</button>
+      <p id="pi-daily-message" class="pi-daily-message" aria-live="polite"></p>
     </section>
 
 
@@ -2367,6 +2370,18 @@
   <p class="user-agreement-version">Версия правил: 1.1 · 27 сентября 2026 года</p>
 </dialog>
 
+<dialog id="pi-shop-dialog" class="pi-shop-dialog" aria-labelledby="pi-shop-title">
+  <button id="pi-shop-close" class="pi-shop-close" type="button" aria-label="Закрыть магазин">×</button>
+  <h2 id="pi-shop-title">🛒 Магазин piCoin</h2>
+  <p class="pi-shop-balance">Баланс: <strong id="pi-shop-balance">0</strong> 🪙</p>
+  <article class="pi-shop-item">
+    <div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p></div>
+    <strong>120 🪙</strong>
+    <button id="pi-buy-turbo" type="button">КУПИТЬ</button>
+  </article>
+  <p id="pi-shop-message" class="pi-shop-message" aria-live="polite"></p>
+</dialog>
+
 <dialog
   id="daily-tasks-dialog"
   class="daily-tasks-dialog"
@@ -2551,7 +2566,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=113"></script>
+  <script src="app.js?v=114"></script>
 
 </body>
 </html>

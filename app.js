@@ -3566,6 +3566,7 @@ async function loadMyProfile() {
       profile.total_pixels
     ).toLocaleString("ru-RU");
 
+  await piCoin.load();
 }
 
 function incrementDisplayedProfilePixelCount(
@@ -13407,10 +13408,6 @@ const pixelQuest = (() => {
     style.textContent += '.pq-profile{margin:18px 0;padding:16px;border:1px solid #534275;border-radius:16px;background:#17152b}.pq-profile h3{margin:0 0 12px;color:#ddd6fe}.pq-profile p{margin:10px 0}.pq-profile small{display:block;color:#aebbd0;line-height:1.5}.pq-badge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.pq-badge{padding:12px 6px;border:1px solid #374151;border-radius:12px;text-align:center;color:#9ca3af}.pq-badge>span{display:block;font-size:28px;margin-bottom:6px}.pq-badge strong{display:block;font-size:12px;overflow-wrap:anywhere}.pq-earned{background:#30204c;border-color:#9d79d0;color:#fff}.pq-badge small{font-size:11px;margin-top:6px}.pq-profile details{margin:14px 0}.pq-profile summary{cursor:pointer}.pq-badge-history{max-height:180px;overflow:auto;font-size:13px}';
     style.textContent += '.pq-career-progress{width:100%;height:14px;accent-color:#a78bfa}.pq-week-stages{display:grid;gap:8px;margin:12px 0}.pq-profile details+h3{margin-top:20px}';
     document.head.append(style);
-    const careerHost = document.createElement('section');
-    careerHost.id = 'quest-profile-career';
-    careerHost.className = 'pq-profile';
-    document.querySelector('#profile-panel .profile-stats').after(careerHost);
     const collectionHost = document.createElement('section');
     collectionHost.id = 'quest-profile-collection';
     collectionHost.className = 'pq-profile';
@@ -15260,6 +15257,62 @@ const promoCodes = (() => {
   }, { passive: true });
 })();
 
+
+// ---------- PI COIN ----------
+const piCoin = (() => {
+  const rewards=[5,5,10,10,15,20,35];
+  const balance=document.getElementById("pi-balance"),shopBalance=document.getElementById("pi-shop-balance");
+  const days=document.getElementById("pi-daily-days"),claimButton=document.getElementById("pi-daily-claim");
+  const dailyMessage=document.getElementById("pi-daily-message"),shopDialog=document.getElementById("pi-shop-dialog");
+  const buyButton=document.getElementById("pi-buy-turbo"),shopMessage=document.getElementById("pi-shop-message");
+  let status=null,busy=false;
+  function message(el,text,error=false){if(!el)return;el.textContent=text;el.classList.toggle("error",error)}
+  function render(){
+    const amount=Number(status?.balance||0);
+    if(balance)balance.textContent=amount.toLocaleString("ru-RU");
+    if(shopBalance)shopBalance.textContent=amount.toLocaleString("ru-RU");
+    if(!days||!claimButton)return;
+    days.replaceChildren();
+    const current=Number(status?.claim_day||1);
+    rewards.forEach((reward,index)=>{
+      const day=index+1,item=document.createElement("span");item.className="pi-daily-day";
+      if(day<current||(status?.claimed_today&&day===current))item.classList.add("claimed");
+      else if(day===current)item.classList.add("current");
+      item.innerHTML="<small>День "+day+"</small><strong>"+reward+" 🪙</strong>";days.append(item);
+    });
+    claimButton.disabled=busy||Boolean(status?.claimed_today);
+    claimButton.textContent=status?.claimed_today?"БОНУС ПОЛУЧЕН":"ЗАБРАТЬ "+rewards[current-1]+" piCoin";
+    if(buyButton)buyButton.disabled=busy||amount<120;
+  }
+  async function load(){
+    if(!currentUser)return;const id=currentUser.id;
+    const {data,error}=await supabaseClient.rpc("get_pi_coin_status");
+    if(!currentUser||currentUser.id!==id)return;
+    if(error){console.error("PI COIN STATUS ERROR:",error);message(dailyMessage,"Выполни новую SQL-миграцию, чтобы открыть бонус.",true);return}
+    status=data;render();
+  }
+  async function claim(){
+    if(busy||status?.claimed_today)return;busy=true;render();message(dailyMessage,"");
+    const {data,error}=await supabaseClient.rpc("claim_pi_coin_daily");busy=false;
+    if(error||!data?.success){message(dailyMessage,data?.error==="ALREADY_CLAIMED"?"Сегодняшний бонус уже получен.":"Не удалось получить бонус. Попробуй ещё раз.",true);await load();return}
+    status=data.status;message(dailyMessage,"Получено: "+data.reward+" piCoin!");render();
+  }
+  async function buy(){
+    if(busy||Number(status?.balance||0)<120)return;
+    if(!confirm("Купить Турбокисть на 10 минут за 120 piCoin? Она включится сразу."))return;
+    busy=true;render();message(shopMessage,"");
+    const {data,error}=await supabaseClient.rpc("buy_pi_coin_turbo");busy=false;
+    if(error||!data?.success){message(shopMessage,data?.error==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":"Не удалось выполнить покупку.",true);await load();return}
+    status=data.status;render();resetPixelCooldownAfterReward();message(shopMessage,"Турбокисть включена на 10 минут!");
+  }
+  async function open(){await load();if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
+  document.getElementById("pi-balance-button")?.addEventListener("click",open);
+  document.getElementById("pi-shop-open-button")?.addEventListener("click",open);
+  document.getElementById("pi-shop-close")?.addEventListener("click",()=>shopDialog?.close());
+  claimButton?.addEventListener("click",claim);buyButton?.addEventListener("click",buy);
+  shopDialog?.addEventListener("click",event=>{if(event.target!==shopDialog)return;const b=shopDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)shopDialog.close()});
+  return {load};
+})();
 
 // ---------- BACKGROUND MUSIC ----------
 
