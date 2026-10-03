@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=74">
+  <link rel="stylesheet" href="style.css?v=75">
 </head>
 
 <body>
@@ -348,31 +348,33 @@
       </button>
     </div>
 
-    <button id="pi-balance-button" class="pi-balance-button" type="button"
-      aria-haspopup="dialog" aria-controls="pi-shop-dialog" title="Открыть магазин">
-      <span aria-hidden="true">🪙</span>
-      <strong id="pi-balance">0</strong>
-      <span class="pi-balance-label">piCoin</span>
-    </button>
+    <div class="header-summary">
+      <button id="pi-balance-button" class="pi-balance-button" type="button"
+        aria-haspopup="dialog" aria-controls="pi-shop-dialog" title="Открыть магазин">
+        <span aria-hidden="true">🪙</span>
+        <strong id="pi-balance">0</strong>
+        <span class="pi-balance-label">piCoin</span>
+      </button>
 
-    <div class="season">
-      <span class="season-topline">
-        <span id="season-info">
-          Загрузка сезона...
+      <div class="season">
+        <span class="season-topline">
+          <span id="season-info">
+            Загрузка сезона...
+          </span>
+
+          <span
+            id="online-users"
+            class="online-users"
+            title="Участников онлайн"
+          >
+            <span class="online-dot"></span>
+            <span id="online-users-count">1</span>
+            <span class="online-label">онлайн</span>
+          </span>
         </span>
 
-        <span
-          id="online-users"
-          class="online-users"
-          title="Участников онлайн"
-        >
-          <span class="online-dot"></span>
-          <span id="online-users-count">1</span>
-          <span class="online-label">онлайн</span>
-        </span>
-      </span>
-
-      <span id="season-countdown"></span>
+        <span id="season-countdown"></span>
+      </div>
     </div>
   </header>
 
@@ -449,15 +451,6 @@
         <div id="selection-indicator" class="selection-indicator hidden" aria-hidden="true"></div>
 
       </div>
-
-      <div id="map-item-toolbar" class="map-item-toolbar" aria-label="Предметы карты">
-        <strong>🎒 Предметы:</strong>
-        <button type="button" data-map-item-use="bomb" title="Бомба: выберите центр воронки и нажмите">💣 <span id="map-bomb-count">0</span></button>
-        <button type="button" data-map-item-use="beacon" title="Маяк: выберите пиксель, нажмите и введите подпись">📍 <span id="map-beacon-count">0</span></button>
-        <button type="button" data-map-item-use="detector" title="Детектор: выберите чужой пиксель и нажмите">🕵️ <span id="map-detector-count">0</span></button>
-        <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
-      </div>
-
 
       <dialog
         id="stencil-dialog"
@@ -760,9 +753,37 @@
         </dialog>
 
 
-        <button id="place-button" disabled>
-          ПОСТАВИТЬ ПИКСЕЛЬ
-        </button>
+        <div class="placement-actions">
+          <button id="place-button" disabled>
+            ПОСТАВИТЬ ПИКСЕЛЬ
+          </button>
+          <button id="map-items-open" class="map-items-open" type="button"
+            aria-haspopup="dialog" aria-controls="map-items-dialog">
+            🎒 ПРЕДМЕТЫ
+          </button>
+        </div>
+
+        <dialog id="map-items-dialog" class="map-items-dialog" aria-labelledby="map-items-title">
+          <button id="map-items-close" class="map-items-close" type="button" aria-label="Закрыть">×</button>
+          <h2 id="map-items-title">🎒 Мои предметы</h2>
+          <p>Сначала выбери клетку на карте, затем используй предмет.</p>
+          <div class="map-items-list">
+            <button type="button" data-map-item-row="bomb" data-map-item-use="bomb" class="hidden">
+              <span>💣 <strong>Бомба</strong><small>Воронка из 41 пикселя</small></span>
+              <b id="map-bomb-count">0</b>
+            </button>
+            <button type="button" data-map-item-row="beacon" data-map-item-use="beacon" class="hidden">
+              <span>📍 <strong>Маяк</strong><small>Метка с подписью на карте</small></span>
+              <b id="map-beacon-count">0</b>
+            </button>
+            <button type="button" data-map-item-row="detector" data-map-item-use="detector" class="hidden">
+              <span>🕵️ <strong>Детектор</strong><small>Узнать автора пикселя</small></span>
+              <b id="map-detector-count">0</b>
+            </button>
+            <span id="map-items-empty">Купленных предметов пока нет.</span>
+          </div>
+          <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
+        </dialog>
 
 
         <div class="cooldown">
@@ -2594,7 +2615,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=116"></script>
+  <script src="app.js?v=117"></script>
 
 </body>
 </html>
