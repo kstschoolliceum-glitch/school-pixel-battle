@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=78">
+  <link rel="stylesheet" href="style.css?v=79">
 </head>
 
 <body>
@@ -382,10 +382,12 @@
   <dialog id="pi-ticker-dialog" class="pi-ticker-dialog" aria-labelledby="pi-ticker-title">
     <button id="pi-ticker-close" class="pi-ticker-close" type="button" aria-label="Закрыть">×</button>
     <h2 id="pi-ticker-title">📢 Бегущая строка дня</h2>
-    <p>Сообщение показывается всем, пока другой ученик не поставит своё на 10 piCoin дороже.</p>
+    <p>Сообщение показывается всем, пока другой ученик не предложит больше piCoin.</p>
     <div class="pi-ticker-current"><strong id="pi-ticker-dialog-nickname">Сегодня место свободно</strong><span id="pi-ticker-dialog-message">Начни торги первым.</span></div>
     <label for="pi-ticker-input">Твоё сообщение · до 80 символов</label>
     <textarea id="pi-ticker-input" maxlength="80" rows="3" placeholder="Напиши сообщение для всей школы"></textarea>
+    <label for="pi-ticker-bid-price">Твоя ставка · минимум <span id="pi-ticker-min-price">10</span> piCoin</label>
+    <input id="pi-ticker-bid-price" type="number" min="10" step="1" value="10" inputmode="numeric">
     <button id="pi-ticker-bid" type="button">РАЗМЕСТИТЬ ЗА <span id="pi-ticker-price">10</span> 🪙</button>
     <span id="pi-ticker-status" aria-live="polite"></span>
   </dialog>
@@ -2652,7 +2654,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=120"></script>
+  <script src="app.js?v=121"></script>
 
 </body>
 </html>

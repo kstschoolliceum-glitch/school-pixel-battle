@@ -15447,30 +15447,37 @@ const mapItems=(()=>{
 
 // ---------- DAILY PI COIN TICKER ----------
 const piTicker=(()=>{
- const openButton=document.getElementById("pi-ticker-open"),dialog=document.getElementById("pi-ticker-dialog"),input=document.getElementById("pi-ticker-input"),bidButton=document.getElementById("pi-ticker-bid"),statusEl=document.getElementById("pi-ticker-status");
- const nicknameEl=document.getElementById("pi-ticker-nickname"),messageEl=document.getElementById("pi-ticker-message"),dialogNickname=document.getElementById("pi-ticker-dialog-nickname"),dialogMessage=document.getElementById("pi-ticker-dialog-message"),priceEl=document.getElementById("pi-ticker-price");
+ const openButton=document.getElementById("pi-ticker-open"),dialog=document.getElementById("pi-ticker-dialog"),input=document.getElementById("pi-ticker-input"),bidInput=document.getElementById("pi-ticker-bid-price"),bidButton=document.getElementById("pi-ticker-bid"),statusEl=document.getElementById("pi-ticker-status");
+ const nicknameEl=document.getElementById("pi-ticker-nickname"),messageEl=document.getElementById("pi-ticker-message"),dialogNickname=document.getElementById("pi-ticker-dialog-nickname"),dialogMessage=document.getElementById("pi-ticker-dialog-message"),minPriceEl=document.getElementById("pi-ticker-min-price"),priceEl=document.getElementById("pi-ticker-price");
  let state=null,busy=false,lastUserId=null;
  function showStatus(text,error=false){if(!statusEl)return;statusEl.textContent=text;statusEl.classList.toggle("error",error)}
+ function updateBid(){
+  const minimum=Number(state?.next_price||10),price=Number(bidInput?.value);
+  priceEl.textContent=Number.isInteger(price)&&price>0?price.toLocaleString("ru-RU"):minimum.toLocaleString("ru-RU");
+  bidButton.disabled=busy||Boolean(state?.is_mine)||!Number.isInteger(price)||price<minimum||price>Number(state?.balance||0);
+ }
  function render(){
-  const hasMessage=Boolean(state?.message),nickname=hasMessage?state.nickname:"Сегодня свободно",message=hasMessage?state.message:"Размести сообщение за 10 piCoin";
+  const hasMessage=Boolean(state?.message),nickname=hasMessage?state.nickname:"Сегодня свободно",message=hasMessage?state.message:"Размести сообщение за 10 piCoin",minimum=Number(state?.next_price||10);
   nicknameEl.textContent=nickname;messageEl.textContent=message;dialogNickname.textContent=hasMessage?nickname:"Сегодня место свободно";dialogMessage.textContent=hasMessage?message:"Начни торги первым.";
-  priceEl.textContent=Number(state?.next_price||10).toLocaleString("ru-RU");
-  bidButton.disabled=busy||Boolean(state?.is_mine)||Number(state?.balance||0)<Number(state?.next_price||10);
-  if(state?.is_mine)showStatus("Сейчас показывается твоё сообщение.");
+  minPriceEl.textContent=minimum.toLocaleString("ru-RU");bidInput.min=String(minimum);
+  if(!Number.isInteger(Number(bidInput.value))||Number(bidInput.value)<minimum)bidInput.value=String(minimum);
+  updateBid();if(state?.is_mine)showStatus("Сейчас показывается твоё сообщение.");
  }
  async function load(){
   if(!currentUser)return;const userId=currentUser.id;const {data,error}=await supabaseClient.rpc("get_pi_ticker");
   if(!currentUser||currentUser.id!==userId)return;if(error){console.warn("PI TICKER:",error);return}state=data;render();
  }
  async function bid(){
-  const message=input.value.trim();if(busy||!message)return;if(message.length>80){showStatus("Не больше 80 символов.",true);return}
-  if(!confirm("Разместить сообщение за "+Number(state?.next_price||10)+" piCoin?"))return;
-  busy=true;render();showStatus("");const {data,error}=await supabaseClient.rpc("bid_pi_ticker",{p_message:message});busy=false;
-  if(error||!data?.success){const e=data?.error,m={NOT_ENOUGH_COINS:"Недостаточно piCoin.",OWN_MESSAGE:"Нельзя перебивать своё сообщение.",PROFANITY:"Сообщение не прошло фильтр.",NO_LINKS:"Ссылки запрещены.",INVALID_MESSAGE:"Нужно от 1 до 80 символов."};showStatus(m[e]||"Не удалось разместить сообщение.",true);await load();return}
+  const message=input.value.trim(),price=Number(bidInput.value),minimum=Number(state?.next_price||10);if(busy||!message)return;
+  if(message.length>80){showStatus("Не больше 80 символов.",true);return}
+  if(!Number.isInteger(price)||price<minimum){showStatus("Ставка должна быть не меньше "+minimum+" piCoin.",true);return}
+  if(!confirm("Разместить сообщение за "+price+" piCoin?"))return;
+  busy=true;render();showStatus("");const {data,error}=await supabaseClient.rpc("bid_pi_ticker",{p_message:message,p_price:price});busy=false;
+  if(error||!data?.success){const e=data?.error,m={NOT_ENOUGH_COINS:"Недостаточно piCoin.",BID_TOO_LOW:"Ставку уже перебили. Укажите новую цену.",OWN_MESSAGE:"Нельзя перебивать своё сообщение.",PROFANITY:"Сообщение не прошло фильтр.",NO_LINKS:"Ссылки запрещены.",INVALID_MESSAGE:"Нужно от 1 до 80 символов.",INVALID_PRICE:"Укажите целое число piCoin."};showStatus(m[e]||"Не удалось разместить сообщение.",true);await load();return}
   state=data.status;input.value="";document.getElementById("pi-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");showStatus("Сообщение размещено!");render();
  }
  openButton?.addEventListener("click",async()=>{await load();if(dialog&&!dialog.open)dialog.showModal()});
- document.getElementById("pi-ticker-close")?.addEventListener("click",()=>dialog?.close());bidButton?.addEventListener("click",bid);
+ document.getElementById("pi-ticker-close")?.addEventListener("click",()=>dialog?.close());bidInput?.addEventListener("input",updateBid);bidButton?.addEventListener("click",bid);
  dialog?.addEventListener("click",event=>{if(event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close()});
  setInterval(()=>{const id=currentUser?.id||null;if(id!==lastUserId){lastUserId=id;if(id)load()}else if(id&&!document.hidden)load()},15000);
  return {load};
