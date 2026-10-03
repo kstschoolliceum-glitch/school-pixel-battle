@@ -564,6 +564,7 @@ ctx.strokeRect(
   }
 
 }
+  window.mapItems?.drawMarkers(ctx);
   updateSelectionIndicator();
 }
 
@@ -861,16 +862,19 @@ function setPixelInformation(x = null, y = null, owner = "") {
   }
 
   coordinatePosition.textContent = `X: ${x}  Y: ${y}`;
-  pixelOwner.textContent = owner
-    ? `🏫 ${owner}`
-    : "Свободная клетка";
+  const mapItem = window.mapItems?.describeCell(x, y);
+  pixelOwner.textContent = mapItem?.type === "bomb"
+    ? "💥 След пиксельной бомбы · подрывник неизвестен"
+    : mapItem?.type === "beacon"
+      ? `📍 ${mapItem.label} · ${mapItem.class_name || "Без класса"}`
+      : owner ? `🏫 ${owner}` : "Свободная клетка";
   reportButton?.classList.toggle("hidden", !owner);
 
-  if (owner && currentUserIsAdmin) {
+  if (currentUserIsAdmin && (owner || mapItem?.type === "bomb")) {
     loadAdminPixelOwner(
       x,
       y,
-      owner,
+      owner || "💥 Бомба",
       requestNumber
     );
   }
@@ -3938,6 +3942,7 @@ async function checkForSeasonChange(force = false) {
   await loadClassRanking();
   await loadMyProfile();
   await dailyTasks.load();
+    await mapItems.load();
 
 
 
@@ -4708,6 +4713,7 @@ async function initializeAuth() {
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await mapItems.load();
 
     await checkAdminStatus();
     await updatePushNotificationStatus();
@@ -4798,6 +4804,7 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await mapItems.load();
 
     await checkAdminStatus();
     await updatePushNotificationStatus();
@@ -5993,6 +6000,7 @@ easyStartButton.addEventListener(
 
     await loadMyProfile();
     await dailyTasks.load();
+    await mapItems.load();
 
 
     await checkAdminStatus();
@@ -15298,14 +15306,14 @@ const piCoin = (() => {
     status=data.status;message(dailyMessage,"Получено: "+data.reward+" piCoin!");render();
   }
   async function buy(){
-    if(busy||Number(status?.balance||0)<120)return;
-    if(!confirm("Купить Турбокисть на 10 минут за 120 piCoin? Она включится сразу."))return;
+    if(busy||Number(status?.balance||0)<160)return;
+    if(!confirm("Купить Турбокисть на 10 минут за 160 piCoin? Она включится сразу."))return;
     busy=true;render();message(shopMessage,"");
     const {data,error}=await supabaseClient.rpc("buy_pi_coin_turbo");busy=false;
     if(error||!data?.success){message(shopMessage,data?.error==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":"Не удалось выполнить покупку.",true);await load();return}
     status=data.status;render();resetPixelCooldownAfterReward();message(shopMessage,"Турбокисть включена на 10 минут!");
   }
-  async function open(){await load();if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
+  async function open(){await Promise.all([load(),mapItems.load()]);if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
   document.getElementById("pi-balance-button")?.addEventListener("click",open);
   document.getElementById("pi-shop-open-button")?.addEventListener("click",open);
   document.getElementById("pi-shop-close")?.addEventListener("click",()=>shopDialog?.close());
@@ -15313,6 +15321,27 @@ const piCoin = (() => {
   shopDialog?.addEventListener("click",event=>{if(event.target!==shopDialog)return;const b=shopDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)shopDialog.close()});
   return {load};
 })();
+
+// ---------- MAP ITEMS ----------
+const mapItems=(()=>{
+ const counts={bomb:0,beacon:0,detector:0},prices={bomb:450,beacon:90,detector:15};let beacons=[],bombCells=new Set(),busy=false;
+ const output=document.getElementById("map-item-message"),key=(x,y)=>x+":"+y;
+ function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
+ function applyStatus(data){if(!data)return;const inv=data.inventory||{};Object.keys(counts).forEach(type=>{counts[type]=Number(inv[type]||0);document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);const el=document.getElementById("map-"+type+"-count");if(el)el.textContent=counts[type]});if(data.balance!==undefined){document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU")}beacons=Array.isArray(data.beacons)?data.beacons:[];bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));drawMap()}
+ async function load(){if(!currentUser||!activeSeason?.id)return;const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
+ async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена.",true);return}applyStatus(data.status);say("Предмет куплен!")}
+ async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;
+  if(type==="bomb"){if(!confirm("Создать воронку из 41 пикселя?")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:selectedX,p_y:selectedY})}
+  else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
+  else result=await supabaseClient.rpc("reveal_pixel_owner",{p_x:selectedX,p_y:selectedY});busy=false;const data=result.data,error=result.error;
+  if(error||!data?.success){const e=data?.error||"",m={EDGE_LIMIT:"Выберите центр не ближе четырёх клеток к краю.",ANONYMOUS_BOMB:"Автор бомбы скрыт.",OWN_PIXEL:"Это ваш пиксель.",EMPTY_PIXEL:"Клетка свободна.",BEACON_LIMIT:"Лимит маяков достигнут.",PROFANITY:"Подпись не прошла фильтр.",NO_LINKS:"Ссылки запрещены.",SEASON_LIMIT:"Две бомбы за неделю уже использованы.",CELL_OCCUPIED:"На клетке уже есть маяк."};say(m[e]||"Предмет не использован.",true);return}
+  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});say("Воронка из 41 пикселя создана.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса"))}drawMap()}
+ function describeCell(x,y){if(bombCells.has(key(x,y)))return{type:"bomb"};const b=beacons.find(v=>Number(v.x)===x&&Number(v.y)===y);return b?{type:"beacon",label:b.label,class_name:b.class_name}:null}
+ function drawMarkers(ctx){beacons.forEach(b=>{const x=Number(b.x)+.5,y=Number(b.y)+.5;ctx.save();ctx.beginPath();ctx.arc(x,y,3.2,0,Math.PI*2);ctx.fillStyle="#ef4444";ctx.fill();ctx.lineWidth=.7;ctx.strokeStyle="#fff";ctx.stroke();ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.restore()})}
+ document.querySelectorAll("[data-map-item-buy]").forEach(b=>b.addEventListener("click",()=>buy(b.dataset.mapItemBuy)));document.querySelectorAll("[data-map-item-use]").forEach(b=>b.addEventListener("click",()=>use(b.dataset.mapItemUse)));setInterval(()=>{if(!document.hidden&&currentUser&&activeSeason)load()},120000);window.addEventListener("focus",()=>{if(currentUser&&activeSeason)load()});
+ const api={load,describeCell,drawMarkers};window.mapItems=api;return api;
+})();
+
 
 // ---------- BACKGROUND MUSIC ----------
 

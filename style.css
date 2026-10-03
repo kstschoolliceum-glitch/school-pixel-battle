@@ -7568,3 +7568,6 @@ body.admin-view .mobile-nav {
   min-height: 44px;
   margin-top: 2px;
 }
+
+/* ---------- MAP ITEMS ---------- */
+.map-item-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:10px 0;padding:9px;border:1px solid #334155;background:#0d1627;color:#cbd5e1;font:700 12px/1.2 "Courier New",monospace}.map-item-toolbar button{min-height:32px;padding:5px 9px;border:1px solid #64748b;background:#18243a;color:#fff;cursor:pointer}.map-item-toolbar button:hover{border-color:#fbbf24}.map-item-toolbar>span{flex:1;min-width:180px;color:#94a3b8}.map-item-toolbar>span.error{color:#fca5a5}.pi-shop-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding-right:3px}.pi-shop-item button[data-map-item-buy]{background:#4a3210}@media(max-width:650px){.map-item-toolbar{gap:5px;margin:7px 0;padding:7px}.map-item-toolbar>strong{width:100%}.map-item-toolbar>span{min-width:100%;font-size:10px}.pi-shop-dialog{max-height:90dvh;overflow:auto}}

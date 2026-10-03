@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=72">
+  <link rel="stylesheet" href="style.css?v=73">
 </head>
 
 <body>
@@ -429,6 +429,14 @@
 
         <div id="selection-indicator" class="selection-indicator hidden" aria-hidden="true"></div>
 
+      </div>
+
+      <div id="map-item-toolbar" class="map-item-toolbar" aria-label="Предметы карты">
+        <strong>🎒 Предметы:</strong>
+        <button type="button" data-map-item-use="bomb">💣 <span id="map-bomb-count">0</span></button>
+        <button type="button" data-map-item-use="beacon">📍 <span id="map-beacon-count">0</span></button>
+        <button type="button" data-map-item-use="detector">🕵️ <span id="map-detector-count">0</span></button>
+        <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
       </div>
 
 
@@ -2374,11 +2382,12 @@
   <button id="pi-shop-close" class="pi-shop-close" type="button" aria-label="Закрыть магазин">×</button>
   <h2 id="pi-shop-title">🛒 Магазин piCoin</h2>
   <p class="pi-shop-balance">Баланс: <strong id="pi-shop-balance">0</strong> 🪙</p>
-  <article class="pi-shop-item">
-    <div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p></div>
-    <strong>120 🪙</strong>
-    <button id="pi-buy-turbo" type="button">КУПИТЬ</button>
-  </article>
+  <div class="pi-shop-list">
+    <article class="pi-shop-item"><div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p></div><strong>160 🪙</strong><button id="pi-buy-turbo" type="button">КУПИТЬ</button></article>
+    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ · <span data-item-stock="detector">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ · <span data-item-stock="beacon">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 41 пикселя. Автор виден только администратору.</p></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ · <span data-item-stock="bomb">0</span> ШТ.</button></article>
+  </div>
   <p id="pi-shop-message" class="pi-shop-message" aria-live="polite"></p>
 </dialog>
 
@@ -2566,7 +2575,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=114"></script>
+  <script src="app.js?v=115"></script>
 
 </body>
 </html>
