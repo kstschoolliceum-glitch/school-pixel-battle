@@ -8557,11 +8557,15 @@ async function loadAdminStudents() {
     return;
   }
 
+  const temporaryBansResult =
+    await supabaseClient.rpc(
+      "admin_get_temporary_bans"
+    );
+
   const [
     studentsResult,
     ipsResult,
-    risksResult,
-    temporaryBansResult
+    risksResult
   ] =
     await Promise.all([
       supabaseClient.rpc(
@@ -8572,9 +8576,6 @@ async function loadAdminStudents() {
       ),
       supabaseClient.rpc(
         "admin_get_multiaccount_risk"
-      ),
-      supabaseClient.rpc(
-        "admin_get_temporary_bans"
       )
     ]);
 
