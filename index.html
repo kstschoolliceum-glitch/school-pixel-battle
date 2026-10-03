@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=75">
+  <link rel="stylesheet" href="style.css?v=76">
 </head>
 
 <body>
@@ -441,6 +441,7 @@
       <div id="canvas-container">
 
         <canvas id="pixel-canvas"></canvas>
+        <div id="beacon-layer" class="beacon-layer" aria-label="Маяки карты"></div>
 
         <div id="stencil-layer" class="stencil-layer hidden" aria-hidden="true">
           <canvas id="stencil-canvas" width="300" height="424"></canvas>
@@ -762,6 +763,15 @@
             🎒 ПРЕДМЕТЫ
           </button>
         </div>
+
+        <dialog id="beacon-dialog" class="beacon-dialog" aria-labelledby="beacon-dialog-title">
+          <button id="beacon-dialog-close" class="beacon-dialog-close" type="button" aria-label="Закрыть">×</button>
+          <h2 id="beacon-dialog-title">🚩 Маяк</h2>
+          <strong id="beacon-dialog-class">Класс</strong>
+          <p id="beacon-dialog-label"></p>
+          <button id="beacon-remove-button" class="hidden" type="button">УБРАТЬ МОЙ МАЯК</button>
+          <span id="beacon-dialog-status" aria-live="polite"></span>
+        </dialog>
 
         <dialog id="map-items-dialog" class="map-items-dialog" aria-labelledby="map-items-title">
           <button id="map-items-close" class="map-items-close" type="button" aria-label="Закрыть">×</button>
@@ -2615,7 +2625,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=117"></script>
+  <script src="app.js?v=118"></script>
 
 </body>
 </html>
