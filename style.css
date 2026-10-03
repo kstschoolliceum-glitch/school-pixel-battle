@@ -7571,3 +7571,18 @@ body.admin-view .mobile-nav {
 
 /* ---------- MAP ITEMS ---------- */
 .map-item-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:10px 0;padding:9px;border:1px solid #334155;background:#0d1627;color:#cbd5e1;font:700 12px/1.2 "Courier New",monospace}.map-item-toolbar button{min-height:32px;padding:5px 9px;border:1px solid #64748b;background:#18243a;color:#fff;cursor:pointer}.map-item-toolbar button:hover{border-color:#fbbf24}.map-item-toolbar>span{flex:1;min-width:180px;color:#94a3b8}.map-item-toolbar>span.error{color:#fca5a5}.pi-shop-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding-right:3px}.pi-shop-item button[data-map-item-buy]{background:#4a3210}@media(max-width:650px){.map-item-toolbar{gap:5px;margin:7px 0;padding:7px}.map-item-toolbar>strong{width:100%}.map-item-toolbar>span{min-width:100%;font-size:10px}.pi-shop-dialog{max-height:90dvh;overflow:auto}}
+
+/* ---------- DAILY PI COIN TICKER ---------- */
+.brand-stack{width:min(410px,42vw);min-width:0;display:flex;flex-direction:column;gap:4px}
+.pi-ticker{width:100%;min-width:0;height:20px;padding:0;display:flex;align-items:center;overflow:hidden;border:1px solid #425577;border-radius:2px;background:#080d19;color:#dbeafe;font:700 10px/1 "Courier New",monospace;cursor:pointer}
+.pi-ticker>strong{flex:none;max-width:42%;height:100%;padding:4px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#25324d;color:#76f5c5;border-right:1px solid #425577}
+.pi-ticker-viewport{min-width:0;flex:1;overflow:hidden;white-space:nowrap}
+.pi-ticker-message{display:inline-block;padding-left:100%;animation:pi-ticker-scroll 14s linear infinite}
+.pi-ticker:hover .pi-ticker-message{animation-play-state:paused}
+@keyframes pi-ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.pi-ticker-dialog{width:min(480px,calc(100% - 24px));padding:22px;border:2px solid #425577;border-radius:2px;background:#141c32;color:#f1f5ff;box-shadow:6px 6px 0 #060a14}
+.pi-ticker-dialog::backdrop{background:#020617cc}.pi-ticker-dialog h2{margin:0 32px 8px 0;color:#fde68a;font:900 19px/1.2 "Courier New",monospace}.pi-ticker-dialog p{margin:0 0 14px;color:#a6b5ce;font-size:13px;line-height:1.4}
+.pi-ticker-close{position:absolute;top:10px;right:10px;border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}.pi-ticker-current{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;padding:10px;border:1px solid #425577;background:#0d1627}.pi-ticker-current strong{color:#76f5c5}.pi-ticker-current span{overflow-wrap:anywhere}
+.pi-ticker-dialog label{display:block;margin-bottom:6px;color:#cbd5e1;font-size:12px}.pi-ticker-dialog textarea{width:100%;resize:vertical;min-height:72px;padding:10px;border:1px solid #526887;background:#080d19;color:#fff;font:14px/1.35 Arial,sans-serif}.pi-ticker-dialog textarea:focus{border-color:#76f5c5}
+#pi-ticker-bid{width:100%;min-height:42px;margin-top:10px;border:1px solid #fbbf24;background:#5b3c08;color:#fff7cf;font-weight:900;cursor:pointer}#pi-ticker-bid:disabled{opacity:.45;cursor:not-allowed}#pi-ticker-status{display:block;min-height:18px;margin-top:8px;color:#86efac;font-size:12px}#pi-ticker-status.error{color:#fca5a5}
+@media(max-width:650px){.header{gap:7px}.brand-stack{width:40vw;gap:2px}.brand-stack .logo{font-size:14px;white-space:nowrap}.pi-ticker{height:17px;font-size:8px}.pi-ticker>strong{max-width:48%;padding:3px 4px}.pi-balance-button{flex:none}.season{flex:none}.pi-ticker-dialog{padding:18px}}

@@ -3943,6 +3943,7 @@ async function checkForSeasonChange(force = false) {
   await loadMyProfile();
   await dailyTasks.load();
     await mapItems.load();
+    await piTicker.load();
 
 
 
@@ -4714,6 +4715,7 @@ async function initializeAuth() {
     await loadMyProfile();
     await dailyTasks.load();
     await mapItems.load();
+    await piTicker.load();
 
     await checkAdminStatus();
     await updatePushNotificationStatus();
@@ -4805,6 +4807,7 @@ loginForm.addEventListener(
     await loadMyProfile();
     await dailyTasks.load();
     await mapItems.load();
+    await piTicker.load();
 
     await checkAdminStatus();
     await updatePushNotificationStatus();
@@ -6001,6 +6004,7 @@ easyStartButton.addEventListener(
     await loadMyProfile();
     await dailyTasks.load();
     await mapItems.load();
+    await piTicker.load();
 
 
     await checkAdminStatus();
@@ -15340,6 +15344,38 @@ const mapItems=(()=>{
  function drawMarkers(ctx){beacons.forEach(b=>{const x=Number(b.x)+.5,y=Number(b.y)+.5;ctx.save();ctx.beginPath();ctx.arc(x,y,3.2,0,Math.PI*2);ctx.fillStyle="#ef4444";ctx.fill();ctx.lineWidth=.7;ctx.strokeStyle="#fff";ctx.stroke();ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.restore()})}
  document.querySelectorAll("[data-map-item-buy]").forEach(b=>b.addEventListener("click",()=>buy(b.dataset.mapItemBuy)));document.querySelectorAll("[data-map-item-use]").forEach(b=>b.addEventListener("click",()=>use(b.dataset.mapItemUse)));setInterval(()=>{if(!document.hidden&&currentUser&&activeSeason)load()},120000);window.addEventListener("focus",()=>{if(currentUser&&activeSeason)load()});
  const api={load,describeCell,drawMarkers};window.mapItems=api;return api;
+})();
+
+
+// ---------- DAILY PI COIN TICKER ----------
+const piTicker=(()=>{
+ const openButton=document.getElementById("pi-ticker-open"),dialog=document.getElementById("pi-ticker-dialog"),input=document.getElementById("pi-ticker-input"),bidButton=document.getElementById("pi-ticker-bid"),statusEl=document.getElementById("pi-ticker-status");
+ const nicknameEl=document.getElementById("pi-ticker-nickname"),messageEl=document.getElementById("pi-ticker-message"),dialogNickname=document.getElementById("pi-ticker-dialog-nickname"),dialogMessage=document.getElementById("pi-ticker-dialog-message"),priceEl=document.getElementById("pi-ticker-price");
+ let state=null,busy=false,lastUserId=null;
+ function showStatus(text,error=false){if(!statusEl)return;statusEl.textContent=text;statusEl.classList.toggle("error",error)}
+ function render(){
+  const hasMessage=Boolean(state?.message),nickname=hasMessage?state.nickname:"Сегодня свободно",message=hasMessage?state.message:"Размести сообщение за 10 piCoin";
+  nicknameEl.textContent=nickname;messageEl.textContent=message;dialogNickname.textContent=hasMessage?nickname:"Сегодня место свободно";dialogMessage.textContent=hasMessage?message:"Начни торги первым.";
+  priceEl.textContent=Number(state?.next_price||10).toLocaleString("ru-RU");
+  bidButton.disabled=busy||Boolean(state?.is_mine)||Number(state?.balance||0)<Number(state?.next_price||10);
+  if(state?.is_mine)showStatus("Сейчас показывается твоё сообщение.");
+ }
+ async function load(){
+  if(!currentUser)return;const userId=currentUser.id;const {data,error}=await supabaseClient.rpc("get_pi_ticker");
+  if(!currentUser||currentUser.id!==userId)return;if(error){console.warn("PI TICKER:",error);return}state=data;render();
+ }
+ async function bid(){
+  const message=input.value.trim();if(busy||!message)return;if(message.length>80){showStatus("Не больше 80 символов.",true);return}
+  if(!confirm("Разместить сообщение за "+Number(state?.next_price||10)+" piCoin?"))return;
+  busy=true;render();showStatus("");const {data,error}=await supabaseClient.rpc("bid_pi_ticker",{p_message:message});busy=false;
+  if(error||!data?.success){const e=data?.error,m={NOT_ENOUGH_COINS:"Недостаточно piCoin.",OWN_MESSAGE:"Нельзя перебивать своё сообщение.",PROFANITY:"Сообщение не прошло фильтр.",NO_LINKS:"Ссылки запрещены.",INVALID_MESSAGE:"Нужно от 1 до 80 символов."};showStatus(m[e]||"Не удалось разместить сообщение.",true);await load();return}
+  state=data.status;input.value="";document.getElementById("pi-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");showStatus("Сообщение размещено!");render();
+ }
+ openButton?.addEventListener("click",async()=>{await load();if(dialog&&!dialog.open)dialog.showModal()});
+ document.getElementById("pi-ticker-close")?.addEventListener("click",()=>dialog?.close());bidButton?.addEventListener("click",bid);
+ dialog?.addEventListener("click",event=>{if(event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close()});
+ setInterval(()=>{const id=currentUser?.id||null;if(id!==lastUserId){lastUserId=id;if(id)load()}else if(id&&!document.hidden)load()},15000);
+ return {load};
 })();
 
 

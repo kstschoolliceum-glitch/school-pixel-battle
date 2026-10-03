@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="style.css?v=73">
+  <link rel="stylesheet" href="style.css?v=74">
 </head>
 
 <body>
@@ -337,8 +337,15 @@
   </div>
 </div>
   <header class="header">
-    <div class="logo">
-      👑 <span>PIXEL <b>BATTLE</b></span>
+    <div class="brand-stack">
+      <div class="logo">
+        👑 <span>PIXEL <b>BATTLE</b></span>
+      </div>
+      <button id="pi-ticker-open" class="pi-ticker" type="button"
+        aria-haspopup="dialog" aria-controls="pi-ticker-dialog" title="Разместить сообщение">
+        <strong id="pi-ticker-nickname">Сегодня свободно</strong>
+        <span class="pi-ticker-viewport"><span id="pi-ticker-message" class="pi-ticker-message">Размести сообщение за 10 piCoin</span></span>
+      </button>
     </div>
 
     <button id="pi-balance-button" class="pi-balance-button" type="button"
@@ -368,6 +375,18 @@
       <span id="season-countdown"></span>
     </div>
   </header>
+
+
+  <dialog id="pi-ticker-dialog" class="pi-ticker-dialog" aria-labelledby="pi-ticker-title">
+    <button id="pi-ticker-close" class="pi-ticker-close" type="button" aria-label="Закрыть">×</button>
+    <h2 id="pi-ticker-title">📢 Бегущая строка дня</h2>
+    <p>Сообщение показывается всем, пока другой ученик не поставит своё на 10 piCoin дороже.</p>
+    <div class="pi-ticker-current"><strong id="pi-ticker-dialog-nickname">Сегодня место свободно</strong><span id="pi-ticker-dialog-message">Начни торги первым.</span></div>
+    <label for="pi-ticker-input">Твоё сообщение · до 80 символов</label>
+    <textarea id="pi-ticker-input" maxlength="80" rows="3" placeholder="Напиши сообщение для всей школы"></textarea>
+    <button id="pi-ticker-bid" type="button">РАЗМЕСТИТЬ ЗА <span id="pi-ticker-price">10</span> 🪙</button>
+    <span id="pi-ticker-status" aria-live="polite"></span>
+  </dialog>
 
 
   <main class="game" id="game">
@@ -433,9 +452,9 @@
 
       <div id="map-item-toolbar" class="map-item-toolbar" aria-label="Предметы карты">
         <strong>🎒 Предметы:</strong>
-        <button type="button" data-map-item-use="bomb">💣 <span id="map-bomb-count">0</span></button>
-        <button type="button" data-map-item-use="beacon">📍 <span id="map-beacon-count">0</span></button>
-        <button type="button" data-map-item-use="detector">🕵️ <span id="map-detector-count">0</span></button>
+        <button type="button" data-map-item-use="bomb" title="Бомба: выберите центр воронки и нажмите">💣 <span id="map-bomb-count">0</span></button>
+        <button type="button" data-map-item-use="beacon" title="Маяк: выберите пиксель, нажмите и введите подпись">📍 <span id="map-beacon-count">0</span></button>
+        <button type="button" data-map-item-use="detector" title="Детектор: выберите чужой пиксель и нажмите">🕵️ <span id="map-detector-count">0</span></button>
         <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
       </div>
 
@@ -2575,7 +2594,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="app.js?v=115"></script>
+  <script src="app.js?v=116"></script>
 
 </body>
 </html>
