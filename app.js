@@ -2169,6 +2169,7 @@ async function placePixel() {
   if (data.daily_tasks) {
     dailyTasks.applyStatus(data.daily_tasks);
   }
+  dailyTasks.recordPiPixel();
 
   pixelCount++;
 
@@ -13465,6 +13466,7 @@ const dailyTasks = (() => {
   let clockOffsetMs = 0;
   let message = "";
   let messageIsError = false;
+  let piTaskStatus = null;
 
   function serverNow() {
     return Date.now() + clockOffsetMs;
@@ -13597,6 +13599,52 @@ const dailyTasks = (() => {
     host.append(reward);
   }
 
+  function renderPiCoinTasks(host) {
+    const section = document.createElement("section");
+    section.className = "pi-pixel-tasks";
+    const heading = document.createElement("div");
+    heading.className = "pi-pixel-tasks-heading";
+    heading.innerHTML = "<strong>🪙 Пиксельный заработок</strong><span>Обновляется ежедневно</span>";
+    const intro = document.createElement("p");
+    intro.textContent = "Ставь пиксели в течение дня и забирай piCoin за каждый достигнутый этап.";
+    section.append(heading, intro);
+
+    if (!piTaskStatus) {
+      const pending = document.createElement("p");
+      pending.textContent = "Загружаем этапы…";
+      section.append(pending);
+      host.append(section);
+      return;
+    }
+
+    const count = Number(piTaskStatus.pixel_count || 0);
+    (piTaskStatus.stages || []).forEach(stage => {
+      const target = Number(stage.target);
+      const reward = Number(stage.reward);
+      const claimed = Boolean(stage.claimed);
+      const ready = count >= target;
+      const card = document.createElement("article");
+      card.className = "pi-pixel-task" + (claimed ? " claimed" : ready ? " ready" : "");
+      const text = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = Math.min(count, target).toLocaleString("ru-RU") + " / " + target.toLocaleString("ru-RU") + " пикселей";
+      const rewardText = document.createElement("span");
+      rewardText.textContent = "Награда: " + reward + " piCoin";
+      const progress = document.createElement("progress");
+      progress.max = target;
+      progress.value = Math.min(count, target);
+      text.append(title, rewardText, progress);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.piStage = String(stage.stage);
+      button.disabled = !ready || claimed;
+      button.textContent = claimed ? "ПОЛУЧЕНО ✓" : ready ? "ЗАБРАТЬ " + reward + " 🪙" : "В ПРОЦЕССЕ";
+      card.append(text, button);
+      section.append(card);
+    });
+    host.append(section);
+  }
+
   function renderTaskList(host, includeReward) {
     host.replaceChildren();
 
@@ -13630,6 +13678,7 @@ const dailyTasks = (() => {
     host.append(intro);
 
     (status.tasks || []).forEach((task, index) => host.append(makeTaskCard(task, index)));
+    renderPiCoinTasks(host);
 
     if (message) {
       const feedback = document.createElement("p");
@@ -13726,7 +13775,10 @@ const dailyTasks = (() => {
     messageIsError = false;
     render();
 
-    const { data, error } = await supabaseClient.rpc("get_daily_tasks");
+    const [{ data, error }, { data: piData, error: piError }] = await Promise.all([
+      supabaseClient.rpc("get_daily_tasks"),
+      supabaseClient.rpc("get_daily_pi_coin_tasks")
+    ]);
 
     if (!currentUser || currentUser.id !== userId || ownRequest !== requestNumber) return;
     loading = false;
@@ -13746,6 +13798,12 @@ const dailyTasks = (() => {
       return;
     }
 
+    if (piError) {
+      console.error("PI PIXEL TASKS ERROR:", piError);
+      piTaskStatus = null;
+    } else {
+      piTaskStatus = piData?.status || null;
+    }
     setStatus(data.status);
   }
 
@@ -13791,7 +13849,29 @@ const dailyTasks = (() => {
     await load();
   }
 
+  async function claimPiReward(stage) {
+    const { data, error } = await supabaseClient.rpc("claim_daily_pi_coin_stage", { p_stage: stage });
+    if (error || !data?.success) {
+      message = data?.error === "TARGET_NOT_REACHED" ? "Сначала выполни нужное количество установок." : "Не удалось получить piCoin.";
+      messageIsError = true;
+      render();
+      return;
+    }
+    piTaskStatus = data.status;
+    document.getElementById("pi-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
+    document.getElementById("pi-shop-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
+    message = "Получено " + data.reward + " piCoin!";
+    messageIsError = false;
+    render();
+  }
+
   async function handleAction(event) {
+    const piButton = event.target.closest("[data-pi-stage]");
+    if (piButton && !piButton.disabled) {
+      piButton.disabled = true;
+      await claimPiReward(Number(piButton.dataset.piStage));
+      return;
+    }
     const actionButton = event.target.closest("[data-daily-action]");
     if (!actionButton || actionButton.disabled) return;
     actionButton.disabled = true;
@@ -13810,6 +13890,7 @@ const dailyTasks = (() => {
     requestNumber++;
     loading = false;
     status = null;
+    piTaskStatus = null;
     profile = null;
     profileOwner = null;
     message = "";
@@ -13836,7 +13917,13 @@ const dailyTasks = (() => {
   }, 1000);
 
   render();
-  return { load, applyStatus, setProfile, reset };
+  function recordPiPixel() {
+    if (!piTaskStatus) return;
+    piTaskStatus = { ...piTaskStatus, pixel_count: Number(piTaskStatus.pixel_count || 0) + 1 };
+    render();
+  }
+
+  return { load, applyStatus, setProfile, reset, recordPiPixel };
 })();
 
 
@@ -15335,7 +15422,7 @@ const mapItems=(()=>{
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
  function applyStatus(data){if(!data)return;const inv=data.inventory||{};Object.keys(counts).forEach(type=>{counts[type]=Number(inv[type]||0);document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);const el=document.getElementById("map-"+type+"-count");if(el)el.textContent=counts[type];document.querySelector('[data-map-item-row="'+type+'"]')?.classList.toggle("hidden",counts[type]<1)});document.getElementById("map-items-empty")?.classList.toggle("hidden",Object.values(counts).some(Boolean));if(data.balance!==undefined){document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU")}beacons=Array.isArray(data.beacons)?data.beacons:[];bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));renderBeaconButtons();drawMap()}
  async function load(){if(!currentUser||!activeSeason?.id)return;const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
- async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена.",true);return}applyStatus(data.status);say("Предмет куплен!")}
+ async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);say("Предмет куплен!")}
  async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;
   if(type==="bomb"){if(!confirm("Создать увеличенную воронку из 145 пикселей?")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:selectedX,p_y:selectedY})}
   else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
