@@ -3543,6 +3543,7 @@ async function loadMyProfile() {
     "profile-nickname"
   ).textContent =
     profile.nickname;
+  profileCosmetics.applyOwn();
 
 
   document.getElementById(
@@ -6406,7 +6407,8 @@ function createChatMessageElement(item) {
   if (!isSystemMessage && !isAdminAnnouncement) {
     author.style.color = isAdminMessage
       ? "#60a5fa"
-      : classColors[Math.abs(hash) % classColors.length];
+      : (item.nickname_color || classColors[Math.abs(hash) % classColors.length]);
+    if (item.nickname_color) author.classList.add("has-cosmetic-color");
   }
 
   if (
@@ -6527,7 +6529,9 @@ function renderChatMessages(messages) {
       chatAuthorCache.set(String(item.user_id), {
         nickname: item.nickname,
         class_name: item.class_name || null,
-        is_admin: Boolean(item.is_admin)
+        is_admin: Boolean(item.is_admin),
+        nickname_color: item.nickname_color || null,
+        profile_frame: item.profile_frame || null
       });
     }
   });
@@ -6744,7 +6748,9 @@ function subscribeToChat() {
               class_name: isAnnouncement
                 ? null
                 : (author.class_name || null),
-              is_admin: Boolean(author.is_admin)
+              is_admin: Boolean(author.is_admin),
+              nickname_color: author.nickname_color || null,
+              profile_frame: author.profile_frame || null
             };
 
             if (
@@ -14258,6 +14264,7 @@ const playerCard = (() => {
     weekly.textContent = Number(data.weekly_pixels || 0).toLocaleString("ru-RU");
     total.textContent = Number(data.total_pixels || 0).toLocaleString("ru-RU");
     renderAchievements(Array.isArray(data.achievements) ? data.achievements : []);
+    profileCosmetics.applyPlayerCard(viewedUserId, dialog, nickname);
   }
 
   function openCard(ownerId) {
@@ -15410,13 +15417,74 @@ const piCoin = (() => {
     if(error||!data?.success){message(shopMessage,data?.error==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":"Не удалось выполнить покупку.",true);await load();return}
     status=data.status;render();resetPixelCooldownAfterReward();message(shopMessage,"Турбокисть включена на 10 минут!");
   }
-  async function open(){await Promise.all([load(),mapItems.load()]);if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
+  async function open(){await Promise.all([load(),mapItems.load(),profileCosmetics.load()]);if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
   document.getElementById("pi-balance-button")?.addEventListener("click",open);
   document.getElementById("pi-shop-open-button")?.addEventListener("click",open);
   document.getElementById("pi-shop-close")?.addEventListener("click",()=>shopDialog?.close());
   claimButton?.addEventListener("click",claim);buyButton?.addEventListener("click",buy);
   shopDialog?.addEventListener("click",event=>{if(event.target!==shopDialog)return;const b=shopDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)shopDialog.close()});
   return {load};
+})();
+
+// ---------- PROFILE AND CHAT COSMETICS ----------
+const profileCosmetics=(()=>{
+ const list=document.getElementById("cosmetic-shop-list"),messageEl=document.getElementById("cosmetic-shop-message");
+ let status=null,busy=false;
+ function say(text,error=false){if(!messageEl)return;messageEl.textContent=text;messageEl.classList.toggle("error",error)}
+ function apply(target,frame,color,nickname){
+  if(target)target.dataset.profileFrame=frame||"";
+  if(nickname)nickname.style.color=color||"";
+ }
+ async function publicStatus(userId){
+  if(!currentUser||!userId)return null;
+  const {data,error}=await supabaseClient.rpc("get_public_profile_cosmetics",{p_user_id:userId});
+  return error?null:data;
+ }
+ async function applyOwn(){
+  const data=await publicStatus(currentUser?.id);
+  if(!data)return;
+  apply(document.querySelector("#profile-panel .profile-info"),data.profile_frame,data.nickname_color,document.getElementById("profile-nickname"));
+ }
+ async function applyPlayerCard(userId,dialog,nickname){
+  const data=await publicStatus(userId);
+  if(!data)return;
+  apply(dialog,data.profile_frame,data.nickname_color,nickname);
+ }
+ function render(){
+  if(!list||!status)return;list.replaceChildren();
+  const owned=new Set(status.owned||[]),equipped=status.equipped||{};
+  (status.catalog||[]).forEach(item=>{
+   const card=document.createElement("article");card.className="cosmetic-shop-item";card.dataset.category=item.category;
+   const preview=document.createElement("span");preview.className="cosmetic-preview";preview.textContent=item.category==="chat_color"?"Aa":"🪪";
+   if(item.color)preview.style.color=item.color;if(item.frame)preview.dataset.previewFrame=item.frame;
+   const info=document.createElement("div"),title=document.createElement("h4"),description=document.createElement("p"),price=document.createElement("strong"),button=document.createElement("button");
+   title.textContent=item.name;description.textContent=item.description;price.textContent=item.price+" 🪙";
+   const active=equipped[item.category]===item.id,isOwned=owned.has(item.id);
+   button.type="button";button.dataset.cosmeticId=item.id;button.dataset.cosmeticAction=isOwned?"equip":"buy";
+   button.disabled=busy||active||(!isOwned&&Number(status.balance||0)<Number(item.price||0));
+   button.textContent=active?"ВЫБРАНО":isOwned?"ВЫБРАТЬ":"КУПИТЬ";
+   info.append(title,description);card.append(preview,info,price,button);list.append(card);
+  });
+ }
+ async function load(){
+  if(!currentUser)return;const userId=currentUser.id;
+  const {data,error}=await supabaseClient.rpc("get_cosmetic_shop_status");
+  if(!currentUser||currentUser.id!==userId)return;
+  if(error){say("Выполните SQL-миграцию магазина косметики.",true);return}
+  status=data;render();applyOwn();
+ }
+ async function act(action,itemId){
+  if(busy)return;if(action==="buy"&&!confirm("Купить эту косметику навсегда?"))return;
+  busy=true;render();say("");
+  const rpc=action==="buy"?"buy_profile_cosmetic":"equip_profile_cosmetic";
+  const args=action==="buy"?{p_item_id:itemId}:{p_item_id:itemId};
+  const {data,error}=await supabaseClient.rpc(rpc,args);busy=false;
+  if(error||!data?.success){const code=data?.error;say(code==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":code==="ALREADY_OWNED"?"Эта косметика уже куплена.":"Не удалось выполнить действие.",true);await load();return}
+  status=data.status;render();applyOwn();loadChatMessages();piCoin.load();
+  say(action==="buy"?"Косметика куплена и выбрана!":"Оформление выбрано!");
+ }
+ list?.addEventListener("click",event=>{const button=event.target.closest("[data-cosmetic-action]");if(!button||button.disabled)return;act(button.dataset.cosmeticAction,button.dataset.cosmeticId)});
+ return {load,applyOwn,applyPlayerCard};
 })();
 
 // ---------- MAP ITEMS ----------
