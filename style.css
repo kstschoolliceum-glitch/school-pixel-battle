@@ -7561,3 +7561,10 @@ body.admin-view .mobile-nav {
 .pi-shop-balance{color:#fde68a;font-size:17px}.pi-shop-item{display:grid;grid-template-columns:1fr auto;gap:12px;padding:16px;border:1px solid #475c7c;background:#111a2c}
 .pi-shop-item h3,.pi-shop-item p{margin:0 0 7px}.pi-shop-item>strong{color:#fde68a}.pi-shop-item button{grid-column:1/-1}
 @media(max-width:650px){.pi-balance-button{min-width:58px;min-height:38px;padding:7px}.pi-balance-label{display:none}.stencil-open-button,.player-card-open-button,.pi-shop-open-button{min-height:30px;padding:5px 6px;font-size:10px}.pi-daily-days{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+
+#profile-panel .pi-shop-open-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 2px;
+}
