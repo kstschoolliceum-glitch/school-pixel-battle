@@ -1,0 +1,1444 @@
+/* ---------- PIXEL INFORMATION POLISH ---------- */
+
+.pixel-owner-row {
+  min-width: 0;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.pixel-owner-row #pixel-owner {
+  min-width: 0;
+}
+
+.pixel-owner-row .pixel-report-button {
+  flex: 0 0 auto;
+  min-height: 20px;
+  margin: 0;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+@media (max-width: 650px) {
+  .pixel-owner-row {
+    gap: 4px;
+  }
+
+  .pixel-owner-row .pixel-report-button {
+    min-height: 19px;
+    padding: 2px 4px;
+    font-size: 8px;
+  }
+}
+
+
+/* ---------- CHAT FEEDS AND DATE SEPARATORS ---------- */
+
+.chat-feed-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0 0 8px;
+  padding: 4px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0b1424;
+}
+
+.chat-feed-tab {
+  position: relative;
+  min-width: 0;
+  min-height: 38px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #94a3b8;
+  font: 800 11px/1.2 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.chat-feed-tab.active {
+  border-color: #6d8db8;
+  background: #1b2d47;
+  color: #f8fafc;
+  box-shadow: 2px 2px 0 #050912;
+}
+
+.chat-events-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  margin-left: 3px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font: 900 9px/1 Arial, sans-serif;
+  vertical-align: middle;
+}
+
+.chat-events-badge.hidden {
+  display: none;
+}
+
+.chat-date-separator {
+  position: sticky;
+  top: -1px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 5px;
+  color: #8fa5c4;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.chat-date-separator::before,
+.chat-date-separator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #30415c;
+}
+
+.chat-date-separator span {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid #30415c;
+  border-radius: 999px;
+  background: #111c2f;
+}
+
+.chat-message.system {
+  cursor: pointer;
+}
+
+.chat-message.system:not(.expanded) .chat-message-content {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  white-space: normal;
+}
+
+.chat-message.system.expanded .chat-message-content {
+  display: block;
+}
+
+.chat-form[hidden] {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .chat-header {
+    padding-bottom: 8px;
+  }
+
+  .chat-feed-tabs {
+    flex: 0 0 auto;
+  }
+
+  .chat-feed-tab {
+    min-height: 36px;
+    padding: 5px 6px;
+    font-size: 10px;
+  }
+
+  .chat-date-separator {
+    margin-top: 6px;
+    font-size: 9px;
+  }
+}
+
+
+/* ---------- HEADER ONLINE STATUS ---------- */
+
+.header .season {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+}
+
+.season-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.header .online-users {
+  flex: 0 0 auto;
+  padding-left: 8px;
+  border-left: 1px solid #334155;
+  color: #a7f3d0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.header .online-dot {
+  width: 6px;
+  height: 6px;
+}
+
+@media (max-width: 650px) {
+  .header .season {
+    align-items: stretch;
+    gap: 1px;
+  }
+
+  .season-topline {
+    gap: 6px;
+  }
+
+  .header .online-users {
+    padding-left: 5px;
+    font-size: 9px;
+  }
+
+  .header .online-label {
+    display: none;
+  }
+}
+
+
+/* ---------- PLAYER CARD ---------- */
+
+.player-card-open-button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #fbbf24;
+  border-radius: 0;
+  background: #4a3210;
+  color: #fff0b5;
+  box-shadow: 2px 2px 0 #070b15;
+  font: 800 12px/1.15 "Courier New", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.player-card-open-button:hover {
+  border-color: #fde68a;
+  background: #644514;
+  color: #fff;
+}
+
+.player-card-dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(90dvh, 760px);
+  overflow: auto;
+  padding: 22px;
+  border: 2px solid #fbbf24;
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, #17223a 0%, #10192b 55%, #251a35 100%);
+  color: #f8fafc;
+  box-shadow: 8px 8px 0 #050912;
+}
+
+.player-card-dialog::backdrop {
+  background: #030916df;
+  backdrop-filter: blur(3px);
+}
+
+.player-card-close {
+  float: right;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #64748b;
+  background: #182338;
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.player-card-heading {
+  padding-right: 46px;
+}
+
+.player-card-kicker {
+  display: block;
+  color: #fbbf24;
+  font: 800 10px/1 "Courier New", monospace;
+  letter-spacing: 1.5px;
+}
+
+.player-card-heading h2 {
+  margin: 7px 0 18px;
+  font: 900 22px/1.2 "Courier New", monospace;
+}
+
+.player-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 15px;
+  border: 1px solid #40506b;
+  background: #0d1526b8;
+}
+
+.player-card-photo {
+  position: relative;
+  flex: 0 0 92px;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  padding: 0;
+  border: 3px solid #fbbf24;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #7c3aed, #2563eb);
+  color: #fff;
+  font: 900 34px/1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.player-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-card-photo-edit {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  background: #111827e8;
+  font-size: 13px;
+}
+
+.player-card-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.player-card-name strong {
+  overflow: hidden;
+  color: #fff;
+  font: 900 23px/1.15 "Courier New", monospace;
+  text-overflow: ellipsis;
+}
+
+.player-card-name span {
+  color: #a7f3d0;
+  font-weight: 800;
+}
+
+.player-card-name small {
+  color: #94a3b8;
+}
+
+.player-card-photo-actions {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 2px 0;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.player-card-photo-actions button {
+  padding: 5px 8px;
+  border: 1px solid #7f1d1d;
+  background: #3f1218;
+  color: #fecaca;
+  font: 800 10px/1.1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+.player-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.player-card-stats > div {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px solid #334155;
+  background: #0b1322aa;
+  text-align: center;
+}
+
+.player-card-stats span,
+.player-card-stats small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.player-card-stats strong {
+  color: #67e8f9;
+  font: 900 24px/1 "Courier New", monospace;
+}
+
+.player-card-achievements {
+  margin-top: 18px;
+}
+
+.player-card-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.player-card-section-title h3 {
+  margin: 0;
+  font: 900 16px/1.2 "Courier New", monospace;
+}
+
+.player-card-section-title span {
+  padding: 4px 7px;
+  border: 1px solid #6b4e12;
+  background: #352709;
+  color: #fde68a;
+  font: 800 11px/1 "Courier New", monospace;
+}
+
+.player-card-achievement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.player-card-achievement {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #2f3b50;
+  background: #0b1322b8;
+  opacity: 0.62;
+}
+
+.player-card-achievement.is-unlocked {
+  border-color: #a87813;
+  background: #2f240cbd;
+  opacity: 1;
+}
+
+.player-card-achievement-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #475569;
+  background: #111b2d;
+  font-size: 22px;
+}
+
+.player-card-achievement.is-unlocked .player-card-achievement-icon {
+  border-color: #fbbf24;
+  background: #523a0c;
+}
+
+.player-card-achievement > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+}
+
+.player-card-achievement strong,
+.player-card-achievement span {
+  grid-column: 1 / -1;
+}
+
+.player-card-achievement strong {
+  font-size: 13px;
+}
+
+.player-card-achievement span {
+  color: #aebbd0;
+  font-size: 11px;
+}
+
+.player-card-achievement small {
+  color: #94a3b8;
+  font-size: 9px;
+  text-align: right;
+}
+
+.player-card-achievement-progress {
+  align-self: center;
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  background: #050a13;
+}
+
+.player-card-achievement-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #fbbf24);
+}
+
+.player-card-message,
+.player-card-loading {
+  margin: 10px 0 0;
+  color: #aebbd0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 650px) {
+  .map-title {
+    gap: 5px;
+  }
+
+  .stencil-open-button,
+  .player-card-open-button {
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .player-card-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 15px;
+    box-shadow: 4px 4px 0 #050912;
+  }
+
+  .player-card-identity {
+    gap: 11px;
+    padding: 11px;
+  }
+
+  .player-card-photo {
+    flex-basis: 76px;
+    width: 76px;
+    height: 76px;
+  }
+
+  .player-card-name strong {
+    font-size: 18px;
+  }
+
+  .player-card-photo-actions {
+    align-items: flex-start;
+  }
+}
+
+
+/* ---------- CLICKABLE PLAYER NICKNAMES ---------- */
+
+.player-card-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: #fbbf2466;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.player-card-link:hover {
+  color: #fde68a !important;
+  text-decoration-color: #fbbf24;
+}
+
+.player-card-link:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.player-card-photo:disabled {
+  opacity: 1;
+}
+
+.player-card-photo.is-readonly {
+  cursor: default;
+}
+
+@media (max-width: 650px) {
+  .player-card-link {
+    text-underline-offset: 2px;
+  }
+}
+
+
+/* ---------- PLAYER CARD MOBILE PERFORMANCE ---------- */
+
+@media (max-width: 650px), (pointer: coarse) {
+  .player-card-dialog::backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .player-card-dialog {
+    box-shadow: 3px 3px 0 #050912;
+  }
+}
+
+
+/* ---------- PLAYER CARD BADGES AND LAST SEEN ---------- */
+.player-card-last-seen {
+  display: block;
+  margin-top: 5px;
+  color: #8fa5c4 !important;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.player-card-achievement-list {
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 9px;
+}
+
+.player-card-achievement-badge {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  background: #111b2d;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.58;
+}
+
+.player-card-achievement-badge.is-unlocked {
+  border-color: #fbbf24;
+  background: radial-gradient(circle at 50% 35%, #5e4310 0%, #2d220d 66%, #171207 100%);
+  box-shadow: inset 0 0 0 1px #7c5a13;
+  opacity: 1;
+}
+
+.player-card-achievement-badge:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
+
+.player-card-achievement-badge-icon {
+  font-size: clamp(23px, 8vw, 34px);
+  filter: grayscale(0.8);
+}
+
+.player-card-achievement-badge.is-unlocked .player-card-achievement-badge-icon {
+  filter: none;
+}
+
+.player-card-achievement-lock {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  font-size: 11px;
+}
+
+.player-achievement-popup {
+  position: fixed;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #030916c7;
+}
+
+.player-achievement-popup.hidden { display: none; }
+
+.player-achievement-popup-panel {
+  position: relative;
+  width: min(360px, 100%);
+  padding: 22px;
+  border: 2px solid #fbbf24;
+  background: #111a2c;
+  box-shadow: 6px 6px 0 #050912;
+  text-align: center;
+}
+
+.player-achievement-popup-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #64748b;
+  background: #182338;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.player-achievement-popup-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  place-items: center;
+  border: 2px solid #fbbf24;
+  background: #4d370c;
+  font-size: 38px;
+}
+
+.player-achievement-popup-panel h4 {
+  margin: 0 34px 8px;
+  color: #fde68a;
+  font: 900 18px/1.2 "Courier New", monospace;
+}
+
+.player-achievement-popup-panel p {
+  margin: 0 0 16px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.player-achievement-popup-progress {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid #475569;
+  background: #050a13;
+}
+
+.player-achievement-popup-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #fbbf24);
+}
+
+.player-achievement-popup-percent,
+.player-achievement-popup-value { display: block; }
+
+.player-achievement-popup-percent {
+  margin-top: 11px;
+  color: #67e8f9;
+  font-size: 14px;
+}
+
+.player-achievement-popup-value {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .player-card-achievement-badge { max-height: 86px; }
+  .player-achievement-popup-panel {
+    padding: 20px 15px;
+    box-shadow: 3px 3px 0 #050912;
+  }
+}
+
+
+/* ---------- ACHIEVEMENT BADGE LABELS ---------- */
+
+.player-card-achievement-badge {
+  grid-template-rows: 1fr auto;
+  gap: 4px;
+  min-height: 88px;
+  aspect-ratio: auto;
+}
+
+.player-card-achievement-badge-label {
+  display: -webkit-box;
+  width: 100%;
+  min-height: 22px;
+  overflow: hidden;
+  color: #cbd5e1;
+  font: 700 9px/1.15 Arial, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.player-card-achievement-badge.is-unlocked .player-card-achievement-badge-label {
+  color: #fde68a;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-badge {
+    min-height: 82px;
+    padding: 6px 4px;
+  }
+
+  .player-card-achievement-badge-icon {
+    font-size: 27px;
+  }
+}
+
+/* ---------- CHAT MENTIONS ---------- */
+
+.chat-mention-button {
+  width: 20px;
+  height: 20px;
+  margin: 0 3px;
+  padding: 0;
+  border: 1px solid #52657f;
+  border-radius: 4px;
+  background: #17243a;
+  color: #93c5fd;
+  font: 900 15px/1 "Courier New", monospace;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.chat-mention-button:hover,
+.chat-mention-button:focus-visible {
+  border-color: #7dd3fc;
+  background: #1d3554;
+  color: #ffffff;
+}
+
+.chat-message.is-mentioned {
+  margin: 2px 0;
+  padding: 8px 7px;
+  border-left: 3px solid #fbbf24;
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(251, 191, 36, 0.18),
+      rgba(139, 92, 246, 0.1)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(251, 191, 36, 0.16);
+}
+
+.chat-message.is-mentioned .chat-message-content {
+  color: #fff7d6;
+}
+
+.chat-report-button {
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  font-size: 10px;
+}
+
+@media (max-width: 650px) {
+  .chat-mention-button {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+  }
+
+  .chat-report-button {
+    width: 22px;
+    height: 22px;
+    opacity: 0.85;
+  }
+}
+
+/* ---------- EXPANDED COLOR PALETTE ---------- */
+
+.color-palette-open {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 2px solid #64748b;
+  border-radius: 0;
+  background:
+    linear-gradient(
+      135deg,
+      #ef4444 0 18%,
+      #facc15 18% 36%,
+      #22c55e 36% 54%,
+      #3b82f6 54% 72%,
+      #8b5cf6 72% 86%,
+      #ec4899 86%
+    );
+  color: #ffffff;
+  box-shadow: 2px 2px 0 #060a14;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.color-palette-open > span {
+  position: relative;
+  z-index: 1;
+  filter:
+    drop-shadow(1px 1px 0 #050912)
+    drop-shadow(-1px -1px 0 #050912);
+}
+
+.color-palette-open > i {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #ffffff;
+  background: #ef4444;
+  box-shadow: 1px 1px 0 #050912;
+}
+
+.color-palette-open:hover {
+  filter: brightness(1.12);
+}
+
+.color-palette-open.active {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.color-palette-dialog {
+  width: min(540px, calc(100vw - 20px));
+  max-height: min(88dvh, 720px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 2px solid #8b5cf6;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      145deg,
+      #17213a,
+      #0d1526
+    );
+  color: #f8fafc;
+  box-shadow: 7px 7px 0 #050912;
+}
+
+.color-palette-dialog::backdrop {
+  background: rgba(3, 9, 22, 0.88);
+  backdrop-filter: blur(3px);
+}
+
+.color-palette-close {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  float: right;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #64748b;
+  background: #17243a;
+  color: #ffffff;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.color-palette-heading {
+  padding-right: 44px;
+}
+
+.color-palette-heading > span {
+  color: #a78bfa;
+  font: 900 10px/1 "Courier New", monospace;
+  letter-spacing: 1.5px;
+}
+
+.color-palette-heading h2 {
+  margin: 7px 0 6px;
+  font: 900 22px/1.15 "Courier New", monospace;
+}
+
+.color-palette-heading p {
+  margin: 0;
+  color: #aab8ce;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.color-palette-selected {
+  margin: 16px 0;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #536784;
+  background: #0b1323;
+}
+
+.color-palette-selected > i {
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  border: 2px solid #ffffff;
+  box-shadow: 3px 3px 0 #050912;
+}
+
+.color-palette-selected > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  align-items: baseline;
+}
+
+.color-palette-selected small {
+  grid-column: 1 / -1;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.color-palette-selected strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.color-palette-selected span {
+  color: #c4b5fd;
+  font: 800 11px/1 "Courier New", monospace;
+}
+
+.color-palette-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.color-palette-group {
+  margin: 0;
+}
+
+.color-palette-group h3 {
+  margin: 0 0 7px;
+  color: #cbd5e1;
+  font: 900 11px/1.2 "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.color-palette-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(6, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.color-palette-grid-recent {
+  margin-bottom: 14px;
+}
+
+.color-palette-option {
+  min-width: 0;
+  min-height: 65px;
+  padding: 6px 3px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #40506b;
+  border-radius: 2px;
+  background: #111c30;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.color-palette-option > i {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #77869c;
+  box-shadow: 2px 2px 0 #050912;
+}
+
+.color-palette-option > span {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.color-palette-option:hover,
+.color-palette-option:focus-visible {
+  border-color: #a78bfa;
+  background: #1b2942;
+  color: #ffffff;
+}
+
+.color-palette-option.active {
+  border-color: #fbbf24;
+  background: #2b2541;
+  color: #fde68a;
+  box-shadow:
+    inset 0 0 0 1px #fbbf24;
+}
+
+.color-palette-option.active > i {
+  border-color: #ffffff;
+  outline: 2px solid #fbbf24;
+  outline-offset: 1px;
+}
+
+.color-palette-option.is-compact {
+  min-height: 55px;
+}
+
+@media (max-width: 650px) {
+  .color-palette-open {
+    width: 29px;
+    height: 29px;
+    font-size: 15px;
+  }
+
+  .color-palette-open.active {
+    outline-width: 1px;
+    outline-offset: 1px;
+  }
+
+  .color-palette-dialog {
+    width: calc(100vw - 14px);
+    max-height: calc(100dvh - 18px);
+    padding: 15px 12px;
+  }
+
+  .color-palette-heading h2 {
+    font-size: 19px;
+  }
+
+  .color-palette-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .color-palette-option {
+    min-height: 61px;
+  }
+
+  .color-palette-option > i {
+    width: 32px;
+    height: 32px;
+  }
+
+  .color-palette-option > span {
+    font-size: 8px;
+  }
+}
+
+/* ---------- LARGE PALETTE CATEGORIES ---------- */
+
+.color-palette-tabs {
+  margin: 0 0 14px;
+  padding: 3px 2px 7px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.color-palette-tab {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 5px 9px;
+  border: 1px solid #40506b;
+  border-radius: 2px;
+  background: #101a2d;
+  color: #aab8ce;
+  font: 800 10px/1.1 "Courier New", monospace;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+
+.color-palette-tab:hover,
+.color-palette-tab:focus-visible {
+  border-color: #a78bfa;
+  color: #ffffff;
+}
+
+.color-palette-tab.active {
+  border-color: #fbbf24;
+  background: #33264b;
+  color: #fde68a;
+  box-shadow:
+    inset 0 -2px 0 #fbbf24;
+}
+
+.color-palette-group[hidden] {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .color-palette-tabs {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .color-palette-tab {
+    min-height: 34px;
+    padding: 6px 9px;
+  }
+}
+
+
+
+/* ---------- ACHIEVEMENT CATEGORIES ---------- */
+.player-card-achievement-list {
+  display: block;
+}
+
+.player-card-achievement-category {
+  width: 100%;
+  min-width: 0;
+}
+
+.player-card-achievement-category + .player-card-achievement-category {
+  margin-top: 16px;
+}
+
+.player-card-achievement-category-title {
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  border-left: 3px solid #fbbf24;
+  background: #101a2b;
+  color: #fde68a;
+  font: 900 13px/1.2 "Courier New", monospace;
+}
+
+.player-card-achievement-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 9px;
+}
+
+@media (max-width: 650px) {
+  .player-card-achievement-category + .player-card-achievement-category {
+    margin-top: 13px;
+  }
+
+  .player-card-achievement-category-title {
+    position: sticky;
+    top: -1px;
+    z-index: 1;
+    margin-bottom: 7px;
+    padding: 7px 8px;
+    box-shadow: 0 3px 0 rgba(5, 9, 18, 0.72);
+    font-size: 12px;
+  }
+
+  .player-card-achievement-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .player-card-achievement-badge {
+    width: 100%;
+    min-height: 80px;
+    padding: 6px 3px;
+  }
+
+  .player-card-achievement-badge-label {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .player-card-achievement-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .player-card-achievement-badge-label {
+    font-size: 9px;
+  }
+}
+
+
+
+/* ---------- CHAT ANTISPAM STATUS ---------- */
+.chat-send-status {
+  margin: 7px 0 0;
+  min-height: 16px;
+  color: #86efac;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.chat-send-status.error {
+  color: #fca5a5;
+}
+
+.chat-send-status.hidden {
+  display: none;
+}
+
+.chat-form button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+@media (max-width: 650px) {
+  .chat-send-status {
+    margin: 5px 8px 0;
+    font-size: 10px;
+  }
+}
+
+/* ---------- ADMIN RULE VIOLATIONS ---------- */
+
+.admin-violations-content {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-violations-content.hidden {
+  display: none;
+}
+
+.admin-violations-toolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-violations-toolbar label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-violations-toolbar select,
+.admin-violations-toolbar button {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #455a7d;
+  background: #111a2b;
+  color: var(--text);
+  font: inherit;
+}
+
+.admin-violations-toolbar button {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-violations-toolbar span {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.admin-violations-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #354665;
+  background: #10182b;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-violations-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+}
+
+.admin-violations-table th,
+.admin-violations-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #273247;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-violations-table th {
+  color: #d5c5ff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-violations-table td {
+  font-size: 13px;
+}
+
+.admin-violation-evidence {
+  min-width: 260px;
+  max-width: 420px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #cbd5e1;
+}
+
+.admin-violation-status {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-violation-status.open {
+  color: #facc15;
+}
+
+.admin-violation-status.banned {
+  color: #f87171;
+}
+
+.admin-violation-ban {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #ef4444;
+  background: #3f1018;
+  color: #fecaca;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-violation-ban:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.admin-violations-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+  .admin-violations-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-violations-toolbar label,
+  .admin-violations-toolbar select,
+  .admin-violations-toolbar button {
+    width: 100%;
+  }
+
+  .admin-violations-toolbar span {
+    margin-left: 0;
+  }
+
+  .admin-violations-table th,
+  .admin-violations-table td {
+    padding: 9px 10px;
+  }
+}
+
