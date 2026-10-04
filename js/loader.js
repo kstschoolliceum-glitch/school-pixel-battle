@@ -1,5 +1,9 @@
-// Load classic application scripts in dependency order.
+// Insert HTML fragments, then load classic scripts in dependency order.
 (() => {
+  const fragments = [
+    "html/admin-section.html",
+    "html/dialogs.html"
+  ];
   const sources = [
   "app.js?v=125",
   "js/map-render.js?v=1",
@@ -57,11 +61,27 @@
     if (message) message.textContent = "Не удалось загрузить игру. Обновите страницу.";
   }
 
-  sources.forEach(source => {
-    const script = document.createElement("script");
-    script.src = source;
-    script.async = false;
-    script.onerror = () => showLoadError(source);
-    document.body.appendChild(script);
-  });
+  async function insertFragments() {
+    const placeholders = Array.from(document.querySelectorAll("[data-html-fragment]"));
+    await Promise.all(placeholders.map(async placeholder => {
+      const source = placeholder.dataset.htmlFragment;
+      const response = await fetch(source, { cache: "no-cache" });
+      if (!response.ok) throw new Error(source + ": HTTP " + response.status);
+      const template = document.createElement("template");
+      template.innerHTML = await response.text();
+      placeholder.replaceWith(template.content.cloneNode(true));
+    }));
+  }
+
+  function loadScripts() {
+    sources.forEach(source => {
+      const script = document.createElement("script");
+      script.src = source;
+      script.async = false;
+      script.onerror = () => showLoadError(source);
+      document.body.appendChild(script);
+    });
+  }
+
+  insertFragments().then(loadScripts).catch(error => showLoadError(error.message || error));
 })();

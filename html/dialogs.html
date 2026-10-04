@@ -1,0 +1,254 @@
+<dialog id="moderation-report-dialog" class="moderation-report-dialog" aria-labelledby="moderation-report-title">
+  <button id="moderation-report-close" class="moderation-report-close" type="button" aria-label="Закрыть окно жалобы">×</button>
+  <h2 id="moderation-report-title">🚩 Сообщить о нарушении</h2>
+  <p id="moderation-report-target" class="moderation-report-target"></p>
+  <form id="moderation-report-form">
+    <label>Причина
+      <select id="moderation-report-reason" required>
+        <option value="">Выберите причину</option>
+        <option value="bullying">Оскорбление или травля</option>
+        <option value="inappropriate">Непристойный контент</option>
+        <option value="personal_data">Чужие личные данные</option>
+        <option value="spam">Спам или намеренная порча</option>
+        <option value="cheating">Нечестная игра</option>
+        <option value="other">Другое нарушение</option>
+      </select>
+    </label>
+    <label>Комментарий для администратора
+      <textarea id="moderation-report-details" maxlength="500" rows="4" placeholder="Кратко опишите, что произошло"></textarea>
+    </label>
+    <div id="moderation-report-message" class="moderation-report-message" aria-live="polite"></div>
+    <button id="moderation-report-submit" type="submit">ОТПРАВИТЬ ЖАЛОБУ</button>
+  </form>
+</dialog>
+
+<dialog
+  id="user-agreement-dialog"
+  class="user-agreement-dialog"
+  aria-labelledby="user-agreement-title"
+  aria-describedby="user-agreement-intro"
+>
+  <div class="user-agreement-heading">
+    <span aria-hidden="true">🤝</span>
+    <div>
+      <h2 id="user-agreement-title">Правила School Pixel Battle</h2>
+      <p id="user-agreement-intro">
+        Школьный учебно-игровой проект школы-лицея №1 города Костанай
+      </p>
+    </div>
+  </div>
+
+  <div class="user-agreement-scroll" tabindex="0">
+    <section>
+      <h3>1. Это школьная игра</h3>
+      <p>
+        School Pixel Battle создана для отдыха, творчества и дружеского
+        соревнования. Рейтинг — это часть игры, а не школьная оценка.
+      </p>
+    </section>
+
+    <section>
+      <h3>2. Уважай других</h3>
+      <ul>
+        <li>Общайся спокойно и не оскорбляй других игроков.</li>
+        <li>Не размещай грубые, опасные или неприличные сообщения и рисунки.</li>
+        <li>Не выдавай себя за другого ученика, учителя или администратора.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>3. Играй честно</h3>
+      <ul>
+        <li>Не используй ботов, автокликеры, ошибки сайта и другие способы получить нечестное преимущество.</li>
+        <li>Не создавай дополнительные аккаунты ради бонусов, рейтинга или рефералов.</li>
+        <li>Не мешай другим играть и не порти карту специально.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>4. Береги личную информацию</h3>
+      <p>
+        Не пиши в чате пароли, адрес, номер телефона и другие личные данные —
+        свои или чужие. Никому не сообщай пароль от аккаунта.
+      </p>
+    </section>
+
+    <section>
+      <h3>5. Если правило нарушено</h3>
+      <p>
+        Администратор может удалить неподходящее сообщение или рисунок,
+        ограничить доступ к отдельным функциям либо заблокировать аккаунт.
+        Если заметил нарушение — отправь жалобу.
+      </p>
+      <p>
+        Для работы игры сохраняются данные аккаунта, класс, игровые действия
+        и IP-адрес. Это помогает вести рейтинг и защищать игру от нарушений.
+      </p>
+    </section>
+
+    <section>
+      <h3>6. Главное правило</h3>
+      <p>
+        Играй честно, уважай других и помогай делать общую карту интереснее.
+        Нажимая кнопку ниже, ты соглашаешься соблюдать эти простые правила.
+      </p>
+    </section>
+  </div>
+
+  <label class="user-agreement-confirm">
+    <input id="user-agreement-checkbox" type="checkbox">
+    <span>Я прочитал(а) и буду соблюдать правила игры</span>
+  </label>
+
+  <button id="user-agreement-accept" type="button" disabled>
+    ИГРАТЬ
+  </button>
+
+  <p class="user-agreement-version">Версия правил: 1.1 · 27 сентября 2026 года</p>
+</dialog>
+
+<dialog id="pi-shop-dialog" class="pi-shop-dialog" aria-labelledby="pi-shop-title">
+  <button id="pi-shop-close" class="pi-shop-close" type="button" aria-label="Закрыть магазин">×</button>
+  <h2 id="pi-shop-title">🛒 Магазин piCoin</h2>
+  <p class="pi-shop-balance">Баланс: <strong id="pi-shop-balance">0</strong> 🪙</p>
+  <div class="pi-shop-list">
+    <article class="pi-shop-item"><div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p><small class="pi-shop-limit">Сегодня: без лимита</small></div><strong>160 🪙</strong><button id="pi-buy-turbo" type="button">КУПИТЬ</button></article>
+    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="detector">10</b></small></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ · <span data-item-stock="detector">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="beacon">2</b></small></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ · <span data-item-stock="beacon">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 145 пикселей. Автор виден только администратору.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="bomb">1</b></small></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ · <span data-item-stock="bomb">0</span> ШТ.</button></article>
+    <section class="cosmetic-shop-section">
+      <h3>✨ Косметика профиля и чата</h3>
+      <p>Покупается навсегда и не даёт преимуществ на карте.</p>
+      <div id="cosmetic-shop-list" class="cosmetic-shop-list"></div>
+      <p id="cosmetic-shop-message" class="pi-shop-message" aria-live="polite"></p>
+    </section>
+  </div>
+  <p id="pi-shop-message" class="pi-shop-message" aria-live="polite"></p>
+</dialog>
+
+<dialog
+  id="daily-tasks-dialog"
+  class="daily-tasks-dialog"
+  aria-labelledby="daily-tasks-title"
+>
+  <button
+    id="daily-tasks-close"
+    class="daily-tasks-close"
+    type="button"
+    aria-label="Закрыть ежедневные задания"
+  >
+    ×
+  </button>
+
+  <h2 id="daily-tasks-title">📋 Задания дня</h2>
+
+  <div id="daily-tasks-dialog-content" aria-live="polite">
+    <p>Загружаем задания…</p>
+  </div>
+</dialog>
+
+
+<dialog
+  id="unblock-me-dialog"
+  class="unblock-dialog"
+  aria-labelledby="unblock-me-title"
+>
+  <button
+    id="unblock-me-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="unblock-me-title">🧱 Unblock Me</h2>
+      <p>Передвигай блоки и выведи красный блок через выход справа.</p>
+    </div>
+    <span id="unblock-me-moves">Ходов: 0</span>
+  </div>
+
+  <div class="unblock-board-wrap">
+    <div id="unblock-me-board" class="unblock-board" aria-label="Игровое поле Unblock Me"></div>
+    <span class="unblock-exit" aria-hidden="true">ВЫХОД →</span>
+  </div>
+
+  <p id="unblock-me-message" class="unblock-message" aria-live="polite">
+    Перетаскивай горизонтальные блоки влево и вправо, вертикальные — вверх и вниз.
+  </p>
+
+  <div class="unblock-actions">
+    <button id="unblock-me-reset" type="button">↻ НАЧАТЬ ЗАНОВО</button>
+  </div>
+</dialog>
+
+<dialog
+  id="sokoban-dialog"
+  class="unblock-dialog sokoban-dialog"
+  aria-labelledby="sokoban-title"
+>
+  <button
+    id="sokoban-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="sokoban-title">📦 Ящики</h2>
+      <p>Передвигай рабочего и поставь все ящики на светящиеся клетки.</p>
+      <button id="sokoban-reset" class="sokoban-reset-top" type="button">
+        ↻ НАЧАТЬ УРОВЕНЬ ЗАНОВО
+      </button>
+    </div>
+    <span id="sokoban-moves">Ходов: 0</span>
+  </div>
+
+  <div id="sokoban-board" class="sokoban-board" aria-label="Игровое поле Ящики"></div>
+
+  <p id="sokoban-message" class="unblock-message" aria-live="polite">
+    Нажимай стрелки на экране или клавиатуре. Ящик можно только толкать.
+  </p>
+
+  <div class="sokoban-controls" aria-label="Управление персонажем">
+    <span></span>
+    <button type="button" data-sokoban-direction="up" aria-label="Вверх">↑</button>
+    <span></span>
+    <button type="button" data-sokoban-direction="left" aria-label="Влево">←</button>
+    <button type="button" data-sokoban-direction="down" aria-label="Вниз">↓</button>
+    <button type="button" data-sokoban-direction="right" aria-label="Вправо">→</button>
+  </div>
+</dialog>
+
+<dialog
+  id="fifteen-dialog"
+  class="unblock-dialog fifteen-dialog"
+  aria-labelledby="fifteen-title"
+>
+  <button
+    id="fifteen-close"
+    class="unblock-close"
+    type="button"
+    aria-label="Закрыть игру"
+  >×</button>
+
+  <div class="unblock-dialog-heading">
+    <div>
+      <h2 id="fifteen-title">🧩 Пятнашки</h2>
+      <p>Расставь числа по порядку. Нажимать можно только на плитку рядом с пустой клеткой.</p>
+      <button id="fifteen-reset" class="fifteen-reset-top" type="button">
+        ↻ НАЧАТЬ ЗАНОВО
+      </button>
+    </div>
+    <span id="fifteen-moves">Ходов: 0</span>
+  </div>
+
+  <div id="fifteen-board" class="fifteen-board" aria-label="Игровое поле Пятнашки"></div>
+
+  <p id="fifteen-message" class="unblock-message" aria-live="polite">
+    Собери последовательность от 1 до 15.
+  </p>
+</dialog>
+
+
