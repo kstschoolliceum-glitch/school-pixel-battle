@@ -1,0 +1,243 @@
+/* ---------- CHAT ---------- */
+
+.chat-section {
+  display: none;
+}
+
+@media (max-width: 650px) {
+
+  body.mobile-chat-view
+  .map-section,
+
+  body.mobile-chat-view
+  .sidebar {
+    display: none;
+  }
+
+  body.mobile-chat-view
+  .chat-section {
+    display: flex;
+  }
+
+  .chat-section {
+    height: calc(100dvh - 58px - 64px);
+    padding: 10px;
+
+    flex-direction: column;
+
+    background: var(--bg);
+
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 8px 4px 12px;
+  }
+
+  .chat-header h2 {
+    margin: 0 0 4px;
+
+    font-size: 18px;
+  }
+
+  .chat-header p {
+    margin: 0;
+
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .chat-messages {
+    min-height: 0;
+    flex: 1;
+
+    padding: 12px;
+
+    overflow-y: auto;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .chat-empty {
+    padding: 30px 10px;
+
+    text-align: center;
+
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .chat-message {
+  padding: 7px 2px;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.chat-message-content {
+  min-width: 0;
+
+  overflow-wrap: anywhere;
+}
+
+.chat-message-author {
+  font-weight: 700;
+}
+
+.chat-message-time {
+  flex-shrink: 0;
+
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 400;
+}
+  .chat-form {
+    flex-shrink: 0;
+
+    margin-top: 10px;
+
+    display: grid;
+    grid-template-columns: 1fr 48px;
+    gap: 8px;
+
+    padding-bottom:
+      env(safe-area-inset-bottom, 0px);
+
+    background: var(--bg);
+  }
+
+  #chat-input {
+    min-width: 0;
+    height: 48px;
+    padding: 0 14px;
+
+    border: 1px solid #334155;
+    border-radius: 12px;
+
+    outline: none;
+
+    background: var(--panel);
+    color: white;
+
+    font-size: 14px;
+  }
+
+  #chat-input:focus {
+    border-color: var(--purple-light);
+  }
+
+  #chat-send-button {
+    width: 48px;
+    height: 48px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+
+    color: white;
+    font-size: 18px;
+
+    cursor: pointer;
+  }
+
+}
+/* ---------- MOBILE SCREENS ---------- */
+
+@media (max-width: 650px) {
+
+  body.mobile-ranking-view
+  .map-section {
+    display: none;
+  }
+
+  body.mobile-profile-view
+  .map-section,
+  body.mobile-minigames-view
+  .map-section {
+    display: none;
+  }
+
+
+  body.mobile-ranking-view
+  .sidebar,
+  body.mobile-profile-view
+  .sidebar,
+  body.mobile-minigames-view
+  .sidebar {
+    display: block;
+  }
+
+
+  body.mobile-ranking-view
+  .sidebar .panel {
+    display: none;
+  }
+
+  body.mobile-ranking-view
+  #ranking-panel {
+    display: block;
+  }
+
+
+  body.mobile-profile-view
+  .sidebar .panel,
+  body.mobile-minigames-view
+  .sidebar .panel {
+    display: none;
+  }
+
+  body.mobile-profile-view
+  #profile-panel {
+    display: block;
+  }
+
+  body.mobile-minigames-view
+  #minigames-panel {
+    display: block;
+  }
+
+
+  body.mobile-ranking-view
+  #ranking-panel,
+  body.mobile-profile-view
+  #profile-panel,
+  body.mobile-minigames-view
+  #minigames-panel {
+    min-height: calc(100vh - 150px);
+  }
+
+}
+.season {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#season-countdown {
+  color: #a78bfa;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .season {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  #season-countdown {
+    font-size: 10px;
+  }
+}
