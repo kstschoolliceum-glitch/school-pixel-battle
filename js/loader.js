@@ -1,9 +1,5 @@
 // Insert HTML fragments, then load classic scripts in dependency order.
 (() => {
-  const fragments = [
-    "html/admin-section.html",
-    "html/dialogs.html"
-  ];
   const sources = [
   "app.js?v=125",
   "js/map-render.js?v=1",
@@ -62,15 +58,20 @@
   }
 
   async function insertFragments() {
-    const placeholders = Array.from(document.querySelectorAll("[data-html-fragment]"));
-    await Promise.all(placeholders.map(async placeholder => {
-      const source = placeholder.dataset.htmlFragment;
-      const response = await fetch(source, { cache: "no-cache" });
-      if (!response.ok) throw new Error(source + ": HTTP " + response.status);
-      const template = document.createElement("template");
-      template.innerHTML = await response.text();
-      placeholder.replaceWith(template.content.cloneNode(true));
-    }));
+    let placeholders = Array.from(document.querySelectorAll("[data-html-fragment]"));
+
+    while (placeholders.length) {
+      await Promise.all(placeholders.map(async placeholder => {
+        const source = placeholder.dataset.htmlFragment;
+        const response = await fetch(source, { cache: "no-cache" });
+        if (!response.ok) throw new Error(source + ": HTTP " + response.status);
+        const template = document.createElement("template");
+        template.innerHTML = await response.text();
+        placeholder.replaceWith(template.content.cloneNode(true));
+      }));
+
+      placeholders = Array.from(document.querySelectorAll("[data-html-fragment]"));
+    }
   }
 
   function loadScripts() {

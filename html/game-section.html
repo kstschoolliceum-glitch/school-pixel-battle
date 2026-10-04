@@ -1,0 +1,899 @@
+<main class="game" id="game">
+
+    <section class="map-section">
+
+      <div class="map-header">
+
+  <span class="map-title">
+
+    <span class="map-title-text">
+      🎨 Карта
+    </span>
+
+    <button
+      id="stencil-open-button"
+      class="stencil-open-button"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="stencil-dialog"
+    >
+      🖼️ Трафарет
+    </button>
+
+    <button
+      id="player-card-open-button"
+      class="player-card-open-button"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="player-card-dialog"
+    >
+      🪪 Визитка
+    </button>
+
+  </span>
+
+  <span id="coordinates" class="pixel-information">
+    <span id="coordinate-position">Выберите пиксель</span>
+    <span class="pixel-owner-row">
+      <button id="pixel-report-button" class="pixel-report-button hidden" type="button">
+        🚩 Жалоба
+      </button>
+      <span id="pixel-owner"></span>
+    </span>
+  </span>
+
+</div>
+
+
+      <div id="canvas-container">
+
+        <canvas id="pixel-canvas"></canvas>
+        <div id="beacon-layer" class="beacon-layer" aria-label="Маяки карты"></div>
+
+        <div id="stencil-layer" class="stencil-layer hidden" aria-hidden="true">
+          <canvas id="stencil-canvas" width="300" height="424"></canvas>
+        </div>
+
+        <div id="pixel-grid"></div>
+
+        <div id="selection-indicator" class="selection-indicator hidden" aria-hidden="true"></div>
+
+      </div>
+
+      <dialog
+        id="stencil-dialog"
+        class="stencil-dialog"
+        aria-labelledby="stencil-dialog-title"
+      >
+        <button
+          id="stencil-close-button"
+          class="stencil-close-button"
+          type="button"
+          aria-label="Закрыть настройки трафарета"
+        >×</button>
+
+        <h2 id="stencil-dialog-title">🖼️ Мой трафарет</h2>
+        <p id="stencil-status">
+          Загрузи PNG, JPG или WebP. Изображение останется только на этом устройстве.
+        </p>
+
+        <div class="stencil-source-actions">
+          <label class="stencil-upload-button" for="stencil-file-input">ЗАГРУЗИТЬ</label>
+          <input id="stencil-file-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          <button id="stencil-paste-button" type="button">ВСТАВИТЬ ИЗ БУФЕРА</button>
+        </div>
+
+        <div id="stencil-controls" class="stencil-controls hidden">
+          <label>
+            <span>По горизонтали: <output id="stencil-x-value">0</output></span>
+            <input id="stencil-x" type="range" min="0" max="300" step="1" value="0">
+          </label>
+          <label>
+            <span>По вертикали: <output id="stencil-y-value">0</output></span>
+            <input id="stencil-y" type="range" min="0" max="424" step="1" value="0">
+          </label>
+          <label>
+            <span>Ширина: <output id="stencil-size-value">1</output> клеток</span>
+            <input id="stencil-size" type="range" min="1" max="300" step="1" value="1">
+          </label>
+          <label>
+            <span>Прозрачность: <output id="stencil-opacity-value">55</output>%</span>
+            <input id="stencil-opacity" type="range" min="10" max="100" step="1" value="55">
+          </label>
+          <div class="stencil-nudge" aria-label="Перемещение трафарета по клеткам">
+            <button type="button" data-stencil-dx="0" data-stencil-dy="-1" aria-label="Трафарет вверх">↑</button>
+            <button type="button" data-stencil-dx="-1" data-stencil-dy="0" aria-label="Трафарет влево">←</button>
+            <button type="button" data-stencil-dx="1" data-stencil-dy="0" aria-label="Трафарет вправо">→</button>
+            <button type="button" data-stencil-dx="0" data-stencil-dy="1" aria-label="Трафарет вниз">↓</button>
+          </div>
+          <div class="stencil-actions">
+            <button id="stencil-lock-button" type="button" aria-pressed="false">📌 ЗАКРЕПИТЬ</button>
+            <button id="stencil-delete-button" type="button">🗑️ УДАЛИТЬ</button>
+          </div>
+        </div>
+      </dialog>
+
+
+      <dialog
+        id="player-card-dialog"
+        class="player-card-dialog"
+        aria-labelledby="player-card-title"
+      >
+        <button
+          id="player-card-close"
+          class="player-card-close"
+          type="button"
+          aria-label="Закрыть визитку"
+        >×</button>
+
+        <div class="player-card-heading">
+          <span class="player-card-kicker">SCHOOL PIXEL BATTLE</span>
+          <h2 id="player-card-title">🪪 Визитка игрока</h2>
+        </div>
+
+        <div class="player-card-identity">
+          <button
+            id="player-card-photo-button"
+            class="player-card-photo"
+            type="button"
+            aria-label="Выбрать фото профиля"
+          >
+            <img id="player-card-photo-image" class="hidden" alt="Фото профиля">
+            <span id="player-card-photo-fallback" aria-hidden="true">?</span>
+          </button>
+          <input
+            id="player-card-photo-input"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          >
+
+          <div class="player-card-name">
+            <strong id="player-card-nickname">Игрок</strong>
+            <span id="player-card-class">Класс —</span>
+            <small id="player-card-username">@—</small>
+            <small id="player-card-last-seen" class="player-card-last-seen">Был(-а) в сети: —</small>
+          </div>
+        </div>
+
+        <div class="player-card-photo-actions">
+          <span id="player-card-photo-status">Нажми на фото, чтобы добавить своё.</span>
+          <button id="player-card-photo-delete" class="hidden" type="button">Убрать фото</button>
+        </div>
+
+        <div class="player-card-stats" aria-label="Игровая статистика">
+          <div>
+            <span>За неделю</span>
+            <strong id="player-card-weekly">—</strong>
+            <small>пикселей</small>
+          </div>
+          <div>
+            <span>За всё время</span>
+            <strong id="player-card-total">—</strong>
+            <small>пикселей</small>
+          </div>
+        </div>
+
+        <section class="player-card-achievements" aria-labelledby="player-card-achievements-title">
+          <div class="player-card-section-title">
+            <h3 id="player-card-achievements-title">🏆 Достижения</h3>
+            <span id="player-card-achievement-count">0 / 3</span>
+          </div>
+          <div id="player-card-achievement-list" class="player-card-achievement-list">
+            <p class="player-card-loading">Загрузка достижений…</p>
+          </div>
+          <div id="player-achievement-popup" class="player-achievement-popup hidden" role="dialog" aria-modal="true" aria-labelledby="player-achievement-popup-title">
+            <div class="player-achievement-popup-panel">
+              <button id="player-achievement-popup-close" class="player-achievement-popup-close" type="button" aria-label="Закрыть описание достижения">×</button>
+              <span id="player-achievement-popup-icon" class="player-achievement-popup-icon">🏆</span>
+              <h4 id="player-achievement-popup-title">Достижение</h4>
+              <p id="player-achievement-popup-description"></p>
+              <div class="player-achievement-popup-progress"><i id="player-achievement-popup-bar"></i></div>
+              <strong id="player-achievement-popup-percent"></strong>
+              <small id="player-achievement-popup-value"></small>
+            </div>
+          </div>
+        </section>
+
+        <p id="player-card-message" class="player-card-message" role="status"></p>
+      </dialog>
+
+      <div class="controls">
+
+        <div class="palette" id="palette">
+
+          <button class="color active"
+                  data-color="#ef4444"
+                  style="background:#ef4444">
+          </button>
+
+          <button class="color"
+                  data-color="#f97316"
+                  style="background:#f97316">
+          </button>
+
+          <button class="color"
+                  data-color="#facc15"
+                  style="background:#facc15">
+          </button>
+
+          <button class="color"
+                  data-color="#22c55e"
+                  style="background:#22c55e">
+          </button>
+
+          <button class="color"
+                  data-color="#06b6d4"
+                  style="background:#06b6d4">
+          </button>
+
+          <button class="color"
+                  data-color="#3b82f6"
+                  style="background:#3b82f6">
+          </button>
+
+          <button class="color"
+                  data-color="#8b5cf6"
+                  style="background:#8b5cf6">
+          </button>
+
+          <button class="color"
+                  data-color="#ec4899"
+                  style="background:#ec4899">
+          </button>
+
+          <button class="color light"
+                  data-color="#ffffff"
+                  style="background:#ffffff">
+          </button>
+
+          <button class="color"
+                  data-color="#111111"
+                  style="background:#111111">
+          </button>
+
+          <button
+  class="color"
+  data-color="#92400e"
+  style="background:#92400e">
+</button>
+
+<button
+  class="color"
+  data-color="#fb923c"
+  style="background:#fb923c">
+</button>
+
+<button
+  class="color"
+  data-color="#f472b6"
+  style="background:#f472b6">
+</button>
+
+<button
+  class="color"
+  data-color="#a78bfa"
+  style="background:#a78bfa">
+</button>
+
+<button
+  class="color"
+  data-color="#38bdf8"
+  style="background:#38bdf8">
+</button>
+
+<button
+  class="color"
+  data-color="#84cc16"
+  style="background:#84cc16">
+</button>
+
+<button
+  class="color"
+  data-color="#cbd5e1"
+  style="background:#cbd5e1">
+</button>
+
+<button
+  id="color-palette-open"
+  class="color-palette-open"
+  type="button"
+  aria-haspopup="dialog"
+  aria-controls="color-palette-dialog"
+  aria-label="Открыть палитру цветов"
+  title="Открыть палитру цветов"
+>
+  <span aria-hidden="true">🎨</span>
+  <i id="color-palette-button-swatch" aria-hidden="true"></i>
+</button>
+
+        </div>
+
+        <dialog
+          id="color-palette-dialog"
+          class="color-palette-dialog"
+          aria-labelledby="color-palette-title"
+        >
+          <button
+            id="color-palette-close"
+            class="color-palette-close"
+            type="button"
+            aria-label="Закрыть палитру"
+          >×</button>
+
+          <div class="color-palette-heading">
+            <span>PIXEL COLORS</span>
+            <h2 id="color-palette-title">🎨 Выберите цвет</h2>
+            <p>Нажмите на цвет — палитра закроется, и можно ставить пиксель.</p>
+          </div>
+
+          <div class="color-palette-selected">
+            <i id="color-palette-selected-swatch" aria-hidden="true"></i>
+            <div>
+              <small>Выбранный цвет</small>
+              <strong id="color-palette-selected-name">Красный</strong>
+              <span id="color-palette-selected-code">#EF4444</span>
+            </div>
+          </div>
+
+          <div
+            id="color-palette-tabs"
+            class="color-palette-tabs"
+            role="tablist"
+            aria-label="Категории цветов"
+          ></div>
+
+          <section
+            id="color-palette-recent-section"
+            class="color-palette-group hidden"
+          >
+            <h3>Недавние</h3>
+            <div
+              id="color-palette-recent"
+              class="color-palette-grid color-palette-grid-recent"
+            ></div>
+          </section>
+
+          <div
+            id="color-palette-groups"
+            class="color-palette-groups"
+          ></div>
+        </dialog>
+
+
+        <div class="placement-actions">
+          <button id="map-items-open" class="map-items-open" type="button"
+            aria-haspopup="dialog" aria-controls="map-items-dialog">
+            🎒 ПРЕДМЕТЫ
+          </button>
+          <button id="place-button" disabled>
+            ПОСТАВИТЬ ПИКСЕЛЬ
+          </button>
+        </div>
+
+        <dialog id="beacon-dialog" class="beacon-dialog" aria-labelledby="beacon-dialog-title">
+          <button id="beacon-dialog-close" class="beacon-dialog-close" type="button" aria-label="Закрыть">×</button>
+          <h2 id="beacon-dialog-title">🚩 Маяк</h2>
+          <strong id="beacon-dialog-class">Класс</strong>
+          <p id="beacon-dialog-label"></p>
+          <button id="beacon-remove-button" class="hidden" type="button">УБРАТЬ МОЙ МАЯК</button>
+          <span id="beacon-dialog-status" aria-live="polite"></span>
+        </dialog>
+
+        <dialog id="map-items-dialog" class="map-items-dialog" aria-labelledby="map-items-title">
+          <button id="map-items-close" class="map-items-close" type="button" aria-label="Закрыть">×</button>
+          <h2 id="map-items-title">🎒 Мои предметы</h2>
+          <p>Сначала выбери клетку на карте, затем используй предмет.</p>
+          <div class="map-items-list">
+            <button type="button" data-map-item-row="bomb" data-map-item-use="bomb" class="hidden">
+              <span>💣 <strong>Бомба</strong><small>Воронка из 145 пикселей</small></span>
+              <b id="map-bomb-count">0</b>
+            </button>
+            <button type="button" data-map-item-row="beacon" data-map-item-use="beacon" class="hidden">
+              <span>📍 <strong>Маяк</strong><small>Метка с подписью на карте</small></span>
+              <b id="map-beacon-count">0</b>
+            </button>
+            <button type="button" data-map-item-row="detector" data-map-item-use="detector" class="hidden">
+              <span>🕵️ <strong>Детектор</strong><small>Узнать автора пикселя</small></span>
+              <b id="map-detector-count">0</b>
+            </button>
+            <span id="map-items-empty">Купленных предметов пока нет.</span>
+          </div>
+          <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
+        </dialog>
+
+
+        <div class="cooldown">
+          ⏳
+          <span id="cooldown-text">
+            Пиксель готов
+          </span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <aside class="sidebar">
+
+      <div class="panel"
+          id="ranking-panel">
+
+            <h2>🏆 Рейтинг</h2>
+        <div class="ranking-tabs">
+
+    <button
+        id="weekly-ranking-tab"
+        class="ranking-tab active"
+        type="button"
+      >
+        НЕДЕЛЯ
+      </button>
+
+      <button
+        id="quarter-ranking-tab"
+        class="ranking-tab"
+        type="button"
+      >
+        ТОП ЧЕТВЕРТИ
+      </button>
+
+      <button
+        id="students-ranking-tab"
+        class="ranking-tab"
+        type="button"
+      >
+        УЧЕНИКИ
+      </button>
+
+    </div>
+        <div
+            class="ranking"
+            id="class-ranking"
+        >
+        <div>
+            <span>Загрузка рейтинга...</span>
+        </div>
+        </div>
+      </div>
+
+      <div class="panel">
+
+        <h2>📊 Эта неделя</h2>
+
+        <div class="stats">
+
+          <p>
+            Пикселей поставлено
+            <strong id="pixel-count">0</strong>
+          </p>
+
+          <p>
+            Размер карты
+            <strong>300 × 424</strong>
+          </p>
+
+          <p>
+            Участников онлайн
+            <strong>1</strong>
+          </p>
+
+        </div>
+
+      </div>
+    <div class="panel" id="minigames-panel">
+      <h2>📋 Задания</h2>
+      <p class="minigames-intro">
+        Выполняй задания, проходи мини-игры и получай игровые бонусы.
+      </p>
+
+      <div class="tasks-panel-tabs" role="tablist" aria-label="Разделы заданий">
+        <button
+          id="tasks-daily-tab"
+          class="tasks-panel-tab active"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="tasks-daily-panel"
+        >
+          📅 Ежедневные задания
+        </button>
+        <button
+          id="tasks-earn-tab"
+          class="tasks-panel-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tasks-earn-panel"
+          tabindex="-1"
+        >
+          🪙 Заработать piCoin
+        </button>
+        <button
+          id="tasks-games-tab"
+          class="tasks-panel-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tasks-games-panel"
+          tabindex="-1"
+        >
+          🎮 Мини-игры
+        </button>
+      </div>
+
+      <section
+        id="tasks-daily-panel"
+        class="tasks-section daily-tasks-section"
+        role="tabpanel"
+        aria-labelledby="tasks-daily-tab"
+      >
+        <div class="tasks-section-heading">
+          <div>
+            <h3 id="daily-tasks-section-title">📅 Ежедневные задания</h3>
+            <p>Выполни три задания дня и забери награду.</p>
+          </div>
+          <button
+            id="daily-tasks-button"
+            class="daily-tasks-button daily-tasks-launch"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="daily-tasks-dialog"
+          >
+            📋 0/3
+          </button>
+        </div>
+      </section>
+
+      <section
+        id="tasks-earn-panel"
+        class="tasks-section pi-earn-section"
+        role="tabpanel"
+        aria-labelledby="tasks-earn-tab"
+        hidden
+      >
+        <div class="tasks-section-heading">
+          <div>
+            <h3>🪙 Заработать piCoin</h3>
+            <p>Ставь пиксели и забирай награды за этапы текущего дня.</p>
+          </div>
+        </div>
+        <div id="pi-earn-tasks" aria-live="polite"></div>
+      </section>
+
+      <section
+        id="tasks-games-panel"
+        class="tasks-section minigames-section"
+        role="tabpanel"
+        aria-labelledby="tasks-games-tab"
+        hidden
+      >
+        <div class="tasks-section-heading">
+          <div>
+            <h3 id="minigames-section-title">🎮 Мини-игры</h3>
+            <p>Решай головоломки и зарабатывай дополнительные бонусы.</p>
+          </div>
+        </div>
+
+    <div class="minigames-grid">
+    <section
+      id="unblock-me-profile"
+      class="unblock-profile-card"
+      aria-labelledby="unblock-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="unblock-profile-title">🧱 Unblock Me</h3>
+          <p>Освободи красный блок и получи Турбокисть на 10 минут.</p>
+        </div>
+        <span id="unblock-me-badge">1 раз в сутки</span>
+      </div>
+      <div id="unblock-me-profile-status" class="unblock-profile-status" aria-live="polite">
+        Проверяем игру дня…
+      </div>
+      <button id="unblock-me-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
+    </section>
+
+    <section
+      id="sokoban-profile"
+      class="unblock-profile-card sokoban-profile-card"
+      aria-labelledby="sokoban-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="sokoban-profile-title">📦 Ящики</h3>
+          <p>Пройди 3 уровня и получи Турбокисть. Следующая игра будет доступна через 4 часа.</p>
+        </div>
+        <span id="sokoban-badge">0 из 3</span>
+      </div>
+      <div id="sokoban-profile-status" class="unblock-profile-status" aria-live="polite">
+        Загружаем прогресс…
+      </div>
+      <button id="sokoban-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
+    </section>
+
+    <section
+      id="fifteen-profile"
+      class="unblock-profile-card fifteen-profile-card"
+      aria-labelledby="fifteen-profile-title"
+    >
+      <div class="unblock-profile-heading">
+        <div>
+          <h3 id="fifteen-profile-title">🧩 Пятнашки</h3>
+          <p>Собери плитки от 1 до 15 и получи Турбокисть на 20 минут. Новая игра — через 5 часов.</p>
+        </div>
+        <span id="fifteen-badge">Уровень 1</span>
+      </div>
+      <div id="fifteen-profile-status" class="unblock-profile-status" aria-live="polite">
+        Загружаем головоломку…
+      </div>
+      <button id="fifteen-open" type="button" disabled>
+        ЗАГРУЗКА…
+      </button>
+    </section>
+    </div>
+      </section>
+    </div>
+
+    <div class="panel" id="profile-panel">
+
+  <h2>👤 Мой профиль</h2>
+
+  <div class="profile-info">
+
+    <div class="profile-name">
+      <strong id="profile-nickname">
+        Загрузка...
+      </strong>
+
+      <span id="profile-class">
+        —
+      </span>
+    </div>
+
+    <div class="profile-stats">
+
+      <p>
+        За эту неделю
+        <strong id="profile-weekly-pixels">0</strong>
+      </p>
+
+      <p>
+        За всё время
+        <strong id="profile-total-pixels">0</strong>
+      </p>
+
+      <p>
+        Логин
+        <strong id="profile-username">—</strong>
+      </p>
+
+    </div>
+
+    <section
+      id="admin-online-users"
+      class="admin-online-users hidden"
+      aria-live="polite"
+    >
+      <div class="admin-online-header">
+        <strong>🟢 Кто сейчас онлайн</strong>
+        <span id="admin-online-count">0</span>
+      </div>
+
+      <div id="admin-online-list" class="admin-online-list">
+        <p>Загружаем список…</p>
+      </div>
+    </section>
+
+    <section id="pi-daily-card" class="daily-profile-card pi-daily-card"
+      aria-labelledby="pi-daily-title">
+      <h3 id="pi-daily-title">🪙 Ежедневный бонус</h3>
+      <p>Заходи каждый день: серия растёт, а награды становятся больше.</p>
+      <div id="pi-daily-days" class="pi-daily-days"><span>Загрузка…</span></div>
+      <button id="pi-daily-claim" type="button" disabled>ЗАГРУЗКА…</button>
+      <p id="pi-daily-message" class="pi-daily-message" aria-live="polite"></p>
+    </section>
+
+
+
+    <section
+      id="referral-profile"
+      class="referral-profile-card"
+      aria-live="polite"
+    >
+      <h3>🤝 Мои приглашения</h3>
+      <p>Создай личную ссылку и отправь её другому ученику. Класс он выберет сам.</p>
+      <div id="referral-profile-status">Загрузка…</div>
+      <div id="referral-link-row" class="referral-link-row hidden">
+        <input id="referral-link-input" type="text" readonly aria-label="Реферальная ссылка">
+        <button id="referral-copy-button" type="button">📋 КОПИРОВАТЬ</button>
+      </div>
+      <button id="referral-create-button" type="button" class="hidden">СОЗДАТЬ ССЫЛКУ</button>
+      <div id="referral-invited-list" class="referral-invited-list"></div>
+    </section>
+
+    <section
+      id="promo-code-profile"
+      class="promo-code-card"
+      aria-labelledby="promo-code-title"
+    >
+      <h3 id="promo-code-title">🎟️ Промокод</h3>
+      <p>
+        Одноразовые промокоды открывают временные игровые бонусы.
+      </p>
+
+      <div
+        id="promo-code-status"
+        class="promo-code-status"
+        aria-live="polite"
+      >
+        Введи одноразовый код и получи указанный бонус.
+      </div>
+
+      <form id="promo-code-form" class="promo-code-form">
+        <input
+          id="promo-code-input"
+          type="text"
+          minlength="6"
+          maxlength="64"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="ВВЕДИ ПРОМОКОД"
+          aria-label="Промокод"
+          required
+        >
+
+        <button id="promo-code-submit" type="submit">
+          АКТИВИРОВАТЬ
+        </button>
+      </form>
+
+      <div
+        id="promo-code-message"
+        class="promo-code-message"
+        aria-live="polite"
+      ></div>
+    </section>
+
+    <div class="notification-settings">
+
+      <div class="notification-settings-text">
+        <strong>🔔 События Pixel Battle</strong>
+
+        <span id="notification-status">
+          Проверка уведомлений...
+        </span>
+      </div>
+
+      <button
+        id="notification-toggle-button"
+        type="button"
+      >
+        ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ
+      </button>
+
+      <button
+        id="notification-test-button"
+        class="hidden"
+        type="button"
+      >
+        🔔 ОТПРАВИТЬ ТЕСТ
+      </button>
+
+    </div>
+
+    <button
+      id="admin-button"
+      class="hidden"
+      type="button"
+    >
+      ⚙️ АДМИН-ПАНЕЛЬ
+    </button>
+    
+    <button id="pi-shop-open-button" class="pi-shop-open-button" type="button"
+      aria-haspopup="dialog" aria-controls="pi-shop-dialog">
+      🛒 МАГАЗИН
+    </button>
+
+    <button
+      id="logout-button"
+      type="button"
+    >
+      ВЫЙТИ ИЗ АККАУНТА
+    </button>
+
+  </div>
+
+</div>
+    </aside>
+<section
+  id="chat-section"
+  class="chat-section"
+>
+
+  <div class="chat-header">
+
+    <div>
+      <h2>💬 Общий чат</h2>
+      <p>Общение участников Pixel Battle</p>
+    </div>
+
+  </div>
+
+  <div class="chat-feed-tabs" role="tablist" aria-label="Разделы чата">
+    <button
+      id="chat-user-tab"
+      class="chat-feed-tab active"
+      type="button"
+      role="tab"
+      aria-selected="true"
+      aria-controls="chat-messages"
+    >
+      💬 Сообщения
+    </button>
+    <button
+      id="chat-events-tab"
+      class="chat-feed-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="chat-messages"
+      tabindex="-1"
+    >
+      🏆 События
+      <span id="chat-events-badge" class="chat-events-badge hidden">0</span>
+    </button>
+  </div>
+
+  <div
+    id="chat-messages"
+    class="chat-messages"
+    role="tabpanel"
+    aria-live="polite"
+  >
+
+    <div class="chat-empty">
+      Сообщений пока нет
+    </div>
+
+  </div>
+
+
+  <form
+    id="chat-form"
+    class="chat-form"
+  >
+
+    <input
+      id="chat-input"
+      type="text"
+      maxlength="200"
+      autocomplete="off"
+      placeholder="Напишите сообщение..."
+    >
+
+    <button
+      id="chat-send-button"
+      type="submit"
+    >
+      ➤
+    </button>
+
+  </form>
+
+  <p
+    id="chat-send-status"
+    class="chat-send-status hidden"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+</section>
+<div data-html-fragment="html/admin-section.html"></div>
+  </main>
