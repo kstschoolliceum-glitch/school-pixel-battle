@@ -100,61 +100,7 @@
 </div>
 
 <div data-html-fragment="html/auth-section.html"></div>
-  <header class="header">
-    <div class="brand-stack">
-      <div class="logo">
-        👑 <span>PIXEL <b>BATTLE</b></span>
-      </div>
-      <button id="pi-ticker-open" class="pi-ticker" type="button"
-        aria-haspopup="dialog" aria-controls="pi-ticker-dialog" title="Разместить сообщение">
-        <strong id="pi-ticker-nickname">Сегодня свободно</strong>
-        <span class="pi-ticker-viewport"><span id="pi-ticker-message" class="pi-ticker-message">Размести сообщение за 10 piCoin</span></span>
-      </button>
-    </div>
-
-    <div class="header-summary">
-      <button id="pi-balance-button" class="pi-balance-button" type="button"
-        aria-haspopup="dialog" aria-controls="pi-shop-dialog" title="Открыть магазин">
-        <span aria-hidden="true">🪙</span>
-        <strong id="pi-balance">0</strong>
-        <span class="pi-balance-label">piCoin</span>
-      </button>
-
-      <div class="season">
-        <span class="season-topline">
-          <span id="season-info">
-            Загрузка сезона...
-          </span>
-
-          <span
-            id="online-users"
-            class="online-users"
-            title="Участников онлайн"
-          >
-            <span class="online-dot"></span>
-            <span id="online-users-count">1</span>
-            <span class="online-label">онлайн</span>
-          </span>
-        </span>
-
-        <span id="season-countdown"></span>
-      </div>
-    </div>
-  </header>
-
-
-  <dialog id="pi-ticker-dialog" class="pi-ticker-dialog" aria-labelledby="pi-ticker-title">
-    <button id="pi-ticker-close" class="pi-ticker-close" type="button" aria-label="Закрыть">×</button>
-    <h2 id="pi-ticker-title">📢 Бегущая строка дня</h2>
-    <p>Сообщение показывается всем, пока другой ученик не предложит больше piCoin.</p>
-    <div class="pi-ticker-current"><strong id="pi-ticker-dialog-nickname">Сегодня место свободно</strong><span id="pi-ticker-dialog-message">Начни торги первым.</span></div>
-    <label for="pi-ticker-input">Твоё сообщение · до 80 символов</label>
-    <textarea id="pi-ticker-input" maxlength="80" rows="3" placeholder="Напиши сообщение для всей школы"></textarea>
-    <label for="pi-ticker-bid-price">Твоя ставка · минимум <span id="pi-ticker-min-price">10</span> piCoin</label>
-    <input id="pi-ticker-bid-price" type="number" min="10" step="1" value="10" inputmode="numeric">
-    <button id="pi-ticker-bid" type="button">РАЗМЕСТИТЬ ЗА <span id="pi-ticker-price">10</span> 🪙</button>
-    <span id="pi-ticker-status" aria-live="polite"></span>
-  </dialog>
+    <div data-html-fragment="html/header-section.html"></div>
 
 
     <div data-html-fragment="html/game-section.html"></div>
@@ -219,7 +165,7 @@
     src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js"></script>
-  <script src="js/loader.js?v=3"></script>
+  <script src="js/loader.js?v=4"></script>
 
 </body>
 </html>
