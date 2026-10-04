@@ -1,0 +1,67 @@
+// Load classic application scripts in dependency order.
+(() => {
+  const sources = [
+  "app.js?v=125",
+  "js/map-render.js?v=1",
+  "js/stencil.js?v=1",
+  "js/palette.js?v=1",
+  "js/pixel-placement.js?v=1",
+  "js/map-input.js?v=1",
+  "js/auth-ui.js?v=1",
+  "js/rankings.js?v=1",
+  "js/user-profile.js?v=1",
+  "js/seasons.js?v=1",
+  "js/referrals.js?v=1",
+  "js/presence.js?v=1",
+  "js/auth-session.js?v=1",
+  "js/pixel-sync.js?v=1",
+  "js/registration.js?v=1",
+  "js/easy-login.js?v=1",
+  "js/logout.js?v=1",
+  "js/chat.js?v=1",
+  "js/mobile-navigation.js?v=1",
+  "js/admin-overview.js?v=1",
+  "js/admin-invite-navigation.js?v=1",
+  "js/admin-invite-data.js?v=1",
+  "js/admin-invite-generator.js?v=1",
+  "js/admin-invite-stats.js?v=1",
+  "js/admin-student-data.js?v=1",
+  "js/admin-student-table.js?v=1",
+  "js/admin-student-section.js?v=1",
+  "js/admin-referrals.js?v=1",
+  "js/admin-classes.js?v=1",
+  "js/admin-season-management.js?v=1",
+  "js/season-timelapse.js?v=1",
+  "js/season-timelapse-export.js?v=1",
+  "js/season-archive-map.js?v=1",
+  "js/notifications.js?v=1",
+  "js/daily-tasks.js?v=1",
+  "js/player-card.js?v=1",
+  "js/unblock-me.js?v=1",
+  "js/promo-codes.js?v=1",
+  "js/interface-sound.js?v=1",
+  "js/pi-coin.js?v=1",
+  "js/music.js?v=1",
+  "js/sokoban.js?v=1",
+  "js/fifteen.js?v=1",
+  "js/tasks-tabs.js?v=1",
+  "js/admin-tools.js?v=1",
+  "js/user-agreement.js?v=1",
+  "js/moderation-reports.js?v=1",
+  "js/bootstrap.js?v=1"
+];
+
+  function showLoadError(source) {
+    console.error("APPLICATION LOAD ERROR:", source);
+    const message = document.getElementById("login-error");
+    if (message) message.textContent = "Не удалось загрузить игру. Обновите страницу.";
+  }
+
+  sources.forEach(source => {
+    const script = document.createElement("script");
+    script.src = source;
+    script.async = false;
+    script.onerror = () => showLoadError(source);
+    document.body.appendChild(script);
+  });
+})();
