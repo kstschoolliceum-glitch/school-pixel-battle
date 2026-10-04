@@ -54,6 +54,33 @@ const seasonTimelapseSpeed =
     "season-timelapse-speed"
   );
 
+const SEASON_TIMELAPSE_PREVIEW_FPS = 60;
+const SEASON_TIMELAPSE_BASE_MOVES_PER_FRAME = 5;
+
+function getSeasonTimelapseSpeedMultiplier() {
+  const speed = Number(
+    seasonTimelapseSpeed.value
+  );
+
+  return [1, 2, 4].includes(speed)
+    ? speed
+    : 1;
+}
+
+function getSeasonTimelapseMovesPerFrame(
+  framesPerSecond = SEASON_TIMELAPSE_PREVIEW_FPS
+) {
+  return Math.max(
+    1,
+    Math.ceil(
+      SEASON_TIMELAPSE_BASE_MOVES_PER_FRAME *
+      SEASON_TIMELAPSE_PREVIEW_FPS *
+      getSeasonTimelapseSpeedMultiplier() /
+      framesPerSecond
+    )
+  );
+}
+
 const seasonTimelapseWebmButton =
   document.getElementById(
     "season-timelapse-webm-button"
@@ -253,16 +280,8 @@ function renderSeasonTimelapseFrame() {
       "2d"
     );
 
-  const speed =
-    Number(
-      seasonTimelapseSpeed.value
-    ) || 1;
-
   const movesPerFrame =
-    Math.max(
-      1,
-      5 * speed
-    );
+    getSeasonTimelapseMovesPerFrame();
 
   const endIndex =
     Math.min(

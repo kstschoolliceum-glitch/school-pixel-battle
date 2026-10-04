@@ -220,15 +220,9 @@ async function exportSeasonTimelapseWebm() {
 
 
     const framesPerSecond = 30;
-    const maximumFrames = 600;
-
     const movesPerFrame =
-      Math.max(
-        1,
-        Math.ceil(
-          seasonTimelapseHistory.length /
-          maximumFrames
-        )
+      getSeasonTimelapseMovesPerFrame(
+        framesPerSecond
       );
 
 
@@ -489,15 +483,10 @@ async function exportSeasonTimelapseGif() {
       );
 
 
-    const maximumFrames = 180;
-
+    const framesPerSecond = 10;
     const movesPerFrame =
-      Math.max(
-        1,
-        Math.ceil(
-          seasonTimelapseHistory.length /
-          maximumFrames
-        )
+      getSeasonTimelapseMovesPerFrame(
+        framesPerSecond
       );
 
 
@@ -557,7 +546,7 @@ async function exportSeasonTimelapseGif() {
         canvas,
         {
           copy: true,
-          delay: 100
+          delay: 1000 / framesPerSecond
         }
       );
 
