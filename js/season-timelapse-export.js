@@ -67,7 +67,6 @@ function downloadSeasonTimelapseBlob(
 function createSeasonTimelapseExportCanvas(
   scale
 ) {
-
   const sourceCanvas =
     document.getElementById(
       "season-map-canvas"
@@ -78,7 +77,6 @@ function createSeasonTimelapseExportCanvas(
       "canvas"
     );
 
-
   exportCanvas.width =
     sourceCanvas.width *
     scale;
@@ -87,74 +85,187 @@ function createSeasonTimelapseExportCanvas(
     sourceCanvas.height *
     scale;
 
-
   const context =
     exportCanvas.getContext(
       "2d"
     );
 
-
   context.imageSmoothingEnabled =
     false;
-
-  context.fillStyle =
-    "#ffffff";
-
-  context.fillRect(
-    0,
-    0,
-    exportCanvas.width,
-    exportCanvas.height
-  );
-
 
   return {
     canvas: exportCanvas,
     context
   };
-
 }
 
+function createSeasonTimelapseStateCanvas() {
+  const sourceCanvas =
+    document.getElementById(
+      "season-map-canvas"
+    );
 
-function drawMoveOnExportCanvas(
-  context,
-  move,
-  scale
-) {
+  const stateCanvas =
+    document.createElement(
+      "canvas"
+    );
 
-  context.fillStyle =
-    move.color;
+  stateCanvas.width =
+    sourceCanvas.width;
+
+  stateCanvas.height =
+    sourceCanvas.height;
+
+  const context =
+    stateCanvas.getContext(
+      "2d"
+    );
+
+  context.imageSmoothingEnabled =
+    false;
+
+  context.fillStyle = "#ffffff";
 
   context.fillRect(
-    move.x * scale,
-    move.y * scale,
-    scale,
-    scale
+    0,
+    0,
+    stateCanvas.width,
+    stateCanvas.height
   );
 
+  return {
+    canvas: stateCanvas,
+    context
+  };
 }
 
-
-function waitForExportFrame(
-  milliseconds
+function renderSeasonTimelapseExportFrame(
+  context,
+  stateCanvas
 ) {
+  context.imageSmoothingEnabled =
+    false;
 
+  context.fillStyle = "#ffffff";
+
+  context.fillRect(
+    0,
+    0,
+    context.canvas.width,
+    context.canvas.height
+  );
+
+  context.drawImage(
+    stateCanvas,
+    0,
+    0,
+    context.canvas.width,
+    context.canvas.height
+  );
+}
+
+function requestSeasonTimelapseVideoFrame(
+  track
+) {
+  if (
+    track &&
+    typeof track.requestFrame === "function"
+  ) {
+    track.requestFrame();
+  }
+}
+
+function waitForSeasonTimelapseDeadline(
+  deadline
+) {
   return new Promise(
     resolve => {
-
       setTimeout(
         resolve,
-        milliseconds
+        Math.max(
+          0,
+          deadline - performance.now()
+        )
       );
-
     }
   );
-
 }
 
+function seasonTimelapseStateMatchesArchive(
+  stateCanvas
+) {
+  const expected =
+    createSeasonTimelapseStateCanvas();
+
+  for (
+    const pixel
+    of openedArchivedFinalPixels
+  ) {
+    drawSeasonTimelapseMove(
+      expected.context,
+      pixel
+    );
+  }
+
+  const actualPixels =
+    stateCanvas
+      .getContext("2d")
+      .getImageData(
+        0,
+        0,
+        stateCanvas.width,
+        stateCanvas.height
+      )
+      .data;
+
+  const expectedPixels =
+    expected.context
+      .getImageData(
+        0,
+        0,
+        expected.canvas.width,
+        expected.canvas.height
+      )
+      .data;
+
+  if (
+    actualPixels.length !==
+    expectedPixels.length
+  ) {
+    return false;
+  }
+
+  for (
+    let index = 0;
+    index < actualPixels.length;
+    index++
+  ) {
+    if (
+      actualPixels[index] !==
+      expectedPixels[index]
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function assertSeasonTimelapseFinalState(
+  stateCanvas
+) {
+  if (
+    !seasonTimelapseStateMatchesArchive(
+      stateCanvas
+    )
+  ) {
+    throw new Error(
+      "Timelapse final state does not match archive"
+    );
+  }
+}
 
 async function exportSeasonTimelapseWebm() {
-
   if (
     seasonTimelapseExporting ||
     seasonTimelapseHistory.length === 0
@@ -162,18 +273,14 @@ async function exportSeasonTimelapseWebm() {
     return;
   }
 
-
   if (
     typeof MediaRecorder === "undefined"
   ) {
-
     alert(
       "Этот браузер не поддерживает запись WebM."
     );
-
     return;
   }
-
 
   const mimeTypes = [
     "video/webm;codecs=vp9",
@@ -189,51 +296,51 @@ async function exportSeasonTimelapseWebm() {
         )
     );
 
-
   if (!mimeType) {
-
     alert(
       "Этот браузер не поддерживает формат WebM."
     );
-
     return;
   }
-
 
   setSeasonTimelapseExporting(
     true,
     "Подготовка WebM..."
   );
 
+  let stream = null;
+  let recorder = null;
 
   try {
-
     const scale = 2;
+    const framesPerSecond = 30;
+    const plan =
+      getSeasonTimelapseExportPlan(
+        framesPerSecond
+      );
 
-    const {
-      canvas,
-      context
-    } =
+    const output =
       createSeasonTimelapseExportCanvas(
         scale
       );
 
+    const state =
+      createSeasonTimelapseStateCanvas();
 
-    const framesPerSecond = 30;
-    const movesPerFrame =
-      getSeasonTimelapseMovesPerFrame(
-        framesPerSecond
-      );
+    renderSeasonTimelapseExportFrame(
+      output.context,
+      state.canvas
+    );
 
+    stream =
+      output.canvas.captureStream(0);
 
-    const stream =
-      canvas.captureStream(
-        framesPerSecond
-      );
+    const videoTrack =
+      stream.getVideoTracks()[0];
 
     const chunks = [];
 
-    const recorder =
+    recorder =
       new MediaRecorder(
         stream,
         {
@@ -243,150 +350,189 @@ async function exportSeasonTimelapseWebm() {
         }
       );
 
-
     recorder.addEventListener(
       "dataavailable",
       event => {
-
         if (event.data.size > 0) {
-
-          chunks.push(
-            event.data
-          );
-
+          chunks.push(event.data);
         }
-
       }
     );
-
 
     const finished =
       new Promise(
         (resolve, reject) => {
-
           recorder.addEventListener(
             "stop",
             resolve,
-            {
-              once: true
-            }
+            { once: true }
           );
 
           recorder.addEventListener(
             "error",
             reject,
-            {
-              once: true
-            }
+            { once: true }
           );
-
         }
       );
 
+    recorder.start(1000);
 
-    recorder.start();
+    requestSeasonTimelapseVideoFrame(
+      videoTrack
+    );
 
+    const startedAt =
+      performance.now();
+
+    const frameDuration =
+      1000 /
+      framesPerSecond;
 
     let moveIndex = 0;
-    let frameNumber = 0;
 
-    const totalFrames =
-      Math.ceil(
-        seasonTimelapseHistory.length /
-        movesPerFrame
-      );
-
-
-    while (
-      moveIndex <
-      seasonTimelapseHistory.length
+    for (
+      let frameIndex = 0;
+      frameIndex < plan.totalFrames;
+      frameIndex++
     ) {
-
       const endIndex =
-        Math.min(
-          moveIndex + movesPerFrame,
+        Math.round(
+          (
+            frameIndex + 1
+          ) /
+          plan.totalFrames *
           seasonTimelapseHistory.length
         );
-
 
       while (
         moveIndex < endIndex
       ) {
-
-        drawMoveOnExportCanvas(
-          context,
+        drawSeasonTimelapseMove(
+          state.context,
           seasonTimelapseHistory[
             moveIndex
-          ],
-          scale
+          ]
         );
 
         moveIndex++;
-
       }
 
-
-      frameNumber++;
-
-
-      if (
-        frameNumber % 10 === 0 ||
-        frameNumber === totalFrames
-      ) {
-
-        seasonTimelapseExportStatus.textContent =
-          `Создание WebM: ${Math.round(
-            frameNumber /
-            totalFrames *
-            100
-          )}%`;
-
-      }
-
-
-      await waitForExportFrame(
-        1000 / framesPerSecond
+      renderSeasonTimelapseExportFrame(
+        output.context,
+        state.canvas
       );
 
+      await waitForSeasonTimelapseDeadline(
+        startedAt +
+        frameIndex *
+        frameDuration
+      );
+
+      requestSeasonTimelapseVideoFrame(
+        videoTrack
+      );
+
+      if (
+        frameIndex % 30 === 0 ||
+        frameIndex + 1 ===
+          plan.totalFrames
+      ) {
+        seasonTimelapseExportStatus.textContent =
+          `Создание WebM: ${Math.round(
+            (
+              frameIndex + 1
+            ) /
+            plan.totalFrames *
+            100
+          )}%`;
+      }
     }
 
-
-    await waitForExportFrame(
-      700
+    assertSeasonTimelapseFinalState(
+      state.canvas
     );
 
+    renderSeasonTimelapseExportFrame(
+      output.context,
+      state.canvas
+    );
+
+    await waitForSeasonTimelapseDeadline(
+      startedAt +
+      plan.durationSeconds *
+      1000
+    );
+
+    requestSeasonTimelapseVideoFrame(
+      videoTrack
+    );
+
+    await new Promise(
+      resolve =>
+        setTimeout(resolve, 250)
+    );
+
+    recorder.requestData();
+
+    await new Promise(
+      resolve =>
+        setTimeout(resolve, 100)
+    );
 
     recorder.stop();
 
     await finished;
 
+    for (
+      const track
+      of stream.getTracks()
+    ) {
+      track.stop();
+    }
 
     const blob =
       new Blob(
         chunks,
-        {
-          type: mimeType
-        }
+        { type: mimeType }
       );
 
+    if (blob.size === 0) {
+      throw new Error(
+        "WebM recorder returned an empty file"
+      );
+    }
 
     downloadSeasonTimelapseBlob(
       blob,
       "webm"
     );
 
-
     setSeasonTimelapseExporting(
       false,
-      "WebM скачан."
+      `WebM скачан · ${plan.durationSeconds} сек.`
     );
-
   } catch (error) {
-
     console.error(
       "WEBM EXPORT ERROR:",
       error
     );
+
+    if (
+      recorder &&
+      recorder.state !== "inactive"
+    ) {
+      recorder.stop();
+    }
+
+    if (stream) {
+      for (
+        const track
+        of stream.getTracks()
+      ) {
+        track.stop();
+      }
+    }
 
     setSeasonTimelapseExporting(
       false,
@@ -394,13 +540,10 @@ async function exportSeasonTimelapseWebm() {
     );
 
     alert(
-      "Не удалось создать WebM."
+      "Не удалось создать корректный WebM."
     );
-
   }
-
 }
-
 
 async function getSeasonTimelapseGifWorkerUrl() {
 
@@ -442,7 +585,6 @@ async function getSeasonTimelapseGifWorkerUrl() {
 
 
 async function exportSeasonTimelapseGif() {
-
   if (
     seasonTimelapseExporting ||
     seasonTimelapseHistory.length === 0
@@ -450,135 +592,134 @@ async function exportSeasonTimelapseGif() {
     return;
   }
 
-
   if (typeof GIF === "undefined") {
-
     alert(
       "Модуль создания GIF не загрузился."
     );
-
     return;
   }
-
 
   setSeasonTimelapseExporting(
     true,
     "Подготовка GIF..."
   );
 
-
   try {
-
     const workerUrl =
       await getSeasonTimelapseGifWorkerUrl();
 
-    const scale = 1;
-
-    const {
-      canvas,
-      context
-    } =
-      createSeasonTimelapseExportCanvas(
-        scale
-      );
-
-
     const framesPerSecond = 10;
-    const movesPerFrame =
-      getSeasonTimelapseMovesPerFrame(
+    const plan =
+      getSeasonTimelapseExportPlan(
         framesPerSecond
       );
 
+    const output =
+      createSeasonTimelapseExportCanvas(
+        1
+      );
+
+    const state =
+      createSeasonTimelapseStateCanvas();
+
+    renderSeasonTimelapseExportFrame(
+      output.context,
+      state.canvas
+    );
 
     const gif =
       new GIF({
         workers: 2,
         quality: 10,
         repeat: 0,
-        width: canvas.width,
-        height: canvas.height,
+        width: output.canvas.width,
+        height: output.canvas.height,
         workerScript: workerUrl
       });
 
-
     gif.addFrame(
-      canvas,
+      output.canvas,
       {
         copy: true,
         delay: 500
       }
     );
 
-
     let moveIndex = 0;
 
-
-    while (
-      moveIndex <
-      seasonTimelapseHistory.length
+    for (
+      let frameIndex = 0;
+      frameIndex < plan.totalFrames;
+      frameIndex++
     ) {
-
       const endIndex =
-        Math.min(
-          moveIndex + movesPerFrame,
+        Math.round(
+          (
+            frameIndex + 1
+          ) /
+          plan.totalFrames *
           seasonTimelapseHistory.length
         );
-
 
       while (
         moveIndex < endIndex
       ) {
-
-        drawMoveOnExportCanvas(
-          context,
+        drawSeasonTimelapseMove(
+          state.context,
           seasonTimelapseHistory[
             moveIndex
-          ],
-          scale
+          ]
         );
 
         moveIndex++;
-
       }
 
-
-      gif.addFrame(
-        canvas,
-        {
-          copy: true,
-          delay: 1000 / framesPerSecond
-        }
+      renderSeasonTimelapseExportFrame(
+        output.context,
+        state.canvas
       );
 
+      gif.addFrame(
+        output.canvas,
+        {
+          copy: true,
+          delay:
+            1000 /
+            framesPerSecond
+        }
+      );
     }
 
+    assertSeasonTimelapseFinalState(
+      state.canvas
+    );
+
+    renderSeasonTimelapseExportFrame(
+      output.context,
+      state.canvas
+    );
 
     gif.addFrame(
-      canvas,
+      output.canvas,
       {
         copy: true,
         delay: 1000
       }
     );
 
-
     gif.on(
       "progress",
       progress => {
-
         seasonTimelapseExportStatus.textContent =
           `Создание GIF: ${Math.round(
             progress * 100
           )}%`;
-
       }
     );
-
 
     gif.on(
       "finished",
       blob => {
-
         downloadSeasonTimelapseBlob(
           blob,
           "gif"
@@ -586,30 +727,23 @@ async function exportSeasonTimelapseGif() {
 
         setSeasonTimelapseExporting(
           false,
-          "GIF скачан."
+          `GIF скачан · ${plan.durationSeconds} сек.`
         );
-
       }
     );
-
 
     gif.on(
       "abort",
       () => {
-
         setSeasonTimelapseExporting(
           false,
           ""
         );
-
       }
     );
 
-
     gif.render();
-
   } catch (error) {
-
     console.error(
       "GIF EXPORT ERROR:",
       error
@@ -621,13 +755,10 @@ async function exportSeasonTimelapseGif() {
     );
 
     alert(
-      "Не удалось создать GIF."
+      "Не удалось создать корректный GIF."
     );
-
   }
-
 }
-
 
 seasonTimelapseWebmButton.addEventListener(
   "click",

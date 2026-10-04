@@ -81,6 +81,70 @@ function getSeasonTimelapseMovesPerFrame(
   );
 }
 
+const SEASON_TIMELAPSE_EXPORT_BASE_DURATION_SECONDS = 40;
+
+function getSeasonTimelapseExportPlan(
+  framesPerSecond
+) {
+  const speed =
+    getSeasonTimelapseSpeedMultiplier();
+
+  const durationSeconds =
+    SEASON_TIMELAPSE_EXPORT_BASE_DURATION_SECONDS /
+    speed;
+
+  return {
+    speed,
+    framesPerSecond,
+    durationSeconds,
+    totalFrames: Math.max(
+      1,
+      Math.round(
+        durationSeconds *
+        framesPerSecond
+      )
+    )
+  };
+}
+
+function drawSeasonTimelapseMove(
+  context,
+  move,
+  scale = 1
+) {
+  const x = Number(move?.x);
+  const y = Number(move?.y);
+
+  if (
+    !Number.isInteger(x) ||
+    !Number.isInteger(y) ||
+    x < 0 ||
+    y < 0 ||
+    x * scale >= context.canvas.width ||
+    y * scale >= context.canvas.height
+  ) {
+    return false;
+  }
+
+  context.fillStyle = "#ffffff";
+
+  if (
+    typeof move.color === "string" &&
+    move.color.trim()
+  ) {
+    context.fillStyle = move.color;
+  }
+
+  context.fillRect(
+    x * scale,
+    y * scale,
+    scale,
+    scale
+  );
+
+  return true;
+}
+
 const seasonTimelapseWebmButton =
   document.getElementById(
     "season-timelapse-webm-button"
@@ -241,14 +305,9 @@ function drawSeasonTimelapseUntil(
       seasonTimelapseHistory[index];
 
 
-    context.fillStyle =
-      move.color;
-
-    context.fillRect(
-      move.x,
-      move.y,
-      1,
-      1
+    drawSeasonTimelapseMove(
+      context,
+      move
     );
 
   }
@@ -302,14 +361,9 @@ function renderSeasonTimelapseFrame() {
       ];
 
 
-    context.fillStyle =
-      move.color;
-
-    context.fillRect(
-      move.x,
-      move.y,
-      1,
-      1
+    drawSeasonTimelapseMove(
+      context,
+      move
     );
 
 
