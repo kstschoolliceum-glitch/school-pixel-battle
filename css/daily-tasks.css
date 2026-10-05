@@ -476,3 +476,166 @@
 }
 
 
+
+
+/* ---------- TODAY PLAN AND DAILY BONUS ENTRY ---------- */
+.today-plan {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid #526887;
+  background: #0d1627;
+}
+
+.today-plan h3 {
+  margin: 0 0 10px;
+  color: #fde68a;
+  font: 900 16px/1.2 "Courier New", monospace;
+}
+
+.today-plan-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.today-plan-list button {
+  min-width: 0;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  border: 1px solid #394967;
+  background: #111a2c;
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+
+.today-plan-list button:last-child {
+  grid-column: 1 / -1;
+}
+
+.today-plan-list button:hover {
+  border-color: #fbbf24;
+}
+
+.today-plan-list span {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.today-plan-list small {
+  flex: 0 0 auto;
+  color: #86efac;
+  font-size: 10px;
+  text-align: right;
+}
+
+.daily-message-action {
+  min-height: 32px;
+  margin: 8px 0 0 10px;
+  padding: 6px 10px;
+  border: 1px solid #fbbf24;
+  background: #5b3c08;
+  color: #fff7cf;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pi-daily-dialog {
+  width: min(500px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 2px solid #fbbf24;
+  border-radius: 2px;
+  background: #141c32;
+  color: #f1f5ff;
+  box-shadow: 6px 6px 0 #060a14;
+}
+
+.pi-daily-dialog::backdrop {
+  background: #020617d9;
+}
+
+.pi-daily-dialog h2 {
+  margin: 0 42px 8px 0;
+  color: #fde68a;
+  font: 900 20px/1.2 "Courier New", monospace;
+}
+
+.pi-daily-dialog > p {
+  color: #b7c3d7;
+  line-height: 1.45;
+}
+
+.pi-daily-dialog-close {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+#pi-daily-dialog-claim {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  border: 1px solid #fbbf24;
+  background: #5b3c08;
+  color: #fff7cf;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#pi-daily-dialog-claim:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.pi-daily-dialog-later {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+@media (max-width: 650px) {
+  .today-plan {
+    padding: 10px;
+  }
+
+  .today-plan-list {
+    grid-template-columns: 1fr;
+  }
+
+  .today-plan-list button:last-child {
+    grid-column: auto;
+  }
+
+  .today-plan-list button {
+    min-height: 46px;
+  }
+
+  .pi-daily-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 18px 14px;
+  }
+
+  .daily-message-action {
+    width: 100%;
+    margin-left: 0;
+  }
+}

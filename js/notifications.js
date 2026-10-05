@@ -211,8 +211,9 @@ async function updatePushNotificationStatus() {
         "enabled"
       );
 
-      notificationTestButton.classList.remove(
-        "hidden"
+      notificationTestButton.classList.toggle(
+        "hidden",
+        !currentUserIsAdmin
       );
 
     } else {

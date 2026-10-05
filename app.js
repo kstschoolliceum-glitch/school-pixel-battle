@@ -15,40 +15,6 @@ const supabaseClient =
 
 const authScreen =
   document.getElementById("auth-screen");
-const telegramPopup =
-  document.getElementById(
-    "telegram-popup"
-  );
-
-const telegramJoinButton =
-  document.getElementById(
-    "telegram-join-button"
-  );
-
-const telegramLaterButton =
-  document.getElementById(
-    "telegram-later-button"
-  );
-
-const pushPermissionPopup =
-  document.getElementById(
-    "push-permission-popup"
-  );
-
-const pushPermissionPopupText =
-  document.getElementById(
-    "push-permission-popup-text"
-  );
-
-const pushPermissionEnableButton =
-  document.getElementById(
-    "push-permission-enable-button"
-  );
-
-const pushPermissionLaterButton =
-  document.getElementById(
-    "push-permission-later-button"
-  );
 const loginForm =
   document.getElementById("login-form");
 

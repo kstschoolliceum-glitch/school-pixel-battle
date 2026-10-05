@@ -1,57 +1,188 @@
 // ---------- PI COIN ----------
 const piCoin = (() => {
-  const rewards=[5,5,10,10,15,20,35];
-  const balance=document.getElementById("pi-balance"),shopBalance=document.getElementById("pi-shop-balance");
-  const days=document.getElementById("pi-daily-days"),claimButton=document.getElementById("pi-daily-claim");
-  const dailyMessage=document.getElementById("pi-daily-message"),shopDialog=document.getElementById("pi-shop-dialog");
-  const buyButton=document.getElementById("pi-buy-turbo"),shopMessage=document.getElementById("pi-shop-message");
-  let status=null,busy=false;
-  function message(el,text,error=false){if(!el)return;el.textContent=text;el.classList.toggle("error",error)}
-  function render(){
-    const amount=Number(status?.balance||0);
-    if(balance)balance.textContent=amount.toLocaleString("ru-RU");
-    if(shopBalance)shopBalance.textContent=amount.toLocaleString("ru-RU");
-    if(!days||!claimButton)return;
-    days.replaceChildren();
-    const current=Number(status?.claim_day||1);
-    rewards.forEach((reward,index)=>{
-      const day=index+1,item=document.createElement("span");item.className="pi-daily-day";
-      if(day<current||(status?.claimed_today&&day===current))item.classList.add("claimed");
-      else if(day===current)item.classList.add("current");
-      item.innerHTML="<small>День "+day+"</small><strong>"+reward+" 🪙</strong>";days.append(item);
+  const rewards = [5, 5, 10, 10, 15, 20, 35];
+  const balance = document.getElementById("pi-balance");
+  const shopBalance = document.getElementById("pi-shop-balance");
+  const days = document.getElementById("pi-daily-days");
+  const claimButton = document.getElementById("pi-daily-claim");
+  const dailyMessage = document.getElementById("pi-daily-message");
+  const shopDialog = document.getElementById("pi-shop-dialog");
+  const buyButton = document.getElementById("pi-buy-turbo");
+  const shopMessage = document.getElementById("pi-shop-message");
+  const dailyDialog = document.getElementById("pi-daily-dialog");
+  const dialogDays = document.getElementById("pi-daily-dialog-days");
+  const dialogClaim = document.getElementById("pi-daily-dialog-claim");
+  const dialogMessage = document.getElementById("pi-daily-dialog-message");
+  const todayBonusStatus = document.getElementById("today-bonus-status");
+  let status = null;
+  let busy = false;
+  let offerPending = false;
+
+  function message(element, text, error = false) {
+    if (!element) return;
+    element.textContent = text;
+    element.classList.toggle("error", error);
+  }
+
+  function renderDays(host) {
+    if (!host) return;
+    host.replaceChildren();
+    const current = Number(status?.claim_day || 1);
+    rewards.forEach((reward, index) => {
+      const day = index + 1;
+      const item = document.createElement("span");
+      item.className = "pi-daily-day";
+      if (day < current || (status?.claimed_today && day === current)) item.classList.add("claimed");
+      else if (day === current) item.classList.add("current");
+      item.innerHTML = "<small>День " + day + "</small><strong>" + reward + " 🪙</strong>";
+      host.append(item);
     });
-    claimButton.disabled=busy||Boolean(status?.claimed_today);
-    claimButton.textContent=status?.claimed_today?"БОНУС ПОЛУЧЕН":"ЗАБРАТЬ "+rewards[current-1]+" piCoin";
-    if(buyButton)buyButton.disabled=busy||amount<120;
   }
-  async function load(){
-    if(!currentUser)return;const id=currentUser.id;
-    const {data,error}=await supabaseClient.rpc("get_pi_coin_status");
-    if(!currentUser||currentUser.id!==id)return;
-    if(error){console.error("PI COIN STATUS ERROR:",error);message(dailyMessage,"Выполни новую SQL-миграцию, чтобы открыть бонус.",true);return}
-    status=data;render();
+
+  function render() {
+    const amount = Number(status?.balance || 0);
+    const current = Number(status?.claim_day || 1);
+    const claimed = Boolean(status?.claimed_today);
+    if (balance) balance.textContent = amount.toLocaleString("ru-RU");
+    if (shopBalance) shopBalance.textContent = amount.toLocaleString("ru-RU");
+    renderDays(days);
+    renderDays(dialogDays);
+    [claimButton, dialogClaim].forEach(button => {
+      if (!button) return;
+      button.disabled = busy || claimed;
+      button.textContent = claimed ? "БОНУС ПОЛУЧЕН ✓" : "ЗАБРАТЬ " + rewards[current - 1] + " piCoin";
+    });
+    if (todayBonusStatus) todayBonusStatus.textContent = claimed ? "Получено ✓" : rewards[current - 1] + " piCoin";
+    if (buyButton) buyButton.disabled = busy || amount < 160;
   }
-  async function claim(){
-    if(busy||status?.claimed_today)return;busy=true;render();message(dailyMessage,"");
-    const {data,error}=await supabaseClient.rpc("claim_pi_coin_daily");busy=false;
-    if(error||!data?.success){message(dailyMessage,data?.error==="ALREADY_CLAIMED"?"Сегодняшний бонус уже получен.":"Не удалось получить бонус. Попробуй ещё раз.",true);await load();return}
-    status=data.status;message(dailyMessage,"Получено: "+data.reward+" piCoin!");render();
+
+  function offerKey() {
+    return "pixel-battle-daily-bonus:" + currentUser?.id + ":" + getLocalDateKey();
   }
-  async function buy(){
-    if(busy||Number(status?.balance||0)<160)return;
-    if(!confirm("Купить Турбокисть на 10 минут за 160 piCoin? Она включится сразу."))return;
-    busy=true;render();message(shopMessage,"");
-    const {data,error}=await supabaseClient.rpc("buy_pi_coin_turbo");busy=false;
-    if(error||!data?.success){message(shopMessage,data?.error==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":"Не удалось выполнить покупку.",true);await load();return}
-    status=data.status;render();resetPixelCooldownAfterReward();message(shopMessage,"Турбокисть включена на 10 минут!");
+
+  function wasOfferedToday() {
+    try {
+      return localStorage.getItem(offerKey()) === "shown";
+    } catch {
+      return false;
+    }
   }
-  async function open(){await Promise.all([load(),mapItems.load(),profileCosmetics.load()]);if(shopDialog&&!shopDialog.open)shopDialog.showModal()}
-  document.getElementById("pi-balance-button")?.addEventListener("click",open);
-  document.getElementById("pi-shop-open-button")?.addEventListener("click",open);
-  document.getElementById("pi-shop-close")?.addEventListener("click",()=>shopDialog?.close());
-  claimButton?.addEventListener("click",claim);buyButton?.addEventListener("click",buy);
-  shopDialog?.addEventListener("click",event=>{if(event.target!==shopDialog)return;const b=shopDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)shopDialog.close()});
-  return {load};
+
+  function markOfferedToday() {
+    try {
+      localStorage.setItem(offerKey(), "shown");
+    } catch {}
+  }
+
+  function openDailyBonus(automatic = false) {
+    if (!dailyDialog || !currentUser || !status) return;
+    if (automatic && (status.claimed_today || wasOfferedToday())) return;
+
+    const activeDialog = document.querySelector("dialog[open]");
+    if (activeDialog && activeDialog !== dailyDialog) {
+      if (!automatic || offerPending) return;
+      offerPending = true;
+      activeDialog.addEventListener("close", () => {
+        offerPending = false;
+        setTimeout(() => openDailyBonus(true), 150);
+      }, { once: true });
+      return;
+    }
+
+    if (automatic) markOfferedToday();
+    if (!dailyDialog.open) dailyDialog.showModal();
+  }
+
+  async function load(options = {}) {
+    if (!currentUser) return;
+    const id = currentUser.id;
+    const { data, error } = await supabaseClient.rpc("get_pi_coin_status");
+    if (!currentUser || currentUser.id !== id) return;
+    if (error) {
+      console.error("PI COIN STATUS ERROR:", error);
+      message(dailyMessage, "Выполни новую SQL-миграцию, чтобы открыть бонус.", true);
+      message(dialogMessage, "Не удалось загрузить ежедневный бонус.", true);
+      return;
+    }
+    status = data;
+    render();
+    if (options.offerDailyBonus) openDailyBonus(true);
+  }
+
+  async function claim() {
+    if (busy || status?.claimed_today) return;
+    busy = true;
+    render();
+    message(dailyMessage, "");
+    message(dialogMessage, "");
+    const { data, error } = await supabaseClient.rpc("claim_pi_coin_daily");
+    busy = false;
+    if (error || !data?.success) {
+      const text = data?.error === "ALREADY_CLAIMED"
+        ? "Сегодняшний бонус уже получен."
+        : "Не удалось получить бонус. Попробуй ещё раз.";
+      message(dailyMessage, text, true);
+      message(dialogMessage, text, true);
+      await load();
+      return;
+    }
+    status = data.status;
+    const text = "Получено: +" + data.reward + " 🪙 · Баланс: " + Number(status?.balance || 0).toLocaleString("ru-RU") + " piCoin";
+    message(dailyMessage, text);
+    message(dialogMessage, text);
+    render();
+    setTimeout(() => {
+      if (dailyDialog?.open) dailyDialog.close();
+    }, 1400);
+  }
+
+  async function buy() {
+    if (busy || Number(status?.balance || 0) < 160) return;
+    if (!confirm("Купить Турбокисть на 10 минут за 160 piCoin? Она включится сразу.")) return;
+    busy = true;
+    render();
+    message(shopMessage, "");
+    const { data, error } = await supabaseClient.rpc("buy_pi_coin_turbo");
+    busy = false;
+    if (error || !data?.success) {
+      message(shopMessage, data?.error === "NOT_ENOUGH_COINS" ? "Недостаточно piCoin." : "Не удалось выполнить покупку.", true);
+      await load();
+      return;
+    }
+    status = data.status;
+    render();
+    resetPixelCooldownAfterReward();
+    message(shopMessage, "Турбокисть включена на 10 минут!");
+  }
+
+  async function open() {
+    await Promise.all([load(), mapItems.load(), profileCosmetics.load()]);
+    if (shopDialog && !shopDialog.open) shopDialog.showModal();
+  }
+
+  document.getElementById("pi-balance-button")?.addEventListener("click", open);
+  document.getElementById("pi-shop-open-button")?.addEventListener("click", open);
+  document.getElementById("pi-shop-close")?.addEventListener("click", () => shopDialog?.close());
+  document.getElementById("today-bonus-button")?.addEventListener("click", async () => {
+    await load();
+    openDailyBonus(false);
+  });
+  document.getElementById("pi-daily-dialog-close")?.addEventListener("click", () => dailyDialog?.close());
+  document.getElementById("pi-daily-dialog-later")?.addEventListener("click", () => dailyDialog?.close());
+  claimButton?.addEventListener("click", claim);
+  dialogClaim?.addEventListener("click", claim);
+  buyButton?.addEventListener("click", buy);
+  dailyDialog?.addEventListener("close", markOfferedToday);
+  dailyDialog?.addEventListener("click", event => {
+    if (event.target === dailyDialog) dailyDialog.close();
+  });
+  shopDialog?.addEventListener("click", event => {
+    if (event.target !== shopDialog) return;
+    const box = shopDialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) shopDialog.close();
+  });
+
+  return { load, open, openDailyBonus };
 })();
 
 // ---------- PROFILE AND CHAT COSMETICS ----------
@@ -117,13 +248,52 @@ const profileCosmetics=(()=>{
 
 // ---------- MAP ITEMS ----------
 const mapItems=(()=>{
- const counts={bomb:0,beacon:0,detector:0},prices={bomb:450,beacon:90,detector:15};let beacons=[],bombCells=new Set(),busy=false,openedBeacon=null;
- const output=document.getElementById("map-item-message"),key=(x,y)=>x+":"+y;
+ const counts={bomb:0,beacon:0,detector:0},prices={bomb:450,beacon:90,detector:15},names={bomb:"💣 Бомба",beacon:"📍 Маяк",detector:"🕵️ Детектор"};let beacons=[],bombCells=new Set(),busy=false,openedBeacon=null;
+ const output=document.getElementById("map-item-message"),guidance=document.getElementById("map-items-guidance"),totalLabel=document.getElementById("map-items-total"),shopItemButton=document.getElementById("pi-shop-open-items"),key=(x,y)=>x+":"+y;
  const beaconLayer=document.getElementById("beacon-layer"),beaconDialog=document.getElementById("beacon-dialog"),beaconLabel=document.getElementById("beacon-dialog-label"),beaconClass=document.getElementById("beacon-dialog-class"),beaconRemove=document.getElementById("beacon-remove-button"),beaconStatus=document.getElementById("beacon-dialog-status");
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
- function applyStatus(data){if(!data)return;const inv=data.inventory||{};Object.keys(counts).forEach(type=>{counts[type]=Number(inv[type]||0);document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);const el=document.getElementById("map-"+type+"-count");if(el)el.textContent=counts[type];document.querySelector('[data-map-item-row="'+type+'"]')?.classList.toggle("hidden",counts[type]<1)});document.getElementById("map-items-empty")?.classList.toggle("hidden",Object.values(counts).some(Boolean));const remaining=data.purchase_remaining||{};Object.keys(counts).forEach(type=>{document.querySelectorAll('[data-item-remaining="'+type+'"]').forEach(el=>el.textContent=data.unlimited_purchases?"∞":Number(remaining[type]??0))});if(data.balance!==undefined){document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU")}beacons=Array.isArray(data.beacons)?data.beacons:[];bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));renderBeaconButtons();drawMap()}
+ function renderGuidance(){
+  if(!guidance)return;
+  guidance.replaceChildren();
+  const strong=document.createElement("strong");
+  if(selectedX===null||selectedY===null){
+   strong.textContent="Как использовать:";
+   guidance.append(strong);
+   ["1. Выбери клетку на карте","2. Открой 🎒 Предметы","3. Выбери предмет"].forEach(text=>{const span=document.createElement("span");span.textContent=text;guidance.append(span)});
+  }else{
+   strong.textContent="📍 Выбрана клетка X:"+selectedX+" Y:"+selectedY;
+   const span=document.createElement("span");span.textContent="Выбери предмет:";guidance.append(strong,span);
+  }
+ }
+ function applyStatus(data){
+  if(!data)return;
+  const inv=data.inventory||{};
+  Object.keys(counts).forEach(type=>{
+   counts[type]=Number(inv[type]||0);
+   document.querySelectorAll('[data-item-stock="'+type+'"]').forEach(el=>el.textContent=counts[type]);
+   const el=document.getElementById("map-"+type+"-count");
+   if(el)el.textContent=counts[type];
+   document.querySelector('[data-map-item-row="'+type+'"]')?.classList.toggle("hidden",counts[type]<1);
+  });
+  const total=Object.values(counts).reduce((sum,count)=>sum+count,0);
+  if(totalLabel)totalLabel.textContent=total?" · "+total:"";
+  document.getElementById("map-items-empty")?.classList.toggle("hidden",total>0);
+  const remaining=data.purchase_remaining||{};
+  Object.keys(counts).forEach(type=>{
+   document.querySelectorAll('[data-item-remaining="'+type+'"]').forEach(el=>el.textContent=data.unlimited_purchases?"∞":Number(remaining[type]??0));
+  });
+  if(data.balance!==undefined){
+   document.getElementById("pi-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");
+   document.getElementById("pi-shop-balance").textContent=Number(data.balance||0).toLocaleString("ru-RU");
+  }
+  beacons=Array.isArray(data.beacons)?data.beacons:[];
+  bombCells=new Set((data.bomb_cells||[]).map(c=>key(c.x,c.y)));
+  renderGuidance();
+  renderBeaconButtons();
+  drawMap();
+ }
  async function load(){if(!currentUser||!activeSeason?.id)return;const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
- async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);say("Предмет куплен!")}
+ async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
  async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;
   if(type==="bomb"){if(!confirm("Создать увеличенную воронку из 145 пикселей?")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:selectedX,p_y:selectedY})}
   else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
@@ -136,8 +306,24 @@ const mapItems=(()=>{
  function renderBeaconButtons(){if(!beaconLayer)return;beaconLayer.replaceChildren();beacons.forEach(beacon=>{const button=document.createElement("button");button.type="button";button.className="map-beacon-flag";button.dataset.beaconId=String(beacon.id);button.textContent="🚩";button.title=beacon.label;button.setAttribute("aria-label","Открыть маяк: "+beacon.label);button.addEventListener("click",event=>{event.stopPropagation();openBeacon(beacon)});beaconLayer.append(button)});updateMarkers()}
  async function removeBeacon(){if(!openedBeacon?.is_owner||busy)return;if(!confirm("Убрать этот маяк с карты?"))return;busy=true;beaconRemove.disabled=true;const {data,error}=await supabaseClient.rpc("remove_map_beacon",{p_beacon_id:openedBeacon.id});busy=false;beaconRemove.disabled=false;if(error||!data?.success){beaconStatus.textContent="Не удалось убрать маяк.";beaconStatus.classList.add("error");return}beaconDialog.close();openedBeacon=null;applyStatus(data.status);say("Маяк убран.")}
  function drawMarkers(){}
- document.querySelectorAll("[data-map-item-buy]").forEach(b=>b.addEventListener("click",()=>buy(b.dataset.mapItemBuy)));document.querySelectorAll("[data-map-item-use]").forEach(b=>b.addEventListener("click",()=>use(b.dataset.mapItemUse)));const itemDialog=document.getElementById("map-items-dialog");document.getElementById("map-items-open")?.addEventListener("click",async()=>{await load();if(itemDialog&&!itemDialog.open)itemDialog.showModal()});document.getElementById("map-items-close")?.addEventListener("click",()=>itemDialog?.close());document.getElementById("beacon-dialog-close")?.addEventListener("click",()=>beaconDialog?.close());beaconRemove?.addEventListener("click",removeBeacon);itemDialog?.addEventListener("click",event=>{if(event.target!==itemDialog)return;const b=itemDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)itemDialog.close()});setInterval(()=>{if(!document.hidden&&currentUser&&activeSeason)load()},120000);window.addEventListener("focus",()=>{if(currentUser&&activeSeason)load()});
- const api={load,describeCell,drawMarkers,updateMarkers};window.mapItems=api;return api;
+ async function openItems(){
+  await load();
+  renderGuidance();
+  if(itemDialog&&!itemDialog.open)itemDialog.showModal();
+ }
+ document.querySelectorAll("[data-map-item-buy]").forEach(b=>b.addEventListener("click",()=>buy(b.dataset.mapItemBuy)));
+ document.querySelectorAll("[data-map-item-use]").forEach(b=>b.addEventListener("click",()=>use(b.dataset.mapItemUse)));
+ const itemDialog=document.getElementById("map-items-dialog");
+ document.getElementById("map-items-open")?.addEventListener("click",openItems);
+ document.getElementById("map-items-close")?.addEventListener("click",()=>itemDialog?.close());
+ document.getElementById("map-items-shop")?.addEventListener("click",()=>{itemDialog?.close();piCoin.open()});
+ shopItemButton?.addEventListener("click",()=>{document.getElementById("pi-shop-dialog")?.close();shopItemButton.classList.add("hidden");openItems()});
+ document.getElementById("beacon-dialog-close")?.addEventListener("click",()=>beaconDialog?.close());
+ beaconRemove?.addEventListener("click",removeBeacon);
+ itemDialog?.addEventListener("click",event=>{if(event.target!==itemDialog)return;const b=itemDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)itemDialog.close()});
+ setInterval(()=>{if(!document.hidden&&currentUser&&activeSeason)load()},120000);
+ window.addEventListener("focus",()=>{if(currentUser&&activeSeason)load()});
+ const api={load,open:openItems,describeCell,drawMarkers,updateMarkers};window.mapItems=api;return api;
 })();
 
 

@@ -113,9 +113,9 @@
   <p class="pi-shop-balance">Баланс: <strong id="pi-shop-balance">0</strong> 🪙</p>
   <div class="pi-shop-list">
     <article class="pi-shop-item"><div><h3>⚡ Турбокисть · 10 минут</h3><p>Один пиксель в секунду. Включается сразу после покупки.</p><small class="pi-shop-limit">Сегодня: без лимита</small></div><strong>160 🪙</strong><button id="pi-buy-turbo" type="button">КУПИТЬ</button></article>
-    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="detector">10</b></small></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ · <span data-item-stock="detector">0</span> ШТ.</button></article>
-    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="beacon">2</b></small></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ · <span data-item-stock="beacon">0</span> ШТ.</button></article>
-    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 145 пикселей. Автор виден только администратору.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="bomb">1</b></small></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ · <span data-item-stock="bomb">0</span> ШТ.</button></article>
+    <article class="pi-shop-item"><div><h3>🕵️ Детектор пикселя</h3><p>Приватно показывает ник владельца. Автор бомбы всегда скрыт.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="detector">10</b></small><small class="pi-shop-stock">В инвентаре: <b data-item-stock="detector">0</b></small></div><strong>15 🪙</strong><button type="button" data-map-item-buy="detector">КУПИТЬ</button></article>
+    <article class="pi-shop-item"><div><h3>📍 Маяк</h3><p>Публичная подпись до 32 символов до конца игровой недели.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="beacon">2</b></small><small class="pi-shop-stock">В инвентаре: <b data-item-stock="beacon">0</b></small></div><strong>90 🪙</strong><button type="button" data-map-item-buy="beacon">КУПИТЬ</button></article>
+    <article class="pi-shop-item"><div><h3>💣 Пиксельная бомба</h3><p>Анонимная воронка из 145 пикселей. Автор виден только администратору.</p><small class="pi-shop-limit">Сегодня можно купить: <b data-item-remaining="bomb">1</b></small><small class="pi-shop-stock">В инвентаре: <b data-item-stock="bomb">0</b></small></div><strong>450 🪙</strong><button type="button" data-map-item-buy="bomb">КУПИТЬ</button></article>
     <section class="cosmetic-shop-section">
       <h3>✨ Косметика профиля и чата</h3>
       <p>Покупается навсегда и не даёт преимуществ на карте.</p>
@@ -124,6 +124,17 @@
     </section>
   </div>
   <p id="pi-shop-message" class="pi-shop-message" aria-live="polite"></p>
+  <button id="pi-shop-open-items" class="pi-shop-open-items hidden" type="button">🎒 ОТКРЫТЬ ПРЕДМЕТЫ</button>
+</dialog>
+
+<dialog id="pi-daily-dialog" class="pi-daily-dialog" aria-labelledby="pi-daily-dialog-title">
+  <button id="pi-daily-dialog-close" class="pi-daily-dialog-close" type="button" aria-label="Закрыть ежедневный бонус">×</button>
+  <h2 id="pi-daily-dialog-title">🎁 Ежедневный бонус</h2>
+  <p>Заходи каждый день — награды становятся больше.</p>
+  <div id="pi-daily-dialog-days" class="pi-daily-days"><span>Загрузка…</span></div>
+  <button id="pi-daily-dialog-claim" type="button" disabled>ЗАГРУЗКА…</button>
+  <p id="pi-daily-dialog-message" class="pi-daily-message" aria-live="polite"></p>
+  <button id="pi-daily-dialog-later" class="pi-daily-dialog-later" type="button">Не сейчас</button>
 </dialog>
 
 <dialog

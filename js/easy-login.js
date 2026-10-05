@@ -253,6 +253,7 @@ easyStartButton.addEventListener(
 
     await loadMyProfile();
     await dailyTasks.load();
+    await piCoin.load({ offerDailyBonus: true });
     await mapItems.load();
     await piTicker.load();
 
@@ -265,7 +266,6 @@ easyStartButton.addEventListener(
 
     startSeasonWatcher();
 
-    showTelegramPopupOnceToday();
 
 
     easyStartButton.disabled =

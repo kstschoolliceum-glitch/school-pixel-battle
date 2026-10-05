@@ -80,3 +80,98 @@
 /* ---------- PROFILE AND CHAT COSMETICS ---------- */
 .cosmetic-shop-section{display:grid;gap:8px;margin-top:6px;padding-top:14px;border-top:2px dashed #465574}.cosmetic-shop-section>h3{margin:0;color:#fde68a;font:900 15px/1.2 "Courier New",monospace}.cosmetic-shop-section>p{margin:0;color:#94a3b8;font-size:12px}.cosmetic-shop-list{display:grid;gap:8px}.cosmetic-shop-item{display:grid;grid-template-columns:46px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:10px;border:1px solid #394967;background:#0d1627}.cosmetic-shop-item>div{min-width:0}.cosmetic-shop-item h4,.cosmetic-shop-item p{margin:0}.cosmetic-shop-item h4{color:#f8fafc;font-size:13px}.cosmetic-shop-item p{margin-top:3px;color:#94a3b8;font-size:11px}.cosmetic-shop-item>strong{color:#fde68a;font-size:12px;white-space:nowrap}.cosmetic-shop-item button{min-height:34px;padding:6px 9px;border:1px solid #fbbf24;background:#5b3c08;color:#fff7cf;font:800 10px/1 "Courier New",monospace;cursor:pointer}.cosmetic-shop-item button:disabled{opacity:.5;cursor:not-allowed}.cosmetic-preview{display:grid;place-items:center;width:42px;height:42px;border:2px solid #475569;background:#111827;font:900 18px/1 "Courier New",monospace}.cosmetic-preview[data-preview-frame="frame_neon"]{border-color:#22d3ee;box-shadow:0 0 10px #22d3ee}.cosmetic-preview[data-preview-frame="frame_gold"]{border-color:#fbbf24;box-shadow:0 0 0 2px #78350f}.cosmetic-preview[data-preview-frame="frame_fire"]{border-color:#fb923c;box-shadow:0 0 12px #ef4444}.cosmetic-preview[data-preview-frame="frame_galaxy"]{border-color:#c084fc;box-shadow:0 0 12px #6366f1}.chat-message-author.has-cosmetic-color{text-shadow:0 0 7px currentColor}.profile-info[data-profile-frame="frame_neon"],.player-card-dialog[data-profile-frame="frame_neon"] .player-card-identity{border-color:#22d3ee;box-shadow:0 0 14px #22d3ee66}.profile-info[data-profile-frame="frame_gold"],.player-card-dialog[data-profile-frame="frame_gold"] .player-card-identity{border-color:#fbbf24;box-shadow:0 0 0 3px #78350f}.profile-info[data-profile-frame="frame_fire"],.player-card-dialog[data-profile-frame="frame_fire"] .player-card-identity{border-color:#fb923c;box-shadow:0 0 16px #ef444477}.profile-info[data-profile-frame="frame_galaxy"],.player-card-dialog[data-profile-frame="frame_galaxy"] .player-card-identity{border-color:#c084fc;box-shadow:0 0 16px #6366f188}
 @media(max-width:650px){.cosmetic-shop-item{grid-template-columns:42px minmax(0,1fr) auto}.cosmetic-shop-item button{grid-column:1/-1;width:100%}}
+
+
+/* ---------- SHOP AND INVENTORY UX ---------- */
+.pi-balance-shop {
+  margin-left: 3px;
+  color: #fde68a;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.pi-shop-stock {
+  display: block;
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.pi-shop-stock b {
+  color: #fde68a;
+}
+
+.pi-shop-open-items {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 8px;
+  border: 1px solid #fbbf24;
+  background: #5b3c08;
+  color: #fff7cf;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pi-shop-open-items.hidden {
+  display: none;
+}
+
+.map-items-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.map-items-guidance {
+  margin: 0 0 14px;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid #fbbf24;
+  background: #0d1627;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.map-items-guidance strong {
+  color: #fde68a;
+}
+
+.map-items-empty {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  border: 1px dashed #526887;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.map-items-empty.hidden {
+  display: none;
+}
+
+.map-items-empty p {
+  margin: 0;
+}
+
+.map-items-empty button {
+  min-height: 38px;
+  border: 1px solid #fbbf24;
+  background: #5b3c08;
+  color: #fff7cf;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 650px) {
+  .pi-balance-shop {
+    width: 9px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .map-items-guidance {
+    font-size: 11px;
+  }
+}

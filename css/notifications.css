@@ -210,3 +210,74 @@
   color: white;
 }
 
+
+
+/* ---------- PROFILE CONNECTIONS ---------- */
+.connection-settings {
+  margin: 18px 0;
+  padding: 15px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #101827;
+}
+
+.connection-settings > h3 {
+  margin: 0 0 12px;
+  color: #dbeafe;
+  font: 900 16px/1.2 "Courier New", monospace;
+}
+
+.connection-option {
+  min-width: 0;
+  padding: 13px;
+  display: grid;
+  gap: 11px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0b1220;
+}
+
+.connection-option > div,
+.connection-option span {
+  min-width: 0;
+}
+
+.connection-option > div {
+  display: grid;
+  gap: 5px;
+}
+
+.connection-option strong {
+  color: white;
+}
+
+.connection-option span {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.connection-option a {
+  min-height: 40px;
+  padding: 8px 12px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  background: #083344;
+  color: #bae6fd;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.connection-settings .notification-settings {
+  margin-top: 10px;
+}
+
+@media (max-width: 430px) {
+  .connection-settings {
+    padding: 10px;
+  }
+}

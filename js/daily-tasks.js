@@ -6,6 +6,8 @@ const dailyTasks = (() => {
   const profileHost = document.getElementById("daily-tasks-profile");
   const careerHost = document.getElementById("player-career-profile");
   const piEarnHost = document.getElementById("pi-earn-tasks");
+  const todayDailyStatus = document.getElementById("today-daily-status");
+  const todayEarnStatus = document.getElementById("today-earn-status");
 
   let status = null;
   let profile = null;
@@ -15,6 +17,7 @@ const dailyTasks = (() => {
   let clockOffsetMs = 0;
   let message = "";
   let messageIsError = false;
+  let messageAction = "";
   let piTaskStatus = null;
 
   function serverNow() {
@@ -232,6 +235,14 @@ const dailyTasks = (() => {
       const feedback = document.createElement("p");
       feedback.className = `daily-message${messageIsError ? " error" : ""}`;
       feedback.textContent = message;
+      if (messageAction === "shop") {
+        const shopButton = document.createElement("button");
+        shopButton.type = "button";
+        shopButton.dataset.dailyAction = "shop";
+        shopButton.className = "daily-message-action";
+        shopButton.textContent = "МАГАЗИН";
+        feedback.append(shopButton);
+      }
       host.append(feedback);
     }
 
@@ -303,6 +314,11 @@ const dailyTasks = (() => {
           : `📋 ${count}/3`;
       button.setAttribute("aria-label", `Открыть задания дня. Выполнено ${count} из 3`);
     }
+    if (todayDailyStatus) todayDailyStatus.textContent = completedCount() + "/3";
+    if (todayEarnStatus) {
+      const available = (piTaskStatus?.stages || []).filter(stage => Number(piTaskStatus?.pixel_count || 0) >= Number(stage.target) && !stage.claimed).length;
+      todayEarnStatus.textContent = available ? "Доступно наград: " + available : "Открыть";
+    }
     if (dialogContent) renderTaskList(dialogContent, true);
     if (profileHost) renderTaskList(profileHost, true);
     if (piEarnHost) {
@@ -325,6 +341,7 @@ const dailyTasks = (() => {
     loading = true;
     message = "";
     messageIsError = false;
+    messageAction = "";
     render();
 
     const [{ data, error }, { data: piData, error: piError }] = await Promise.all([
@@ -363,11 +380,13 @@ const dailyTasks = (() => {
     if (!currentUser || !nextStatus) return;
     message = "";
     messageIsError = false;
+    messageAction = "";
     setStatus(nextStatus);
   }
 
   async function claimReward() {
     message = "";
+    messageAction = "";
     const { data, error } = await supabaseClient.rpc("claim_daily_task_reward");
     if (error) {
       console.error("DAILY REWARD CLAIM ERROR:", error);
@@ -402,6 +421,7 @@ const dailyTasks = (() => {
   }
 
   async function claimPiReward(stage) {
+    messageAction = "";
     const { data, error } = await supabaseClient.rpc("claim_daily_pi_coin_stage", { p_stage: stage });
     if (error || !data?.success) {
       message = data?.error === "TARGET_NOT_REACHED" ? "Сначала выполни нужное количество установок." : "Не удалось получить piCoin.";
@@ -412,8 +432,10 @@ const dailyTasks = (() => {
     piTaskStatus = data.status;
     document.getElementById("pi-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
     document.getElementById("pi-shop-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
-    message = "Получено " + data.reward + " piCoin!";
+    message = "+" + data.reward + " 🪙 · Баланс: " + Number(data.balance || 0).toLocaleString("ru-RU") + " piCoin";
     messageIsError = false;
+    messageAction = "shop";
+    await piCoin.load();
     render();
   }
 
@@ -429,6 +451,7 @@ const dailyTasks = (() => {
     actionButton.disabled = true;
     if (actionButton.dataset.dailyAction === "claim") await claimReward();
     if (actionButton.dataset.dailyAction === "activate") await activateBoost();
+    if (actionButton.dataset.dailyAction === "shop") await piCoin.open();
   }
 
   function setProfile(nextProfile, userId) {
@@ -446,11 +469,20 @@ const dailyTasks = (() => {
     profile = null;
     profileOwner = null;
     message = "";
+    messageAction = "";
     if (dialog?.open) dialog.close();
     render();
   }
 
-  button?.addEventListener("click", async () => {
+  document.getElementById("today-daily-button")?.addEventListener("click", () => button?.click());
+  document.getElementById("today-earn-button")?.addEventListener("click", () => document.getElementById("tasks-earn-tab")?.click());
+  document.getElementById("today-games-button")?.addEventListener("click", () => document.getElementById("tasks-games-tab")?.click());
+  document.getElementById("today-map-button")?.addEventListener("click", () => {
+    document.getElementById("mobile-map-button")?.click();
+    document.querySelector(".map-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+    button?.addEventListener("click", async () => {
     if (!currentUser) return;
     if (dialog && !dialog.open) dialog.showModal();
     await load();

@@ -364,7 +364,7 @@
         <div class="placement-actions">
           <button id="map-items-open" class="map-items-open" type="button"
             aria-haspopup="dialog" aria-controls="map-items-dialog">
-            🎒 ПРЕДМЕТЫ
+            🎒 ПРЕДМЕТЫ<span id="map-items-total"></span>
           </button>
           <button id="place-button" disabled>
             ПОСТАВИТЬ ПИКСЕЛЬ
@@ -383,7 +383,12 @@
         <dialog id="map-items-dialog" class="map-items-dialog" aria-labelledby="map-items-title">
           <button id="map-items-close" class="map-items-close" type="button" aria-label="Закрыть">×</button>
           <h2 id="map-items-title">🎒 Мои предметы</h2>
-          <p>Сначала выбери клетку на карте, затем используй предмет.</p>
+          <div id="map-items-guidance" class="map-items-guidance">
+            <strong>Как использовать:</strong>
+            <span>1. Выбери клетку на карте</span>
+            <span>2. Открой 🎒 Предметы</span>
+            <span>3. Выбери предмет</span>
+          </div>
           <div class="map-items-list">
             <button type="button" data-map-item-row="bomb" data-map-item-use="bomb" class="hidden">
               <span>💣 <strong>Бомба</strong><small>Воронка из 145 пикселей</small></span>
@@ -397,7 +402,10 @@
               <span>🕵️ <strong>Детектор</strong><small>Узнать автора пикселя</small></span>
               <b id="map-detector-count">0</b>
             </button>
-            <span id="map-items-empty">Купленных предметов пока нет.</span>
+            <div id="map-items-empty" class="map-items-empty">
+              <p>Купленных предметов пока нет.</p>
+              <button id="map-items-shop" type="button">ОТКРЫТЬ МАГАЗИН</button>
+            </div>
           </div>
           <span id="map-item-message" aria-live="polite">Выберите клетку, затем предмет.</span>
         </dialog>
@@ -487,6 +495,32 @@
       <p class="minigames-intro">
         Выполняй задания, проходи мини-игры и получай игровые бонусы.
       </p>
+
+      <section class="today-plan" aria-labelledby="today-plan-title">
+        <h3 id="today-plan-title">Сегодня можно</h3>
+        <div class="today-plan-list">
+          <button id="today-bonus-button" type="button">
+            <span>🎁 Забрать ежедневный бонус</span>
+            <small id="today-bonus-status">Проверяем…</small>
+          </button>
+          <button id="today-daily-button" type="button">
+            <span>🎯 Выполнить задания дня</span>
+            <small id="today-daily-status">0/3</small>
+          </button>
+          <button id="today-earn-button" type="button">
+            <span>🪙 Заработать piCoin</span>
+            <small id="today-earn-status">Открыть</small>
+          </button>
+          <button id="today-games-button" type="button">
+            <span>🎮 Пройти мини-игру</span>
+            <small>Посмотреть доступные</small>
+          </button>
+          <button id="today-map-button" type="button">
+            <span>🎨 Помочь своему классу на карте</span>
+            <small>Вернуться к карте</small>
+          </button>
+        </div>
+      </section>
 
       <div class="tasks-panel-tabs" role="tablist" aria-label="Разделы заданий">
         <button
@@ -761,32 +795,34 @@
       ></div>
     </section>
 
-    <div class="notification-settings">
+    <section class="connection-settings" aria-labelledby="connection-settings-title">
+      <h3 id="connection-settings-title">📡 Связь и уведомления</h3>
 
-      <div class="notification-settings-text">
-        <strong>🔔 События Pixel Battle</strong>
-
-        <span id="notification-status">
-          Проверка уведомлений...
-        </span>
+      <div class="connection-option">
+        <div>
+          <strong>✈️ Telegram-канал</strong>
+          <span>Новости, итоги недель и важные объявления Pixel Battle.</span>
+        </div>
+        <a href="https://t.me/elttabxelip" target="_blank" rel="noopener noreferrer">
+          ОТКРЫТЬ TELEGRAM
+        </a>
       </div>
 
-      <button
-        id="notification-toggle-button"
-        type="button"
-      >
-        ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ
-      </button>
+      <div class="notification-settings">
+        <div class="notification-settings-text">
+          <strong>🔔 Уведомления Pixel Battle</strong>
+          <span id="notification-status">Проверка уведомлений...</span>
+        </div>
 
-      <button
-        id="notification-test-button"
-        class="hidden"
-        type="button"
-      >
-        🔔 ОТПРАВИТЬ ТЕСТ
-      </button>
+        <button id="notification-toggle-button" type="button">
+          ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ
+        </button>
 
-    </div>
+        <button id="notification-test-button" class="hidden" type="button">
+          🔔 ОТПРАВИТЬ ТЕСТ
+        </button>
+      </div>
+    </section>
 
     <button
       id="admin-button"

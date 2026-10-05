@@ -21,219 +21,6 @@ function getLocalDateKey() {
 }
 
 
-function showTelegramPopupOnceToday() {
-
-  if (!telegramPopup) {
-    return;
-  }
-
-
-  const today =
-    getLocalDateKey();
-
-
-  const lastShown =
-    localStorage.getItem(
-      "pixelBattleTelegramPopupDate"
-    );
-
-
-  /*
-   * Сегодня уже показывали.
-   */
-
-  if (lastShown === today) {
-    return;
-  }
-
-
-  /*
-   * Сразу запоминаем сегодняшний день.
-   * Даже если ученик просто обновит страницу,
-   * второй раз окно сегодня не появится.
-   */
-
-  localStorage.setItem(
-    "pixelBattleTelegramPopupDate",
-    today
-  );
-
-
-  telegramPopup.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-async function showPushPermissionPromptIfNeeded() {
-
-  if (
-    !currentUser ||
-    !pushPermissionPopup
-  ) {
-    return;
-  }
-
-
-  if (
-    !("serviceWorker" in navigator) ||
-    !("PushManager" in window) ||
-    !("Notification" in window)
-  ) {
-    return;
-  }
-
-
-  if (
-    Notification.permission ===
-    "denied"
-  ) {
-    return;
-  }
-
-
-  try {
-
-    const registration =
-      await navigator.serviceWorker.ready;
-
-    currentPushSubscription =
-      await registration.pushManager
-        .getSubscription();
-
-
-    if (currentPushSubscription) {
-      return;
-    }
-
-
-    if (
-      isIosDevice() &&
-      !isStandaloneApp()
-    ) {
-
-      pushPermissionPopupText.textContent =
-        "На iPhone добавь Pixel Battle на экран «Домой», чтобы включить уведомления о сезонах.";
-
-      pushPermissionEnableButton.textContent =
-        "КАК ВКЛЮЧИТЬ";
-
-    } else {
-
-      pushPermissionPopupText.textContent =
-        "Включи уведомления, чтобы узнать о начале нового сезона и последних часах перед его завершением.";
-
-      pushPermissionEnableButton.textContent =
-        "🔔 ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ";
-
-    }
-
-
-    pushPermissionPopup.classList.remove(
-      "hidden"
-    );
-
-  } catch (error) {
-
-    console.error(
-      "PUSH PROMPT CHECK ERROR:",
-      error
-    );
-
-  }
-
-}
-
-
-function closePushPermissionPopup() {
-
-  pushPermissionPopup?.classList.add(
-    "hidden"
-  );
-
-}
-
-
-function closeTelegramPopup() {
-
-  telegramPopup?.classList.add(
-    "hidden"
-  );
-
-
-  setTimeout(
-    showPushPermissionPromptIfNeeded,
-    250
-  );
-
-}
-
-
-telegramLaterButton?.addEventListener(
-  "click",
-  closeTelegramPopup
-);
-
-
-telegramJoinButton?.addEventListener(
-  "click",
-  closeTelegramPopup
-);
-
-
-pushPermissionLaterButton?.addEventListener(
-  "click",
-  closePushPermissionPopup
-);
-
-
-pushPermissionEnableButton?.addEventListener(
-  "click",
-  async () => {
-
-    if (
-      isIosDevice() &&
-      !isStandaloneApp()
-    ) {
-
-      alert(
-        "Откройте меню «Поделиться», выберите «На экран Домой», затем запустите Pixel Battle с нового значка."
-      );
-
-      closePushPermissionPopup();
-
-      return;
-
-    }
-
-
-    pushPermissionEnableButton.disabled =
-      true;
-
-    pushPermissionEnableButton.textContent =
-      "ПОДКЛЮЧЕНИЕ...";
-
-
-    await enablePushNotifications();
-
-
-    if (currentPushSubscription) {
-
-      closePushPermissionPopup();
-
-    } else {
-
-      pushPermissionEnableButton.disabled =
-        false;
-
-      pushPermissionEnableButton.textContent =
-        "🔔 ПОПРОБОВАТЬ СНОВА";
-
-    }
-
-  }
-);
 async function recordCurrentUserIp() {
   if (!currentUser) {
     return;
@@ -287,6 +74,7 @@ async function initializeAuth() {
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await piCoin.load({ offerDailyBonus: true });
     await mapItems.load();
     await piTicker.load();
 
@@ -296,7 +84,6 @@ async function initializeAuth() {
     await startOnlinePresence();
 
     startSeasonWatcher();
-    showTelegramPopupOnceToday();
   } else {
 
     authScreen.classList.remove("hidden");
@@ -379,6 +166,7 @@ loginForm.addEventListener(
     await loadClassRanking();
     await loadMyProfile();
     await dailyTasks.load();
+    await piCoin.load({ offerDailyBonus: true });
     await mapItems.load();
     await piTicker.load();
 
@@ -388,6 +176,5 @@ loginForm.addEventListener(
     await startOnlinePresence();
 
     startSeasonWatcher();
-    showTelegramPopupOnceToday();
   }
 );
