@@ -40,6 +40,11 @@ registerForm.addEventListener(
         "referral-registration"
       );
 
+    const schoolRegistration =
+      registerForm.classList.contains(
+        "school-registration"
+      );
+
     const referralClassId =
       referralClassSelect.value;
 
@@ -57,7 +62,7 @@ registerForm.addEventListener(
 
 
     if (
-      referralRegistration &&
+      (referralRegistration || schoolRegistration) &&
       !referralClassId
     ) {
       registerMessage.textContent =
@@ -119,11 +124,18 @@ const {
   error
 } =
   await supabaseClient.functions.invoke(
-    referralRegistration
-      ? "register-referral-student"
-      : "register-student",
+    schoolRegistration
+      ? "register-school-student"
+      : referralRegistration
+        ? "register-referral-student"
+        : "register-student",
     {
-      body: referralRegistration
+      body: schoolRegistration
+        ? {
+            classId: referralClassId,
+            nickname
+          }
+        : referralRegistration
         ? {
             referralCode:
               referralRegistrationCode,
@@ -152,6 +164,12 @@ const {
  */
 
 const messages = {
+
+  REGISTRATION_LIMIT:
+    "Слишком много регистраций за короткое время. Подождите минуту и попробуйте снова.",
+
+  ORIGIN_NOT_ALLOWED:
+    "Регистрация доступна только с официального сайта игры.",
 
   INVALID_REFERRAL:
     "Реферальная ссылка недействительна.",

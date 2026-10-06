@@ -195,6 +195,48 @@ async function loadReferralRegistrationClasses() {
   }
 }
 
+function applySchoolRegistrationFromUrl() {
+  const params =
+    new URLSearchParams(window.location.search);
+
+  if (params.get("school")?.trim().toLowerCase() !== "join") {
+    return false;
+  }
+
+  openRegister();
+
+  registerInvite.required = false;
+  registerInvite.classList.add("hidden");
+  referralClassField.classList.remove("hidden");
+  referralClassSelect.required = true;
+
+  registerForm.classList.add(
+    "easy-registration",
+    "school-registration"
+  );
+
+  registerUsername.required = false;
+  registerPassword.required = false;
+  registerPasswordRepeat.required = false;
+
+  let easyLabel =
+    document.getElementById("easy-invite-label");
+
+  if (!easyLabel) {
+    easyLabel = document.createElement("div");
+    easyLabel.id = "easy-invite-label";
+    easyLabel.className = "easy-invite-label";
+    registerForm.prepend(easyLabel);
+  }
+
+  easyLabel.textContent =
+    "🏫 Регистрация ученика школы";
+
+  loadReferralRegistrationClasses();
+  referralClassSelect.focus();
+  return true;
+}
+
 function applyReferralFromUrl() {
   const params =
     new URLSearchParams(window.location.search);
@@ -255,6 +297,6 @@ showRegister.addEventListener(
   openRegister
 );
 
-if (!applyReferralFromUrl()) {
+if (!applySchoolRegistrationFromUrl() && !applyReferralFromUrl()) {
   applyInviteFromUrl();
 }
