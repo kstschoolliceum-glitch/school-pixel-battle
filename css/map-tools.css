@@ -372,4 +372,25 @@
   transform-origin: center;
 }
 
+.selection-indicator.pixel-place-success { animation: pixel-place-success 240ms ease-out; }
+
+@keyframes pixel-place-success {
+  0% { filter: brightness(1); }
+  45% { filter: brightness(2.2) drop-shadow(0 0 5px #76f5c5); }
+  100% { filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selection-indicator.pixel-place-success { animation: none; }
+}
+
+@media (max-width: 650px) {
+  .map-header { margin-bottom: 5px; }
+  .map-title { flex-wrap: nowrap; gap: 4px; }
+  .stencil-open-button,
+  .player-card-open-button,
+  .pixel-report-button { min-height: 28px; padding: 4px 5px; font-size: 9px; }
+  .pixel-information { max-width: 128px; padding-top: 0; }
+  #coordinate-position { color: #d8f3ff; font: 900 11px/1.15 "Courier New", monospace; }
+}
 

@@ -77,6 +77,56 @@ function getColorIndex(color) {
 
 }
 
+const placeButtonLabel = document.getElementById("place-button-label");
+const placeButtonSwatch = document.getElementById("place-button-swatch");
+const pixelActionStatus = document.getElementById("pixel-action-status");
+const pixelActionStatusIcon = document.getElementById("pixel-action-status-icon");
+const pixelActionStatusText = document.getElementById("pixel-action-status-text");
+
+let turboBrushRemaining = 0;
+
+function formatPixelActionTime(totalSeconds) {
+  const seconds = Math.max(0, Math.ceil(Number(totalSeconds) || 0));
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function updatePixelActionStatus() {
+  if (!pixelActionStatus || !pixelActionStatusText || !pixelActionStatusIcon) return;
+
+  const turboActive = turboBrushRemaining > 0;
+  pixelActionStatus.classList.toggle("is-turbo", turboActive);
+  pixelActionStatus.classList.toggle("is-cooldown", !turboActive && cooldownRemaining > 0);
+  pixelActionStatus.classList.toggle("is-ready", !turboActive && cooldownRemaining <= 0);
+
+  if (turboActive) {
+    pixelActionStatusIcon.textContent = "🔥";
+    pixelActionStatusText.textContent = `ТУРБОКИСТЬ · ${formatPixelActionTime(turboBrushRemaining)}`;
+  } else if (cooldownRemaining > 0) {
+    pixelActionStatusIcon.textContent = "⏱";
+    pixelActionStatusText.textContent = `ПИКСЕЛЬ ЧЕРЕЗ ${formatPixelActionTime(cooldownRemaining)}`;
+  } else {
+    pixelActionStatusIcon.textContent = "●";
+    pixelActionStatusText.textContent = "ПИКСЕЛЬ ГОТОВ";
+  }
+}
+
+window.setPixelActionTurboRemaining = seconds => {
+  turboBrushRemaining = Math.max(0, Math.ceil(Number(seconds) || 0));
+  updatePixelActionStatus();
+};
+
+function setPlaceButtonLabel(text) {
+  if (placeButtonLabel) placeButtonLabel.textContent = text;
+}
+
+function showPixelPlacementFeedback() {
+  if (!selectionIndicator) return;
+  selectionIndicator.classList.remove("pixel-place-success");
+  void selectionIndicator.offsetWidth;
+  selectionIndicator.classList.add("pixel-place-success");
+  window.setTimeout(() => selectionIndicator.classList.remove("pixel-place-success"), 260);
+}
+
 
 function showPixelUnchangedMessage() {
   cooldownText.textContent =
@@ -261,6 +311,8 @@ async function placePixel() {
 
   drawMap();
 
+  showPixelPlacementFeedback();
+
   startCooldown(Number(data.cooldown) || COOLDOWN_SECONDS);
 
   scheduleRankingRefresh();
@@ -330,6 +382,8 @@ function updateCooldown() {
 
   }
 
+  updatePixelActionStatus();
+
   updatePlaceButton();
 
 }
@@ -345,8 +399,7 @@ function updatePlaceButton() {
 
     placeButton.disabled = true;
 
-    placeButton.textContent =
-      `ПОДОЖДИТЕ ${cooldownRemaining} СЕК.`;
+    setPlaceButtonLabel(`ПОДОЖДИТЕ ${cooldownRemaining} СЕК.`);
 
     return;
   }
@@ -363,8 +416,7 @@ function updatePlaceButton() {
 
     placeButton.disabled = true;
 
-    placeButton.textContent =
-      "ВЫБЕРИТЕ ПИКСЕЛЬ";
+    setPlaceButtonLabel("ВЫБЕРИТЕ ПИКСЕЛЬ");
 
     return;
   }
@@ -376,7 +428,9 @@ function updatePlaceButton() {
 
   placeButton.disabled = false;
 
-  placeButton.textContent =
-    "ПОСТАВИТЬ ПИКСЕЛЬ";
+  setPlaceButtonLabel("ПОСТАВИТЬ ПИКСЕЛЬ");
 
 }
+
+if (placeButtonSwatch) placeButtonSwatch.style.backgroundColor = selectedColor;
+updatePixelActionStatus();

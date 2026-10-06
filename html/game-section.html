@@ -361,13 +361,19 @@
         </dialog>
 
 
+        <div id="pixel-action-status" class="pixel-action-status is-ready" role="status" aria-live="polite">
+          <span id="pixel-action-status-icon" aria-hidden="true">●</span>
+          <strong id="pixel-action-status-text">ПИКСЕЛЬ ГОТОВ</strong>
+        </div>
+
         <div class="placement-actions">
           <button id="map-items-open" class="map-items-open" type="button"
             aria-haspopup="dialog" aria-controls="map-items-dialog">
             🎒 ПРЕДМЕТЫ<span id="map-items-total"></span>
           </button>
           <button id="place-button" disabled>
-            ПОСТАВИТЬ ПИКСЕЛЬ
+            <i id="place-button-swatch" aria-hidden="true"></i>
+            <span id="place-button-label">ВЫБЕРИТЕ ПИКСЕЛЬ</span>
           </button>
         </div>
 

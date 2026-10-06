@@ -8,6 +8,7 @@ const dailyTasks = (() => {
   const piEarnHost = document.getElementById("pi-earn-tasks");
   const todayDailyStatus = document.getElementById("today-daily-status");
   const todayEarnStatus = document.getElementById("today-earn-status");
+  const mobileTasksBadge = document.getElementById("mobile-tasks-badge");
 
   let status = null;
   let profile = null;
@@ -302,9 +303,22 @@ const dailyTasks = (() => {
   }
 
   function render() {
+    const rewardState = effectiveRewardState();
+    const boostRemaining = rewardState === "active"
+      ? secondsUntil(status?.boost_until)
+      : 0;
+
+    window.setPixelActionTurboRemaining?.(boostRemaining);
+
+    if (mobileTasksBadge) {
+      const actionRequired = rewardState === "ready" || rewardState === "claimed";
+      mobileTasksBadge.classList.toggle("hidden", !actionRequired);
+      mobileTasksBadge.setAttribute("aria-hidden", actionRequired ? "false" : "true");
+      mobileTasksBadge.parentElement?.classList.toggle("has-task-action", actionRequired);
+    }
+
     if (button) {
       const count = completedCount();
-      const rewardState = effectiveRewardState();
       button.classList.toggle("reward-ready", rewardState === "ready" || rewardState === "claimed");
       button.classList.toggle("boost-active", rewardState === "active");
       button.textContent = rewardState === "active"

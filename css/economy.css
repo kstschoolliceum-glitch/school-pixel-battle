@@ -164,6 +164,18 @@
   cursor: pointer;
 }
 
+/* ---------- MOBILE GAMEPLAY DENSITY ---------- */
+@media (max-width: 650px) {
+  .header { height: 52px; padding: 3px 9px; }
+  .brand-stack { width: 43vw; gap: 1px; }
+  .brand-stack .logo { font-size: 12px; line-height: 1.1; }
+  .pi-ticker { height: 18px; font-size: 9px; }
+  .header-summary .pi-balance-button { min-height: 34px; padding: 4px 5px; }
+  .header-summary .season { padding: 4px 5px; font-size: 10px; }
+  .placement-actions { grid-template-columns: minmax(0, 1.65fr) minmax(88px, .75fr); }
+  .placement-actions #place-button { order: -1; }
+}
+
 @media (max-width: 650px) {
   .pi-balance-shop {
     width: 9px;

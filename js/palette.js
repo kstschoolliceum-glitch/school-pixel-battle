@@ -272,6 +272,9 @@ function updatePaletteSelection() {
         selectedColor;
   }
 
+  const placeButtonSwatch = document.getElementById("place-button-swatch");
+  if (placeButtonSwatch) placeButtonSwatch.style.backgroundColor = selectedColor;
+
   if (colorPaletteSelectedName) {
     colorPaletteSelectedName.textContent =
       name;

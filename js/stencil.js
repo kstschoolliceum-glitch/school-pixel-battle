@@ -67,7 +67,8 @@ function setPixelInformation(x = null, y = null, owner = "") {
     return;
   }
 
-  coordinatePosition.textContent = `X: ${x}  Y: ${y}`;
+  coordinatePosition.textContent = `📍 ${x} : ${y}`;
+  coordinatePosition.setAttribute("aria-label", `Выбрана клетка X ${x}, Y ${y}`);
   const mapItem = window.mapItems?.describeCell(x, y);
   pixelOwner.textContent = mapItem?.type === "bomb"
     ? "💥 След пиксельной бомбы · подрывник неизвестен"
