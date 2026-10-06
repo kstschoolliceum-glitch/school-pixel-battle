@@ -166,21 +166,34 @@
 
 /* ---------- MOBILE GAMEPLAY DENSITY ---------- */
 @media (max-width: 650px) {
-  .header { height: 52px; padding: 3px 9px; }
-  .brand-stack { width: 43vw; gap: 1px; }
+  .header {
+    height: 52px;
+    padding: 3px 7px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+  .brand-stack { width: auto; min-width: 0; gap: 1px; }
   .brand-stack .logo { font-size: 12px; line-height: 1.1; }
   .pi-ticker { height: 18px; font-size: 9px; }
-  .header-summary .pi-balance-button { min-height: 34px; padding: 4px 5px; }
-  .header-summary .season { padding: 4px 5px; font-size: 10px; }
-  .placement-actions { grid-template-columns: minmax(0, 1.65fr) minmax(88px, .75fr); }
-  .placement-actions #place-button { order: -1; }
+  .header-summary { flex: 0 0 auto; min-width: 0; }
+  .header-summary .pi-balance-button {
+    min-width: 0;
+    min-height: 34px;
+    padding: 4px;
+    gap: 3px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .header-summary #pi-balance { white-space: nowrap; font-size: 11px; }
+  .header-summary .season { max-width: 92px; padding: 4px; font-size: 9px; }
+  .header-summary .season-topline { gap: 3px; }
+  .placement-actions { grid-template-columns: minmax(88px, .75fr) minmax(0, 1.65fr); }
 }
 
 @media (max-width: 650px) {
   .pi-balance-shop {
-    width: 9px;
-    overflow: hidden;
-    white-space: nowrap;
+    display: none;
   }
 
   .map-items-guidance {

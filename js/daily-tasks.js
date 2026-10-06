@@ -304,11 +304,6 @@ const dailyTasks = (() => {
 
   function render() {
     const rewardState = effectiveRewardState();
-    const boostRemaining = rewardState === "active"
-      ? secondsUntil(status?.boost_until)
-      : 0;
-
-    window.setPixelActionTurboRemaining?.(boostRemaining);
 
     if (mobileTasksBadge) {
       const actionRequired = rewardState === "ready" || rewardState === "claimed";

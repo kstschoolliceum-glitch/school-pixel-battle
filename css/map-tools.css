@@ -385,12 +385,34 @@
 }
 
 @media (max-width: 650px) {
-  .map-header { margin-bottom: 5px; }
-  .map-title { flex-wrap: nowrap; gap: 4px; }
+  .map-header {
+    min-height: 24px;
+    margin: 0 1px 3px;
+    gap: 3px 5px;
+  }
+  .map-title { flex-wrap: nowrap; gap: 3px; }
   .stencil-open-button,
   .player-card-open-button,
-  .pixel-report-button { min-height: 28px; padding: 4px 5px; font-size: 9px; }
-  .pixel-information { max-width: 128px; padding-top: 0; }
-  #coordinate-position { color: #d8f3ff; font: 900 11px/1.15 "Courier New", monospace; }
+  .pixel-report-button {
+    min-height: 22px;
+    padding: 3px 4px;
+    font-size: 8px;
+    line-height: 1;
+  }
+  .pixel-information {
+    max-width: 140px;
+    padding-top: 0;
+    gap: 0;
+    font-size: 9px;
+    line-height: 1.05;
+  }
+  #coordinate-position { color: #d8f3ff; font: 900 10px/1.05 "Courier New", monospace; }
+  #pixel-owner { font-size: 8px; line-height: 1; }
+  .pixel-owner-row { gap: 3px; }
+  .pixel-owner-row .pixel-report-button {
+    min-height: 16px;
+    margin: 0;
+    padding: 1px 3px;
+    font-size: 7px;
+  }
 }
-
