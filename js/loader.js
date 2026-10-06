@@ -28,6 +28,7 @@
   "js/admin-student-data.js?v=1",
   "js/admin-student-table.js?v=1",
   "js/admin-student-section.js?v=1",
+  "js/admin-school-link.js?v=1",
   "js/admin-referrals.js?v=1",
   "js/admin-classes.js?v=1",
   "js/admin-season-management.js?v=1",

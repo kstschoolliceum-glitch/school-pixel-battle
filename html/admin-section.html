@@ -65,6 +65,10 @@
         data-admin-target="admin-invites-content" aria-controls="admin-invites-content" aria-selected="false">
         🎟️ Приглашения
       </button>
+      <button id="admin-school-link-tab" class="admin-tab" type="button"
+        data-admin-target="admin-school-link-content" aria-controls="admin-school-link-content" aria-selected="false">
+        🏫 Общая ссылка
+      </button>
       <button id="admin-promos-tab" class="admin-tab" type="button"
         data-admin-target="admin-promos-content" aria-controls="admin-promos-content" aria-selected="false">
         🎁 Промокоды
@@ -762,6 +766,47 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <div id="admin-school-link-content" data-admin-panel class="admin-school-link-content hidden">
+    <div class="admin-section-title">
+      <h2>🏫 Общая ссылка</h2>
+      <p>Ученики, зарегистрированные через постоянную ссылку со школьного стенда.</p>
+    </div>
+
+    <div class="school-link-card">
+      <label for="admin-school-link-url">Ссылка для стенда</label>
+      <div class="school-link-copy-row">
+        <input id="admin-school-link-url" type="text" readonly>
+        <button id="admin-school-link-copy" type="button">📋 КОПИРОВАТЬ</button>
+      </div>
+      <small>Ссылка бессрочная. Классы берутся из активных классов админ-панели.</small>
+    </div>
+
+    <div class="school-link-toolbar">
+      <span>Зарегистрировано: <strong id="admin-school-link-count">0</strong></span>
+      <button id="admin-school-link-refresh" type="button">↻ ОБНОВИТЬ</button>
+    </div>
+
+    <div class="students-table-wrapper">
+      <table class="students-table school-link-table">
+        <thead>
+          <tr>
+            <th>Логин</th>
+            <th>Никнейм</th>
+            <th>Класс</th>
+            <th>Регистрация</th>
+            <th>IP регистрации</th>
+            <th>IP и риски</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody id="admin-school-link-body">
+          <tr><td colspan="7">Откройте вкладку для загрузки данных.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="school-link-risk-note">Совпадение IP само по себе не доказывает нарушение: школьный Wi‑Fi и мобильные сети могут использоваться несколькими учениками.</p>
   </div>
 
   <div

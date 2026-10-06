@@ -178,6 +178,25 @@ Deno.serve(async request => {
 
     if (profileError) throw profileError;
 
+    const { error: auditError } = await admin
+      .from("school_link_registrations")
+      .insert({
+        user_id: createdUserId,
+        registration_ip: clientIp
+      });
+
+    if (auditError) throw auditError;
+
+    const { error: ipError } = await admin.rpc(
+      "record_student_ip",
+      {
+        p_user_id: createdUserId,
+        p_ip: clientIp
+      }
+    );
+
+    if (ipError) throw ipError;
+
     return response(request, {
       success: true,
       username,
