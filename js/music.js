@@ -10,7 +10,7 @@
   if (!audio) return;
   const key = 'pixelBattleMusicEnabled';
   const enabled = () => localStorage.getItem(key) !== 'false';
-  let tracks = [], index = 0, failures = 0, started = false;
+  let tracks = [], index = 0, failures = 0, started = false, selectedFile = null;
   audio.volume = 0.35;
   function update() {
     if (preference) preference.checked = enabled();
@@ -102,6 +102,9 @@
     } finally { refresh.disabled = false; }
   });
   window.musicPlayer = { stopForLogout() { audio.pause(); started = false; } };
-  loadManifest().catch(() => { if (count) count.textContent = 'Плейлист недоступен'; });
+  Promise.all([loadManifest(), loadSelectedTrack().catch(() => {})]).then(() => {
+    if (selectedFile && tracks.some(track => track.file === selectedFile)) selectTrack();
+    renderAdminTracks();
+  }).catch(() => { if (count) count.textContent = 'Плейлист недоступен'; });
   update();
 })();
