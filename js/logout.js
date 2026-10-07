@@ -42,6 +42,7 @@ logoutButton.addEventListener(
 
   onlinePresenceChannel = null;
 }
+    mapItems.stopBombEffects();
     clearStencilView();
     currentUser = null;
     currentChatNickname = "";

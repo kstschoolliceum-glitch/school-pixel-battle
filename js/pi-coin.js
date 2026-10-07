@@ -249,6 +249,71 @@ const profileCosmetics=(()=>{
 // ---------- MAP ITEMS ----------
 const mapItems=(()=>{
  const counts={bomb:0,beacon:0,detector:0},prices={bomb:550,beacon:100,detector:15},names={bomb:"💣 Бомба",beacon:"📍 Маяк",detector:"🕵️ Детектор"};let beacons=[],bombCells=new Set(),busy=false,openedBeacon=null;
+ let effectsChannel=null,effectsUserId=null,effectsWindow=0,effectsRequests=0,effectsTimeout=null;
+ const seenBombs=new Set(),pendingBombs=new Set();
+ const effectsViewport=document.getElementById("canvas-container");
+ const reduceEffects=window.matchMedia("(prefers-reduced-motion: reduce)");
+ function bombPosition(x,y){
+  if(!effectsViewport)return null;
+  const left=effectsViewport.clientWidth/2+offsetX+(x+.5-MAP_WIDTH/2)*scale;
+  const top=effectsViewport.clientHeight/2+offsetY+(y+.5-MAP_HEIGHT/2)*scale;
+  const radius=Math.max(25,12*scale);
+  if(left < -radius || top < -radius || left > effectsViewport.clientWidth+radius || top > effectsViewport.clientHeight+radius)return null;
+  return {left,top,size:radius*2};
+ }
+ function playBombEffect(event){
+  const id=Number(event?.event_id),season=Number(event?.season_id);
+  const x=Number(event?.center_x),y=Number(event?.center_y);
+  if(!Number.isSafeInteger(id)||id<=0||seenBombs.has(id)||season!==Number(activeSeason?.id)
+    ||!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=MAP_WIDTH||y>=MAP_HEIGHT)return;
+  seenBombs.add(id);
+  if(seenBombs.size>100)seenBombs.delete(seenBombs.values().next().value);
+  const pos=bombPosition(x,y);
+  if(!pos)return;
+  clearTimeout(effectsTimeout);
+  effectsViewport.querySelector(".bomb-effect")?.remove();
+  effectsViewport.classList.remove("bomb-impact");
+  const effect=document.createElement("div");
+  effect.className="bomb-effect";
+  effect.setAttribute("aria-hidden","true");
+  effect.style.left=pos.left+"px";effect.style.top=pos.top+"px";
+  effect.style.setProperty("--bomb-size",pos.size+"px");
+  effect.innerHTML='<span class="bomb-flash"></span><span class="bomb-ring"></span><span class="bomb-wave"></span><span class="bomb-debris"></span><span class="bomb-smoke"></span>';
+  effectsViewport.append(effect);
+  if(!reduceEffects.matches)effectsViewport.classList.add("bomb-impact");
+  effectsTimeout=setTimeout(()=>{effect.remove();effectsViewport.classList.remove("bomb-impact")},reduceEffects.matches?280:1350);
+ }
+ async function verifyBombBroadcast(event){
+  const id=Number(event?.event_id),season=Number(event?.season_id);
+  const x=Number(event?.center_x),y=Number(event?.center_y);
+  if(!currentUser||!Number.isSafeInteger(id)||id<=0||seenBombs.has(id)||pendingBombs.has(id)
+    ||season!==Number(activeSeason?.id)||!Number.isInteger(x)||!Number.isInteger(y)
+    ||x<0||y<0||x>=MAP_WIDTH||y>=MAP_HEIGHT||!bombPosition(x,y))return;
+  // A client might forge Broadcast metadata: only a recent committed SQL event may animate.
+  if(Date.now()-effectsWindow>5000){effectsWindow=Date.now();effectsRequests=0}
+  if(++effectsRequests>20)return;
+  pendingBombs.add(id);
+  try{
+   const {data,error}=await supabaseClient.rpc("get_bomb_effect_event",{p_event_id:id});
+   if(!error&&data)playBombEffect(data);
+  }finally{pendingBombs.delete(id)}
+ }
+ function subscribeBombEffects(){
+  if(!currentUser||effectsUserId===currentUser.id)return;
+  if(effectsChannel)supabaseClient.removeChannel(effectsChannel);
+  effectsUserId=currentUser.id;
+  effectsChannel=supabaseClient.channel("bomb-effects",{config:{private:true}})
+    .on("broadcast",{event:"bomb_exploded"},message=>verifyBombBroadcast(message.payload))
+    .subscribe();
+ }
+ function stopBombEffects(){
+  if(effectsChannel)supabaseClient.removeChannel(effectsChannel);
+  effectsChannel=null;effectsUserId=null;
+  clearTimeout(effectsTimeout);
+  effectsViewport?.querySelector(".bomb-effect")?.remove();
+  effectsViewport?.classList.remove("bomb-impact");
+  seenBombs.clear();pendingBombs.clear();
+ }
  const output=document.getElementById("map-item-message"),guidance=document.getElementById("map-items-guidance"),totalLabel=document.getElementById("map-items-total"),shopItemButton=document.getElementById("pi-shop-open-items"),key=(x,y)=>x+":"+y;
  const beaconLayer=document.getElementById("beacon-layer"),beaconDialog=document.getElementById("beacon-dialog"),beaconLabel=document.getElementById("beacon-dialog-label"),beaconClass=document.getElementById("beacon-dialog-class"),beaconRemove=document.getElementById("beacon-remove-button"),beaconStatus=document.getElementById("beacon-dialog-status");
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
@@ -292,14 +357,14 @@ const mapItems=(()=>{
   renderBeaconButtons();
   drawMap();
  }
- async function load(){if(!currentUser||!activeSeason?.id)return;const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
+ async function load(){if(!currentUser||!activeSeason?.id)return;subscribeBombEffects();const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
  async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
- async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;
-  if(type==="bomb"){if(!confirm("Создать увеличенную воронку из 145 пикселей?")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:selectedX,p_y:selectedY})}
+ async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;const useX=selectedX,useY=selectedY;
+  if(type==="bomb"){if(!confirm("💣 Взорвать эту область? Бомба изменит 313 клеток.")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:useX,p_y:useY})}
   else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
   else result=await supabaseClient.rpc("reveal_pixel_owner",{p_x:selectedX,p_y:selectedY});busy=false;const data=result.data,error=result.error;
-  if(error||!data?.success){const e=data?.error||"",m={EDGE_LIMIT:"Выберите центр не ближе восьми клеток к краю.",ANONYMOUS_BOMB:"Автор бомбы скрыт.",OWN_PIXEL:"Это ваш пиксель.",EMPTY_PIXEL:"Клетка свободна.",BEACON_LIMIT:"Лимит маяков достигнут.",PROFANITY:"Подпись не прошла фильтр.",NO_LINKS:"Ссылки запрещены.",SEASON_LIMIT:"Две бомбы за неделю уже использованы.",CELL_OCCUPIED:"На клетке уже есть маяк."};say(m[e]||"Предмет не использован.",true);return}
-  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});say("Увеличенная воронка из 145 пикселей создана.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса"))}drawMap()}
+  if(error||!data?.success){const e=data?.error||"",m={EDGE_LIMIT:type==="bomb"?"Выберите центр не ближе 12 клеток к краю.":"Выберите клетку дальше от края.",ANONYMOUS_BOMB:"Автор бомбы скрыт.",OWN_PIXEL:"Это ваш пиксель.",EMPTY_PIXEL:"Клетка свободна.",BEACON_LIMIT:"Лимит маяков достигнут.",PROFANITY:"Подпись не прошла фильтр.",NO_LINKS:"Ссылки запрещены.",SEASON_LIMIT:"Две бомбы за неделю уже использованы.",CELL_OCCUPIED:"На клетке уже есть маяк."};say(m[e]||"Предмет не использован.",true);return}
+  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});playBombEffect({event_id:data.event_id,season_id:data.season_id,center_x:useX,center_y:useY});say("💥 БА-БАХ! Бомба взорвана · 313 клеток.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса"))}drawMap()}
  function describeCell(x,y){if(bombCells.has(key(x,y)))return{type:"bomb"};const b=beacons.find(v=>Number(v.x)===x&&Number(v.y)===y);return b?{type:"beacon",label:b.label,class_name:b.class_name}:null}
  function updateMarkers(){if(!beaconLayer)return;beaconLayer.querySelectorAll(".map-beacon-flag").forEach(button=>{const b=beacons.find(v=>String(v.id)===button.dataset.beaconId);if(!b)return;const px=(Number(b.x)+.5-MAP_WIDTH/2)*scale,py=(Number(b.y)+.5-MAP_HEIGHT/2)*scale;button.style.transform="translate(calc(-50% + "+(offsetX+px)+"px),calc(-100% + "+(offsetY+py)+"px))"})}
  function openBeacon(beacon){openedBeacon=beacon;beaconClass.textContent=beacon.class_name||"Без класса";beaconLabel.textContent=beacon.label;beaconRemove.classList.toggle("hidden",!beacon.is_owner);beaconStatus.textContent="";if(beaconDialog&&!beaconDialog.open)beaconDialog.showModal()}
@@ -323,7 +388,7 @@ const mapItems=(()=>{
  itemDialog?.addEventListener("click",event=>{if(event.target!==itemDialog)return;const b=itemDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)itemDialog.close()});
  setInterval(()=>{if(!document.hidden&&currentUser&&activeSeason)load()},120000);
  window.addEventListener("focus",()=>{if(currentUser&&activeSeason)load()});
- const api={load,open:openItems,describeCell,drawMarkers,updateMarkers};window.mapItems=api;return api;
+ const api={load,open:openItems,describeCell,drawMarkers,updateMarkers,stopBombEffects};window.mapItems=api;return api;
 })();
 
 

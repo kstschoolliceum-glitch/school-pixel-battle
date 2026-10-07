@@ -222,3 +222,26 @@
     font-size: 11px;
   }
 }
+
+/* Bomb visuals live above the map; zoom and map canvas transforms remain untouched. */
+.bomb-effect{position:absolute;width:0;height:0;z-index:8;pointer-events:none}
+.bomb-effect span{position:absolute;left:0;top:0;pointer-events:none}
+.bomb-flash{width:var(--bomb-size);height:var(--bomb-size);background:#fff4b0;opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.06);animation:bomb-flash .32s steps(4,end) both}
+.bomb-ring{width:var(--bomb-size);height:var(--bomb-size);border:6px dashed #fb923c;background:#fbbf2433;box-shadow:0 0 0 4px #ef444477,inset 0 0 0 3px #fde68a;opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.1);animation:bomb-ring .75s .13s steps(10,end) both}
+.bomb-wave{width:var(--bomb-size);height:var(--bomb-size);border:3px solid #e2e8f0;opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.1);animation:bomb-wave .55s .4s ease-out both}
+.bomb-debris{width:4px;height:4px;background:#fbbf24;box-shadow:16px 6px #f97316,-15px -9px #fde68a,8px -19px #fb923c,-10px 18px #fbbf24,22px -12px #ef4444,-21px 12px #f97316;opacity:0;transform:scale(1);animation:bomb-debris .7s .3s ease-out both}
+.bomb-smoke{width:var(--bomb-size);height:var(--bomb-size);background:radial-gradient(circle,#0f172a99 0 10%,#47556977 25%,#94a3b855 39%,transparent 65%);opacity:0;transform:translate(-50%,-50%) scale(.4);animation:bomb-smoke .7s .55s ease-out both}
+@keyframes bomb-flash{0%{opacity:1}65%{opacity:.85;transform:translate(-50%,-50%) rotate(45deg) scale(.6)}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(1)}}
+@keyframes bomb-ring{15%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(1)}}
+@keyframes bomb-wave{20%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(1.3)}}
+@keyframes bomb-debris{20%{opacity:1}100%{opacity:0;transform:scale(5) rotate(45deg)}}
+@keyframes bomb-smoke{25%{opacity:.65}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1)}}
+#canvas-container.bomb-impact{animation:bomb-impact .48s .25s steps(4,end) both}
+@keyframes bomb-impact{0%,100%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,1px)}}
+@media(pointer:coarse){@keyframes bomb-impact{0%,100%{transform:translate(0,0)}25%{transform:translate(1px,0)}50%{transform:translate(-1px,1px)}75%{transform:translate(0,-1px)}}}
+@media(prefers-reduced-motion:reduce){
+  #canvas-container.bomb-impact{animation:none}
+  .bomb-ring,.bomb-wave,.bomb-debris,.bomb-smoke{animation:none;display:none}
+  .bomb-flash{animation:bomb-flash-reduced .25s ease-out both}
+  @keyframes bomb-flash-reduced{0%{opacity:.8;transform:translate(-50%,-50%) rotate(45deg) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.55)}}
+}
