@@ -83,7 +83,8 @@
   <section id="admin-music-content" data-admin-panel class="admin-card hidden" aria-hidden="true">
     <h2>🎵 Плейлист</h2>
     <p id="admin-music-count">Загрузка…</p>
-    <ol id="admin-music-tracks"></ol>
+    <p>Выберите композицию, которая будет играть у всех пользователей:</p>
+    <div id="admin-music-tracks" role="radiogroup" aria-label="Активная фоновая музыка"></div>
     <button id="admin-music-refresh" type="button">🔄 ПРОВЕРИТЬ ОПУБЛИКОВАННЫЙ ПЛЕЙЛИСТ</button>
     <p id="admin-music-message" aria-live="polite">Новые файлы появятся после commit и публикации сайта через GitHub Actions. Проверка считывает опубликованный manifest.</p>
   </section>
