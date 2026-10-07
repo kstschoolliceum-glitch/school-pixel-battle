@@ -25,8 +25,63 @@
   }
   function selectTrack() {
     if (!tracks.length) return;
+    const selectedIndex = selectedFile ? tracks.findIndex(track => track.file === selectedFile) : -1;
+    if (selectedIndex >= 0) index = selectedIndex;
     audio.src = tracks[index].file;
     audio.load();
+  }
+
+  async function loadSelectedTrack() {
+    if (typeof supabaseClient === 'undefined') return;
+    const { data, error } = await supabaseClient
+      .from('game_settings')
+      .select('value')
+      .eq('key', 'music_track')
+      .maybeSingle();
+    if (error) throw error;
+    selectedFile = data?.value || null;
+  }
+
+  async function chooseTrack(file) {
+    if (typeof currentUserIsAdmin === 'undefined' || !currentUserIsAdmin) return;
+    const { error } = await supabaseClient.rpc('set_music_track', { p_file: file });
+    if (error) throw error;
+    selectedFile = file;
+    index = Math.max(0, tracks.findIndex(track => track.file === file));
+    selectTrack();
+    started = true;
+    if (enabled()) play();
+    renderAdminTracks();
+  }
+
+  function renderAdminTracks() {
+    if (!list) return;
+    list.replaceChildren();
+    tracks.forEach((track, trackIndex) => {
+      const label = document.createElement('label');
+      label.className = 'admin-music-track';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'admin-music-track';
+      radio.value = track.file;
+      radio.checked = selectedFile ? track.file === selectedFile : trackIndex === 0;
+      radio.addEventListener('change', async () => {
+        if (!radio.checked) return;
+        try {
+          await chooseTrack(track.file);
+          if (message) message.textContent = `Активная композиция: ${track.title}`;
+        } catch (error) {
+          console.error('MUSIC SELECT ERROR:', error);
+          if (message) message.textContent = 'Не удалось сохранить выбор. Проверьте, применена ли миграция музыки в Supabase.';
+          await loadSelectedTrack().catch(() => {});
+          renderAdminTracks();
+        }
+      });
+      const title = document.createElement('span');
+      title.textContent = track.title;
+      label.append(radio, title);
+      list.append(label);
+    });
   }
   function play() {
     if (!enabled() || typeof currentUser === 'undefined' || !currentUser || !tracks.length
@@ -61,14 +116,7 @@
     failures = 0;
     if (tracks.length && (!audio.src || sameIndex < 0)) selectTrack();
     if (count) count.textContent = `${tracks.length} композиции`;
-    if (list) {
-      list.replaceChildren();
-      tracks.forEach(track => {
-        const item = document.createElement('li');
-        item.textContent = track.title;
-        list.append(item);
-      });
-    }
+    renderAdminTracks();
     return tracks;
   }
   audio.addEventListener('ended', () => { failures = 0; next(); });
@@ -84,7 +132,7 @@
   button?.addEventListener('click', () => setEnabled(!enabled()));
   preference?.addEventListener('change', () => setEnabled(preference.checked));
   function firstGesture(event) {
-    if (typeof currentUser === 'undefined' || !currentUser || started || !enabled() || !tracks.length
+    if (typeof currentUser === 'undefined' || !currentUser || !enabled() || !tracks.length
       || !document.getElementById('auth-screen')?.classList.contains('hidden') || button?.contains(event.target)) return;
     started = true;
     play();
