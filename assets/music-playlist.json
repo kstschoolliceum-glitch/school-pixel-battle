@@ -1,4 +1,9 @@
 {
   "version": 1,
-  "tracks": []
+  "tracks": [
+    {
+      "file": "assets/music/KSLV%20-%20Disaster.mp3",
+      "title": "KSLV   Disaster"
+    }
+  ]
 }
