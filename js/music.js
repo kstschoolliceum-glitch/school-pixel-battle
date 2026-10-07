@@ -7,19 +7,21 @@
   const list = document.getElementById('admin-music-tracks');
   const count = document.getElementById('admin-music-count');
   const message = document.getElementById('admin-music-message');
-  if (!audio || !button) return;
+  if (!audio) return;
   const key = 'pixelBattleMusicEnabled';
   const enabled = () => localStorage.getItem(key) !== 'false';
   let tracks = [], index = 0, failures = 0, started = false;
   audio.volume = 0.35;
   function update() {
     if (preference) preference.checked = enabled();
-    button.classList.toggle('is-playing', !audio.paused);
-    button.setAttribute('aria-pressed', String(enabled()));
-    button.innerHTML = enabled()
-      ? '<span aria-hidden="true">🔊</span><span class="music-toggle-label">Музыка</span>'
-      : '<span aria-hidden="true">🔇</span><span class="music-toggle-label">Музыка</span>';
-    button.title = enabled() ? 'Выключить музыку' : 'Включить музыку';
+    if (button) {
+      button.classList.toggle('is-playing', !audio.paused);
+      button.setAttribute('aria-pressed', String(enabled()));
+      button.innerHTML = enabled()
+        ? '<span aria-hidden="true">🔊</span><span class="music-toggle-label">Музыка</span>'
+        : '<span aria-hidden="true">🔇</span><span class="music-toggle-label">Музыка</span>';
+      button.title = enabled() ? 'Выключить музыку' : 'Включить музыку';
+    }
   }
   function selectTrack() {
     if (!tracks.length) return;
@@ -79,11 +81,11 @@
     else audio.pause();
     update();
   }
-  button.addEventListener('click', () => setEnabled(!enabled()));
+  button?.addEventListener('click', () => setEnabled(!enabled()));
   preference?.addEventListener('change', () => setEnabled(preference.checked));
   function firstGesture(event) {
     if (typeof currentUser === 'undefined' || !currentUser || started || !enabled() || !tracks.length
-      || !document.getElementById('auth-screen')?.classList.contains('hidden') || button.contains(event.target)) return;
+      || !document.getElementById('auth-screen')?.classList.contains('hidden') || button?.contains(event.target)) return;
     started = true;
     play();
   }
