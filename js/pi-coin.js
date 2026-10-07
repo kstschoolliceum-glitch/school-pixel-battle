@@ -1,4 +1,23 @@
 // ---------- PI COIN ----------
+let coinFeedbackTimer;
+function showCoinFeedback(amount) {
+  const host = document.getElementById("pi-balance-button");
+  if (!host || !Number.isFinite(Number(amount)) || Number(amount) === 0) return;
+  let label = host.querySelector(".pi-coin-feedback");
+  if (!label) {
+    label = document.createElement("span");
+    label.className = "pi-coin-feedback";
+    label.setAttribute("aria-hidden", "true");
+    host.append(label);
+  }
+  label.textContent = (amount > 0 ? "+" : "−") + Math.abs(amount) + " 🪙";
+  label.classList.remove("visible");
+  void label.offsetWidth;
+  label.classList.add("visible");
+  host.classList.add("pi-coin-updated");
+  clearTimeout(coinFeedbackTimer);
+  coinFeedbackTimer = setTimeout(() => { label.remove(); host.classList.remove("pi-coin-updated"); }, 1050);
+}
 const piCoin = (() => {
   const rewards = [5, 5, 10, 10, 15, 20, 35];
   const balance = document.getElementById("pi-balance");
@@ -17,6 +36,14 @@ const piCoin = (() => {
   let status = null;
   let busy = false;
   let offerPending = false;
+  let statusLoadedAt = 0;
+  let statusUserId = null;
+
+  function refreshTurboIndicator() {
+    const duration = Date.parse(status?.boost_until || "") - Date.parse(status?.server_now || "");
+    const purchasedActive = currentUser?.id === statusUserId && Number.isFinite(duration) && duration > performance.now() - statusLoadedAt;
+    document.getElementById("place-button")?.classList.toggle("pixel-turbo-active", Boolean(currentUser) && (purchasedActive || Boolean(dailyTasks?.isBoostActive?.())));
+  }
 
   function message(element, text, error = false) {
     if (!element) return;
@@ -54,6 +81,7 @@ const piCoin = (() => {
     });
     if (todayBonusStatus) todayBonusStatus.textContent = claimed ? "Получено ✓" : rewards[current - 1] + " piCoin";
     if (buyButton) buyButton.disabled = busy || amount < 180;
+    refreshTurboIndicator();
   }
 
   function offerKey() {
@@ -105,6 +133,8 @@ const piCoin = (() => {
       return;
     }
     status = data;
+    statusLoadedAt = performance.now();
+    statusUserId = id;
     render();
     if (options.offerDailyBonus) openDailyBonus(true);
   }
@@ -127,6 +157,9 @@ const piCoin = (() => {
       return;
     }
     status = data.status;
+    statusLoadedAt = performance.now();
+    statusUserId = currentUser?.id;
+    showCoinFeedback(Number(data.reward));
     const text = "Получено: +" + data.reward + " 🪙 · Баланс: " + Number(status?.balance || 0).toLocaleString("ru-RU") + " piCoin";
     message(dailyMessage, text);
     message(dialogMessage, text);
@@ -149,7 +182,11 @@ const piCoin = (() => {
       await load();
       return;
     }
+    const spent = Number(status?.balance || 0) - Number(data.status?.balance || 0);
     status = data.status;
+    statusLoadedAt = performance.now();
+    statusUserId = currentUser?.id;
+    showCoinFeedback(-Math.max(0, spent));
     render();
     resetPixelCooldownAfterReward();
     message(shopMessage, "Турбокисть включена на 10 минут!");
@@ -182,7 +219,7 @@ const piCoin = (() => {
     if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) shopDialog.close();
   });
 
-  return { load, open, openDailyBonus };
+  return { load, open, openDailyBonus, refreshTurboIndicator };
 })();
 
 // ---------- PROFILE AND CHAT COSMETICS ----------
@@ -239,7 +276,9 @@ const profileCosmetics=(()=>{
   const args=action==="buy"?{p_item_id:itemId}:{p_item_id:itemId};
   const {data,error}=await supabaseClient.rpc(rpc,args);busy=false;
   if(error||!data?.success){const code=data?.error;say(code==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":code==="ALREADY_OWNED"?"Эта косметика уже куплена.":"Не удалось выполнить действие.",true);await load();return}
+  const spent=Number(status?.balance||0)-Number(data.status?.balance||0);
   status=data.status;render();applyOwn();loadChatMessages();piCoin.load();
+  if(action==="buy")showCoinFeedback(-Math.max(0,spent));
   say(action==="buy"?"Косметика куплена и выбрана!":"Оформление выбрано!");
  }
  list?.addEventListener("click",event=>{const button=event.target.closest("[data-cosmetic-action]");if(!button||button.disabled)return;act(button.dataset.cosmeticAction,button.dataset.cosmeticId)});
@@ -316,6 +355,7 @@ const mapItems=(()=>{
  }
  const output=document.getElementById("map-item-message"),guidance=document.getElementById("map-items-guidance"),totalLabel=document.getElementById("map-items-total"),shopItemButton=document.getElementById("pi-shop-open-items"),key=(x,y)=>x+":"+y;
  const beaconLayer=document.getElementById("beacon-layer"),beaconDialog=document.getElementById("beacon-dialog"),beaconLabel=document.getElementById("beacon-dialog-label"),beaconClass=document.getElementById("beacon-dialog-class"),beaconRemove=document.getElementById("beacon-remove-button"),beaconStatus=document.getElementById("beacon-dialog-status");
+ let newBeaconId=null;
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}
  function renderGuidance(){
   if(!guidance)return;
@@ -358,17 +398,18 @@ const mapItems=(()=>{
   drawMap();
  }
  async function load(){if(!currentUser||!activeSeason?.id)return;subscribeBombEffects();const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
- async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
+ async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const before=Number(document.getElementById("pi-balance")?.textContent?.replace(/[^\d]/g,"")||0);const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);showCoinFeedback(-Math.max(0,before-Number(data.status?.balance||0)));piCoin.load();const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
  async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;const useX=selectedX,useY=selectedY;
   if(type==="bomb"){if(!confirm("💣 Взорвать эту область? Бомба изменит 313 клеток.")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:useX,p_y:useY})}
   else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
   else result=await supabaseClient.rpc("reveal_pixel_owner",{p_x:selectedX,p_y:selectedY});busy=false;const data=result.data,error=result.error;
   if(error||!data?.success){const e=data?.error||"",m={EDGE_LIMIT:type==="bomb"?"Выберите центр не ближе 12 клеток к краю.":"Выберите клетку дальше от края.",ANONYMOUS_BOMB:"Автор бомбы скрыт.",OWN_PIXEL:"Это ваш пиксель.",EMPTY_PIXEL:"Клетка свободна.",BEACON_LIMIT:"Лимит маяков достигнут.",PROFANITY:"Подпись не прошла фильтр.",NO_LINKS:"Ссылки запрещены.",SEASON_LIMIT:"Две бомбы за неделю уже использованы.",CELL_OCCUPIED:"На клетке уже есть маяк."};say(m[e]||"Предмет не использован.",true);return}
-  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});playBombEffect({event_id:data.event_id,season_id:data.season_id,center_x:useX,center_y:useY});say("💥 БА-БАХ! Бомба взорвана · 313 клеток.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса"))}drawMap()}
+  if(type==="beacon")newBeaconId=data.status?.beacons?.find(b=>Number(b.x)===useX&&Number(b.y)===useY)?.id??null;
+  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});playBombEffect({event_id:data.event_id,season_id:data.season_id,center_x:useX,center_y:useY});say("💥 БА-БАХ! Бомба взорвана · 313 клеток.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));if(selectedX===useX&&selectedY===useY){selectionIndicator.classList.remove("pixel-detector-scan");void selectionIndicator.offsetWidth;selectionIndicator.classList.add("pixel-detector-scan");setTimeout(()=>selectionIndicator.classList.remove("pixel-detector-scan"),260)}setTimeout(()=>alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса")),220)}drawMap()}
  function describeCell(x,y){if(bombCells.has(key(x,y)))return{type:"bomb"};const b=beacons.find(v=>Number(v.x)===x&&Number(v.y)===y);return b?{type:"beacon",label:b.label,class_name:b.class_name}:null}
  function updateMarkers(){if(!beaconLayer)return;beaconLayer.querySelectorAll(".map-beacon-flag").forEach(button=>{const b=beacons.find(v=>String(v.id)===button.dataset.beaconId);if(!b)return;const px=(Number(b.x)+.5-MAP_WIDTH/2)*scale,py=(Number(b.y)+.5-MAP_HEIGHT/2)*scale;button.style.transform="translate(calc(-50% + "+(offsetX+px)+"px),calc(-100% + "+(offsetY+py)+"px))"})}
  function openBeacon(beacon){openedBeacon=beacon;beaconClass.textContent=beacon.class_name||"Без класса";beaconLabel.textContent=beacon.label;beaconRemove.classList.toggle("hidden",!beacon.is_owner);beaconStatus.textContent="";if(beaconDialog&&!beaconDialog.open)beaconDialog.showModal()}
- function renderBeaconButtons(){if(!beaconLayer)return;beaconLayer.replaceChildren();beacons.forEach(beacon=>{const button=document.createElement("button");button.type="button";button.className="map-beacon-flag";button.dataset.beaconId=String(beacon.id);button.textContent="🚩";button.title=beacon.label;button.setAttribute("aria-label","Открыть маяк: "+beacon.label);button.addEventListener("click",event=>{event.stopPropagation();openBeacon(beacon)});beaconLayer.append(button)});updateMarkers()}
+ function renderBeaconButtons(){if(!beaconLayer)return;beaconLayer.replaceChildren();beacons.forEach(beacon=>{const button=document.createElement("button");button.type="button";button.className="map-beacon-flag";button.dataset.beaconId=String(beacon.id);if(newBeaconId!==null&&String(beacon.id)===String(newBeaconId))button.classList.add("beacon-arrival");button.textContent="🚩";button.title=beacon.label;button.setAttribute("aria-label","Открыть маяк: "+beacon.label);button.addEventListener("click",event=>{event.stopPropagation();openBeacon(beacon)});beaconLayer.append(button)});newBeaconId=null;updateMarkers()}
  async function removeBeacon(){if(!openedBeacon?.is_owner||busy)return;if(!confirm("Убрать этот маяк с карты?"))return;busy=true;beaconRemove.disabled=true;const {data,error}=await supabaseClient.rpc("remove_map_beacon",{p_beacon_id:openedBeacon.id});busy=false;beaconRemove.disabled=false;if(error||!data?.success){beaconStatus.textContent="Не удалось убрать маяк.";beaconStatus.classList.add("error");return}beaconDialog.close();openedBeacon=null;applyStatus(data.status);say("Маяк убран.")}
  function drawMarkers(){}
  async function openItems(){
@@ -421,7 +462,7 @@ const piTicker=(()=>{
   if(!confirm("Разместить сообщение за "+price+" piCoin?"))return;
   busy=true;render();showStatus("");const {data,error}=await supabaseClient.rpc("bid_pi_ticker",{p_message:message,p_price:price});busy=false;
   if(error||!data?.success){const e=data?.error,m={NOT_ENOUGH_COINS:"Недостаточно piCoin.",BID_TOO_LOW:"Ставку уже перебили. Укажите новую цену.",OWN_MESSAGE:"Нельзя перебивать своё сообщение.",PROFANITY:"Сообщение не прошло фильтр.",NO_LINKS:"Ссылки запрещены.",INVALID_MESSAGE:"Нужно от 1 до 80 символов.",INVALID_PRICE:"Укажите целое число piCoin."};showStatus(m[e]||"Не удалось разместить сообщение.",true);await load();return}
-  state=data.status;input.value="";document.getElementById("pi-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");showStatus("Сообщение размещено!");render();
+  state=data.status;input.value="";document.getElementById("pi-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");showCoinFeedback(-price);showStatus("Сообщение размещено!");render();
  }
  openButton?.addEventListener("click",async()=>{await load();if(dialog&&!dialog.open)dialog.showModal()});
  document.getElementById("pi-ticker-close")?.addEventListener("click",()=>dialog?.close());bidInput?.addEventListener("input",updateBid);bidButton?.addEventListener("click",bid);

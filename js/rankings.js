@@ -1,3 +1,26 @@
+let knownWeeklyLeader = null;
+let knownWeeklySeason = null;
+let weeklyLeaderToastTimer = null;
+function showWeeklyLeaderToast(name) {
+  let toast = document.getElementById("weekly-leader-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "weekly-leader-toast";
+    toast.className = "weekly-leader-toast";
+    toast.setAttribute("role", "status");
+    document.body.append(toast);
+  }
+  toast.replaceChildren();
+  const title = document.createElement("strong");
+  title.textContent = "👑 НОВЫЙ ЛИДЕР";
+  const description = document.createElement("span");
+  description.textContent = name + " вышел на первое место";
+  toast.append(title, description);
+  toast.classList.add("visible");
+  clearTimeout(weeklyLeaderToastTimer);
+  weeklyLeaderToastTimer = setTimeout(() => toast.classList.remove("visible"), 2700);
+}
+
 async function loadClassRanking() {
 
   const rankingElement =
@@ -46,6 +69,19 @@ async function loadClassRanking() {
       "<div><span>Рейтинг пока пуст</span></div>";
 
     return;
+  }
+
+  const seasonId = activeSeason?.id ?? null;
+  const leader = Number(data[0]?.pixels_count) > Number(data[1]?.pixels_count ?? -1)
+    ? String(data[0].class_name ?? "") : null;
+  if (knownWeeklySeason !== seasonId) {
+    knownWeeklySeason = seasonId;
+    knownWeeklyLeader = leader;
+  } else if (leader && knownWeeklyLeader && leader !== knownWeeklyLeader && currentUser && !document.hidden) {
+    showWeeklyLeaderToast(leader);
+    knownWeeklyLeader = leader;
+  } else {
+    knownWeeklyLeader = leader;
   }
 
 

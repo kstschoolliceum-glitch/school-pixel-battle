@@ -245,3 +245,17 @@
   .bomb-flash{animation:bomb-flash-reduced .25s ease-out both}
   @keyframes bomb-flash-reduced{0%{opacity:.8;transform:translate(-50%,-50%) rotate(45deg) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.55)}}
 }
+
+/* Small, one-shot responses tied to confirmed actions. */
+.map-beacon-flag.beacon-arrival{animation:beacon-arrival 380ms ease-out both}
+@keyframes beacon-arrival{0%{scale:.5;opacity:.4}65%{scale:1.16;opacity:1}100%{scale:1;opacity:1}}
+#pi-balance-button{position:relative}
+#pi-balance-button.pi-coin-updated{border-color:#fde68a;box-shadow:inset 0 0 0 1px #fbbf2488}
+.pi-coin-feedback{position:absolute;z-index:10;bottom:calc(100% + 3px);right:0;padding:3px 6px;border:1px solid #fbbf24;background:#211909;color:#fde68a;white-space:nowrap;font:900 11px/1.2 "Courier New",monospace;pointer-events:none;opacity:0}
+.pi-coin-feedback.visible{animation:pi-coin-pop 1s ease-out both}
+@keyframes pi-coin-pop{15%{opacity:1;transform:translateY(-4px)}75%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+.weekly-leader-toast{position:fixed;z-index:90;left:50%;bottom:calc(75px + env(safe-area-inset-bottom,0px));width:max-content;max-width:min(320px,calc(100vw - 24px));padding:8px 12px;box-sizing:border-box;border:2px solid #fbbf24;background:#18233b;color:#fff;box-shadow:3px 3px 0 #080b13;text-align:center;pointer-events:none;opacity:0;transform:translate(-50%,5px);transition:opacity .2s,transform .2s}
+.weekly-leader-toast.visible{opacity:1;transform:translate(-50%,0)}
+.weekly-leader-toast strong,.weekly-leader-toast span{display:block;overflow-wrap:anywhere;font:800 12px/1.25 "Courier New",monospace}
+.weekly-leader-toast strong{color:#fde68a}
+@media(prefers-reduced-motion:reduce){.map-beacon-flag.beacon-arrival,.pi-coin-feedback.visible{animation:none;opacity:1}.weekly-leader-toast{transition:none}}

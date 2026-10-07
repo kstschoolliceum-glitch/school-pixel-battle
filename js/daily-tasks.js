@@ -439,6 +439,7 @@ const dailyTasks = (() => {
       return;
     }
     piTaskStatus = data.status;
+    showCoinFeedback(Number(data.reward));
     document.getElementById("pi-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
     document.getElementById("pi-shop-balance").textContent = Number(data.balance || 0).toLocaleString("ru-RU");
     message = "+" + data.reward + " 🪙 · Баланс: " + Number(data.balance || 0).toLocaleString("ru-RU") + " piCoin";
@@ -507,6 +508,7 @@ const dailyTasks = (() => {
     if (!document.hidden && currentUser) load();
   });
   setInterval(() => {
+    piCoin.refreshTurboIndicator();
     if (effectiveRewardState() === "active" || effectiveRewardState() === "claimed") render();
   }, 1000);
 
@@ -517,7 +519,7 @@ const dailyTasks = (() => {
     render();
   }
 
-  return { load, applyStatus, setProfile, reset, recordPiPixel };
+  return { load, applyStatus, setProfile, reset, recordPiPixel, isBoostActive: () => effectiveRewardState() === "active" };
 })();
 
 // Feature modules are loaded from /js in index.html.

@@ -84,12 +84,19 @@ function setPlaceButtonLabel(text) {
   if (placeButtonLabel) placeButtonLabel.textContent = text;
 }
 
-function showPixelPlacementFeedback() {
+function showPixelPlacementFeedback(captured = false) {
   if (!selectionIndicator) return;
-  selectionIndicator.classList.remove("pixel-place-success");
+  selectionIndicator.classList.remove("pixel-place-success", "pixel-place-capture");
   void selectionIndicator.offsetWidth;
-  selectionIndicator.classList.add("pixel-place-success");
-  window.setTimeout(() => selectionIndicator.classList.remove("pixel-place-success"), 260);
+  selectionIndicator.classList.add(captured ? "pixel-place-capture" : "pixel-place-success");
+  window.setTimeout(() => selectionIndicator.classList.remove("pixel-place-success", "pixel-place-capture"), 240);
+}
+
+function showPlacementError() {
+  placeButton.classList.remove("pixel-action-error");
+  void placeButton.offsetWidth;
+  placeButton.classList.add("pixel-action-error");
+  window.setTimeout(() => placeButton.classList.remove("pixel-action-error"), 260);
 }
 
 
@@ -134,16 +141,20 @@ async function placePixel() {
     selectedColor
   ) {
     showPixelUnchangedMessage();
+    showPlacementError();
     return;
   }
 
 
   if (cooldownRemaining > 0) {
+    showPlacementError();
     return;
   }
 
 
   placeButton.disabled = true;
+  const previousOwner = pixelOwners[selectedIndex];
+  const ownClass = document.getElementById("profile-class")?.textContent?.trim();
   const {
     data,
     error
@@ -159,6 +170,7 @@ async function placePixel() {
 
 
   if (error) {
+    showPlacementError();
 
     console.error(
       "Ошибка установки пикселя:",
@@ -192,6 +204,7 @@ async function placePixel() {
    */
 
   if (!data.success) {
+    showPlacementError();
 
     if (
       data.reason === "PIXEL_UNCHANGED"
@@ -276,7 +289,9 @@ async function placePixel() {
 
   drawMap();
 
-  showPixelPlacementFeedback();
+  if (selectedX === data.x && selectedY === data.y) {
+    showPixelPlacementFeedback(Boolean(previousOwner && ownClass && previousOwner !== ownClass));
+  }
 
   startCooldown(Number(data.cooldown) || COOLDOWN_SECONDS);
 
@@ -288,6 +303,13 @@ placeButton.addEventListener(
   "click",
   placePixel
 );
+
+// Disabled controls do not dispatch click; pointerdown still gives a brief visual hint.
+placeButton.addEventListener("pointerdown", () => {
+  if (placeButton.disabled && (cooldownRemaining > 0 || selectedX === null || selectedY === null)) {
+    showPlacementError();
+  }
+});
 
 
 /* -------------------------
