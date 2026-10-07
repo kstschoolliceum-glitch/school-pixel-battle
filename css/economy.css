@@ -81,6 +81,28 @@
 .cosmetic-shop-section{display:grid;gap:8px;margin-top:6px;padding-top:14px;border-top:2px dashed #465574}.cosmetic-shop-section>h3{margin:0;color:#fde68a;font:900 15px/1.2 "Courier New",monospace}.cosmetic-shop-section>p{margin:0;color:#94a3b8;font-size:12px}.cosmetic-shop-list{display:grid;gap:8px}.cosmetic-shop-item{display:grid;grid-template-columns:46px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:10px;border:1px solid #394967;background:#0d1627}.cosmetic-shop-item>div{min-width:0}.cosmetic-shop-item h4,.cosmetic-shop-item p{margin:0}.cosmetic-shop-item h4{color:#f8fafc;font-size:13px}.cosmetic-shop-item p{margin-top:3px;color:#94a3b8;font-size:11px}.cosmetic-shop-item>strong{color:#fde68a;font-size:12px;white-space:nowrap}.cosmetic-shop-item button{min-height:34px;padding:6px 9px;border:1px solid #fbbf24;background:#5b3c08;color:#fff7cf;font:800 10px/1 "Courier New",monospace;cursor:pointer}.cosmetic-shop-item button:disabled{opacity:.5;cursor:not-allowed}.cosmetic-preview{display:grid;place-items:center;width:42px;height:42px;border:2px solid #475569;background:#111827;font:900 18px/1 "Courier New",monospace}.cosmetic-preview[data-preview-frame="frame_neon"]{border-color:#22d3ee;box-shadow:0 0 10px #22d3ee}.cosmetic-preview[data-preview-frame="frame_gold"]{border-color:#fbbf24;box-shadow:0 0 0 2px #78350f}.cosmetic-preview[data-preview-frame="frame_fire"]{border-color:#fb923c;box-shadow:0 0 12px #ef4444}.cosmetic-preview[data-preview-frame="frame_galaxy"]{border-color:#c084fc;box-shadow:0 0 12px #6366f1}.chat-message-author.has-cosmetic-color{text-shadow:0 0 7px currentColor}.profile-info[data-profile-frame="frame_neon"],.player-card-dialog[data-profile-frame="frame_neon"] .player-card-identity{border-color:#22d3ee;box-shadow:0 0 14px #22d3ee66}.profile-info[data-profile-frame="frame_gold"],.player-card-dialog[data-profile-frame="frame_gold"] .player-card-identity{border-color:#fbbf24;box-shadow:0 0 0 3px #78350f}.profile-info[data-profile-frame="frame_fire"],.player-card-dialog[data-profile-frame="frame_fire"] .player-card-identity{border-color:#fb923c;box-shadow:0 0 16px #ef444477}.profile-info[data-profile-frame="frame_galaxy"],.player-card-dialog[data-profile-frame="frame_galaxy"] .player-card-identity{border-color:#c084fc;box-shadow:0 0 16px #6366f188}
 @media(max-width:650px){.cosmetic-shop-item{grid-template-columns:42px minmax(0,1fr) auto}.cosmetic-shop-item button{grid-column:1/-1;width:100%}}
 
+/* Shared decorative border for the owner's profile, public player card and shop preview. */
+:is(.profile-info[data-profile-frame],.player-card-dialog[data-profile-frame] .player-card-identity,.cosmetic-preview[data-preview-frame]){position:relative}
+:is(.profile-info[data-profile-frame^="frame_"],.player-card-dialog[data-profile-frame^="frame_"] .player-card-identity,.cosmetic-preview[data-preview-frame^="frame_"])::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  padding:3px;border-radius:inherit;
+  background:var(--frame-colors) 0 50%/300% 300%;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;
+  animation:frame-flow var(--frame-speed) linear infinite,frame-glow 3.5s ease-in-out infinite alternate;
+}
+:is(.profile-info[data-profile-frame="frame_neon"],.player-card-dialog[data-profile-frame="frame_neon"] .player-card-identity,.cosmetic-preview[data-preview-frame="frame_neon"]){--frame-colors:linear-gradient(110deg,#0e7490,#67e8f9,#2563eb,#22d3ee,#0e7490);--frame-speed:4s;box-shadow:0 0 8px #22d3ee88,inset 0 0 7px #22d3ee33}
+:is(.profile-info[data-profile-frame="frame_gold"],.player-card-dialog[data-profile-frame="frame_gold"] .player-card-identity,.cosmetic-preview[data-preview-frame="frame_gold"]){--frame-colors:linear-gradient(115deg,#713f12,#d97706,#fff4b0,#eab308,#92400e);--frame-speed:6s;box-shadow:0 0 10px #fbbf2488,inset 0 0 10px #eab30844}
+:is(.profile-info[data-profile-frame="frame_fire"],.player-card-dialog[data-profile-frame="frame_fire"] .player-card-identity,.cosmetic-preview[data-preview-frame="frame_fire"]){--frame-colors:linear-gradient(130deg,#7f1d1d,#f97316,#fbbf24,#ef4444,#7f1d1d);--frame-speed:3.7s;box-shadow:0 0 12px #f9731688,inset 0 0 11px #ef444444}
+:is(.profile-info[data-profile-frame="frame_galaxy"],.player-card-dialog[data-profile-frame="frame_galaxy"] .player-card-identity,.cosmetic-preview[data-preview-frame="frame_galaxy"]){--frame-colors:linear-gradient(120deg,#312e81,#818cf8,#c084fc,#38bdf8,#6d28d9);--frame-speed:9s;box-shadow:0 0 14px #a78bfa99,inset 0 0 14px #6366f155}
+.profile-info[data-profile-frame^="frame_"]{border-radius:5px}
+.cosmetic-preview[data-preview-frame^="frame_"]{border-color:transparent}
+@keyframes frame-flow{to{background-position:100% 50%}}
+@keyframes frame-glow{to{opacity:.68}}
+@media(prefers-reduced-motion:reduce){:is(.profile-info[data-profile-frame^="frame_"],.player-card-dialog[data-profile-frame^="frame_"] .player-card-identity,.cosmetic-preview[data-preview-frame^="frame_"])::before{animation:none;background-position:50% 50%}}
+
 
 /* ---------- SHOP AND INVENTORY UX ---------- */
 .pi-balance-shop {

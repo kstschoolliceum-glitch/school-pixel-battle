@@ -53,7 +53,7 @@ const piCoin = (() => {
       button.textContent = claimed ? "БОНУС ПОЛУЧЕН ✓" : "ЗАБРАТЬ " + rewards[current - 1] + " piCoin";
     });
     if (todayBonusStatus) todayBonusStatus.textContent = claimed ? "Получено ✓" : rewards[current - 1] + " piCoin";
-    if (buyButton) buyButton.disabled = busy || amount < 160;
+    if (buyButton) buyButton.disabled = busy || amount < 180;
   }
 
   function offerKey() {
@@ -137,8 +137,8 @@ const piCoin = (() => {
   }
 
   async function buy() {
-    if (busy || Number(status?.balance || 0) < 160) return;
-    if (!confirm("Купить Турбокисть на 10 минут за 160 piCoin? Она включится сразу.")) return;
+    if (busy || Number(status?.balance || 0) < 180) return;
+    if (!confirm("Купить Турбокисть на 10 минут за 180 piCoin? Она включится сразу.")) return;
     busy = true;
     render();
     message(shopMessage, "");
@@ -248,7 +248,7 @@ const profileCosmetics=(()=>{
 
 // ---------- MAP ITEMS ----------
 const mapItems=(()=>{
- const counts={bomb:0,beacon:0,detector:0},prices={bomb:450,beacon:90,detector:15},names={bomb:"💣 Бомба",beacon:"📍 Маяк",detector:"🕵️ Детектор"};let beacons=[],bombCells=new Set(),busy=false,openedBeacon=null;
+ const counts={bomb:0,beacon:0,detector:0},prices={bomb:550,beacon:100,detector:15},names={bomb:"💣 Бомба",beacon:"📍 Маяк",detector:"🕵️ Детектор"};let beacons=[],bombCells=new Set(),busy=false,openedBeacon=null;
  const output=document.getElementById("map-item-message"),guidance=document.getElementById("map-items-guidance"),totalLabel=document.getElementById("map-items-total"),shopItemButton=document.getElementById("pi-shop-open-items"),key=(x,y)=>x+":"+y;
  const beaconLayer=document.getElementById("beacon-layer"),beaconDialog=document.getElementById("beacon-dialog"),beaconLabel=document.getElementById("beacon-dialog-label"),beaconClass=document.getElementById("beacon-dialog-class"),beaconRemove=document.getElementById("beacon-remove-button"),beaconStatus=document.getElementById("beacon-dialog-status");
  function say(text,error=false){if(output){output.textContent=text;output.classList.toggle("error",error)}}

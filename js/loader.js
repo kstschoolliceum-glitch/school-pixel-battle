@@ -41,7 +41,7 @@
   "js/unblock-me.js?v=1",
   "js/promo-codes.js?v=1",
   "js/interface-sound.js?v=1",
-  "js/pi-coin.js?v=2",
+  "js/pi-coin.js?v=3",
   "js/music.js?v=1",
   "js/sokoban.js?v=1",
   "js/fifteen.js?v=1",
