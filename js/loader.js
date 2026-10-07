@@ -42,7 +42,7 @@
   "js/promo-codes.js?v=1",
   "js/interface-sound.js?v=1",
   "js/pi-coin.js?v=6",
-  "js/music.js?v=5",
+  "js/music.js?v=6",
   "js/sokoban.js?v=1",
   "js/fifteen.js?v=1",
   "js/tasks-tabs.js?v=1",
