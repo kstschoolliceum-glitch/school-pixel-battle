@@ -10,7 +10,7 @@
   if (!audio) return;
   const key = 'pixelBattleMusicEnabled';
   const enabled = () => localStorage.getItem(key) !== 'false';
-  let tracks = [], index = 0, failures = 0, started = false, selectedFile = null;
+  let tracks = [], index = 0, failures = 0, started = false, selectedFile = null, settingsChannel = null, settingsPoll = null;
   audio.volume = 0.35;
   function update() {
     if (preference) preference.checked = enabled();
@@ -42,16 +42,62 @@
     selectedFile = data?.value || null;
   }
 
+  function applySelectedTrack(file) {
+    if (!file || file === selectedFile || !tracks.some(track => track.file === file)) return;
+    selectedFile = file;
+    index = Math.max(0, tracks.findIndex(track => track.file === file));
+    selectTrack();
+    failures = 0;
+    if (enabled()) {
+      started = true;
+      play();
+    }
+    renderAdminTracks();
+  }
+
+  function startSettingsSync() {
+    if (typeof supabaseClient === 'undefined') return;
+    if (!settingsChannel) {
+      settingsChannel = supabaseClient
+        .channel('music-settings')
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'game_settings',
+          filter: 'key=eq.music_track'
+        }, payload => applySelectedTrack(payload.new?.value))
+        .subscribe();
+    }
+    if (!settingsPoll) {
+      settingsPoll = setInterval(async () => {
+        if (typeof currentUser === 'undefined' || !currentUser) return;
+        const previous = selectedFile;
+        await loadSelectedTrack().catch(() => {});
+        if (selectedFile && selectedFile !== previous) {
+          const changed = selectedFile;
+          selectedFile = previous;
+          applySelectedTrack(changed);
+        }
+      }, 10000);
+    }
+  }
+
+  function stopSettingsSync() {
+    if (settingsPoll) clearInterval(settingsPoll);
+    settingsPoll = null;
+    if (settingsChannel && typeof supabaseClient !== 'undefined') {
+      supabaseClient.removeChannel(settingsChannel);
+    }
+    settingsChannel = null;
+  }
+
   async function chooseTrack(file) {
     if (typeof currentUserIsAdmin === 'undefined' || !currentUserIsAdmin) return;
     const { error } = await supabaseClient.rpc('set_music_track', { p_file: file });
     if (error) throw error;
-    selectedFile = file;
-    index = Math.max(0, tracks.findIndex(track => track.file === file));
-    selectTrack();
-    started = true;
-    if (enabled()) play();
-    renderAdminTracks();
+    const previous = selectedFile;
+    selectedFile = previous;
+    applySelectedTrack(file);
   }
 
   function renderAdminTracks() {
@@ -149,10 +195,17 @@
       message.textContent = 'Не удалось загрузить опубликованный плейлист.';
     } finally { refresh.disabled = false; }
   });
-  window.musicPlayer = { stopForLogout() { audio.pause(); started = false; } };
+  window.musicPlayer = {
+    stopForLogout() {
+      audio.pause();
+      started = false;
+      stopSettingsSync();
+    }
+  };
   Promise.all([loadManifest(), loadSelectedTrack().catch(() => {})]).then(() => {
     if (selectedFile && tracks.some(track => track.file === selectedFile)) selectTrack();
     renderAdminTracks();
+    startSettingsSync();
   }).catch(() => { if (count) count.textContent = 'Плейлист недоступен'; });
   update();
 })();
