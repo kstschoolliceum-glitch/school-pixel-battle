@@ -17,6 +17,9 @@ declare
   definition text;
   old_text text;
   replacement text;
+  ledger_pattern text;
+  matched_statement text;
+  match_count integer;
 begin
   for r in
     select * from (values
@@ -78,6 +81,25 @@ begin
   loop
     definition := pg_get_functiondef(to_regprocedure(r.signature));
     if definition is null then raise exception 'Missing function: %', r.signature; end if;
+    -- pg_get_functiondef preserves the deployed body's whitespace. The ledger
+    -- inserts exist in both compact and multiline versions; verify the whole
+    -- exact operation, including columns and values, before wrapping it.
+    if r.signature in ('public.buy_map_item(text)', 'public.buy_pi_coin_turbo()')
+       and r.needle like 'insert into public.pi_coin_transactions%' then
+      if r.signature = 'public.buy_map_item(text)' then
+        ledger_pattern := $re$insert[[:space:]]+into[[:space:]]+public[.]pi_coin_transactions[[:space:]]*[(][[:space:]]*user_id[[:space:]]*,[[:space:]]*amount[[:space:]]*,[[:space:]]*reason[[:space:]]*,[[:space:]]*item_type[[:space:]]*[)][[:space:]]*values[[:space:]]*[(][[:space:]]*u[[:space:]]*,[[:space:]]*-price[[:space:]]*,[[:space:]]*'item_purchase'[[:space:]]*,[[:space:]]*p_item_type[[:space:]]*[)][[:space:]]*;$re$;
+      else
+        ledger_pattern := $re$insert[[:space:]]+into[[:space:]]+public[.]pi_coin_transactions[[:space:]]*[(][[:space:]]*user_id[[:space:]]*,[[:space:]]*amount[[:space:]]*,[[:space:]]*reason[[:space:]]*[)][[:space:]]*values[[:space:]]*[(][[:space:]]*u[[:space:]]*,[[:space:]]*-price[[:space:]]*,[[:space:]]*'turbo_purchase'[[:space:]]*[)][[:space:]]*;$re$;
+      end if;
+      select count(*) into match_count from regexp_matches(definition, ledger_pattern, 'g');
+      if match_count <> 1 then
+        raise exception 'Unexpected ledger operation in % (matches: %)', r.signature, match_count;
+      end if;
+      matched_statement := substring(definition from ledger_pattern);
+      execute replace(definition, matched_statement,
+        'if not public.is_gameplay_admin() then ' || matched_statement || ' end if;');
+      continue;
+    end if;
     old_text := replace(r.needle, E'\\n', E'\n');
     replacement := replace(r.substitute, E'\\n', E'\n');
     if length(definition)-length(replace(definition,old_text,'')) <> length(old_text) then
