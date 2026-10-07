@@ -1,0 +1,40 @@
+name: Publish music playlist
+on:
+  push:
+    branches: [main]
+    paths: ['assets/music/**', 'scripts/generate-music-playlist.mjs', '.github/workflows/music-playlist.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages-music
+  cancel-in-progress: false
+jobs:
+  playlist:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/generate-music-playlist.mjs
+      - name: Commit updated manifest
+        run: |
+          git add assets/music-playlist.json
+          if ! git diff --cached --quiet -- assets/music-playlist.json; then
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git commit -m "Update published music playlist"
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

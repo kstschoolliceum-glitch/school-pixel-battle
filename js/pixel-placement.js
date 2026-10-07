@@ -146,7 +146,7 @@ async function placePixel() {
   }
 
 
-  if (cooldownRemaining > 0) {
+  if (cooldownRemaining > 0 && !currentUserIsAdmin) {
     showPlacementError();
     return;
   }
@@ -293,7 +293,7 @@ async function placePixel() {
     showPixelPlacementFeedback(Boolean(previousOwner && ownClass && previousOwner !== ownClass));
   }
 
-  startCooldown(Number(data.cooldown) || COOLDOWN_SECONDS);
+  startCooldown(Number.isFinite(Number(data.cooldown)) ? Number(data.cooldown) : COOLDOWN_SECONDS);
 
   scheduleRankingRefresh();
   updateDisplayedProfileAfterPixel();
@@ -324,6 +324,8 @@ function startCooldown(seconds = COOLDOWN_SECONDS) {
   updateCooldown();
 
   clearInterval(cooldownTimer);
+
+  if (cooldownRemaining <= 0) return;
 
   cooldownTimer =
     setInterval(() => {
@@ -357,7 +359,7 @@ function resetPixelCooldownAfterReward() {
 
 function updateCooldown() {
 
-  if (cooldownRemaining <= 0) {
+  if (cooldownRemaining <= 0 || currentUserIsAdmin) {
 
     cooldownText.textContent =
       "Пиксель готов";
@@ -380,7 +382,7 @@ function updatePlaceButton() {
    * Идёт cooldown.
    */
 
-  if (cooldownRemaining > 0) {
+  if (cooldownRemaining > 0 && !currentUserIsAdmin) {
 
     placeButton.disabled = true;
 

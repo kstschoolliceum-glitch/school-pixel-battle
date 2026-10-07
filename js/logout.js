@@ -45,6 +45,7 @@ logoutButton.addEventListener(
     mapItems.stopBombEffects();
     clearStencilView();
     currentUser = null;
+    window.musicPlayer?.stopForLogout();
     currentChatNickname = "";
     dailyTasks.reset();
     unblockMeGame.reset();

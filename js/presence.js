@@ -165,6 +165,8 @@ async function checkAdminStatus() {
   currentUserIsAdmin =
     data === true;
 
+  updateCooldown();
+
   syncChatMessageLimit();
 
   if (currentUserIsAdmin) {

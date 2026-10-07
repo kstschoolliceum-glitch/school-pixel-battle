@@ -80,7 +80,7 @@ const piCoin = (() => {
       button.textContent = claimed ? "БОНУС ПОЛУЧЕН ✓" : "ЗАБРАТЬ " + rewards[current - 1] + " piCoin";
     });
     if (todayBonusStatus) todayBonusStatus.textContent = claimed ? "Получено ✓" : rewards[current - 1] + " piCoin";
-    if (buyButton) buyButton.disabled = busy || amount < 180;
+    if (buyButton) buyButton.disabled = busy || (!currentUserIsAdmin && amount < 180);
     refreshTurboIndicator();
   }
 
@@ -170,8 +170,8 @@ const piCoin = (() => {
   }
 
   async function buy() {
-    if (busy || Number(status?.balance || 0) < 180) return;
-    if (!confirm("Купить Турбокисть на 10 минут за 180 piCoin? Она включится сразу.")) return;
+    if (busy || (!currentUserIsAdmin && Number(status?.balance || 0) < 180)) return;
+    if (!confirm(currentUserIsAdmin ? "Включить Турбокисть для тестирования бесплатно?" : "Купить Турбокисть на 10 минут за 180 piCoin? Она включится сразу.")) return;
     busy = true;
     render();
     message(shopMessage, "");
@@ -398,7 +398,7 @@ const mapItems=(()=>{
   drawMap();
  }
  async function load(){if(!currentUser||!activeSeason?.id)return;subscribeBombEffects();const {data,error}=await supabaseClient.rpc("get_map_item_status",{p_season_id:activeSeason.id});if(error){console.warn("MAP ITEMS:",error);say("Выполните новую SQL-миграцию для предметов.",true);return}applyStatus(data)}
- async function buy(type){if(busy||!prices[type])return;if(!confirm("Купить за "+prices[type]+" piCoin?"))return;busy=true;const before=Number(document.getElementById("pi-balance")?.textContent?.replace(/[^\d]/g,"")||0);const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);showCoinFeedback(-Math.max(0,before-Number(data.status?.balance||0)));piCoin.load();const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
+ async function buy(type){if(busy||!prices[type])return;if(!confirm(currentUserIsAdmin?"Получить предмет бесплатно для тестирования?":"Купить за "+prices[type]+" piCoin?"))return;busy=true;const before=Number(document.getElementById("pi-balance")?.textContent?.replace(/[^\d]/g,"")||0);const {data,error}=await supabaseClient.rpc("buy_map_item",{p_item_type:type});busy=false;if(error||!data?.success){console.warn("MAP ITEM PURCHASE:",error||data);const e=data?.error;say(e==="NOT_ENOUGH_COINS"?"Недостаточно piCoin.":e==="DAILY_LIMIT"?"Суточный лимит покупок исчерпан.":e==="INVENTORY_LIMIT"?"Инвентарь заполнен.":"Покупка не выполнена. Обновите страницу и попробуйте снова.",true);return}applyStatus(data.status);showCoinFeedback(-Math.max(0,before-Number(data.status?.balance||0)));piCoin.load();const shopOutput=document.getElementById("pi-shop-message");if(shopOutput){shopOutput.textContent=names[type]+" куплена. Теперь она находится в 🎒 Моих предметах на карте.";shopOutput.classList.remove("error")}shopItemButton?.classList.remove("hidden")}
  async function use(type){if(busy)return;if(selectedX===null||selectedY===null){say("Сначала выберите клетку.",true);return}if(counts[type]<=0){say("Сначала купите предмет.",true);return}busy=true;let result;const useX=selectedX,useY=selectedY;
   if(type==="bomb"){if(!confirm("💣 Взорвать эту область? Бомба изменит 313 клеток.")){busy=false;return}result=await supabaseClient.rpc("use_map_bomb",{p_x:useX,p_y:useY})}
   else if(type==="beacon"){const label=prompt("Подпись маяка — до 32 символов:","");if(label===null){busy=false;return}if(!label.trim()||label.trim().length>32){busy=false;say("Нужно от 1 до 32 символов.",true);return}result=await supabaseClient.rpc("place_map_beacon",{p_x:selectedX,p_y:selectedY,p_label:label.trim()})}
