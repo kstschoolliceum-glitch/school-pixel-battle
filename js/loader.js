@@ -37,7 +37,7 @@
   "js/season-archive-map.js?v=1",
   "js/notifications.js?v=2",
   "js/daily-tasks.js?v=5",
-  "js/player-card.js?v=1",
+  "js/player-card.js?v=2",
   "js/unblock-me.js?v=1",
   "js/promo-codes.js?v=1",
   "js/interface-sound.js?v=1",
