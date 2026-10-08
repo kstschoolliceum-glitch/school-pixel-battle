@@ -130,6 +130,7 @@ const playerCard = (() => {
     const secretLocked = Boolean(item.secret && !item.unlocked);
     setAchievementArtwork(achievementPopupIcon, item);
     achievementPopupIcon.dataset.rarity = achievementRarity(item);
+    achievementPopupIcon.classList.toggle("is-locked", !item.unlocked);
     achievementPopupTitle.textContent = secretLocked
       ? "Секретное достижение"
       : (item.title || "Достижение");
@@ -188,22 +189,101 @@ const playerCard = (() => {
     return "common";
   }
 
+  // Rasterize each complete Unicode emoji once; no canvas is attached to the page.
+  const emojiPixels = new Map();
+  let emojiSource;
+  let emojiSmall;
+  let emojiSourceContext;
+  let emojiSmallContext;
+
+  function pixelatedEmoji(emoji) {
+    if (emojiPixels.has(emoji)) return emojiPixels.get(emoji);
+    let result = null;
+    try {
+      if (!emoji || emoji.length > 64 || !emoji.trim()) throw new Error("Invalid emoji");
+      if (!emojiSource) {
+        emojiSource = document.createElement("canvas");
+        emojiSmall = document.createElement("canvas");
+        emojiSource.width = emojiSource.height = 64;
+        emojiSmall.width = emojiSmall.height = 24;
+        emojiSourceContext = emojiSource.getContext("2d", { willReadFrequently: true });
+        emojiSmallContext = emojiSmall.getContext("2d", { willReadFrequently: true });
+      }
+      if (!emojiSourceContext || !emojiSmallContext) throw new Error("Canvas unavailable");
+
+      const source = emojiSourceContext;
+      source.clearRect(0, 0, 64, 64);
+      source.textAlign = "center";
+      source.textBaseline = "middle";
+      const fonts = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+      source.font = `48px ${fonts}`;
+      const metrics = source.measureText(emoji);
+      const boundsWidth = Math.max(metrics.width,
+        (metrics.actualBoundingBoxLeft || 0) + (metrics.actualBoundingBoxRight || 0));
+      const boundsHeight = (metrics.actualBoundingBoxAscent || 0) +
+        (metrics.actualBoundingBoxDescent || 0);
+      if (!Number.isFinite(boundsWidth) || boundsWidth <= 0) throw new Error("Empty glyph");
+      const scale = Math.min(1, 56 / Math.max(boundsWidth, boundsHeight, 1));
+      source.font = `${Math.max(16, Math.floor(48 * scale))}px ${fonts}`;
+      source.fillText(emoji, 32, 32);
+
+      // Crop to rendered alpha bounds so flags and ZWJ emoji retain their proportions.
+      const pixels = source.getImageData(0, 0, 64, 64).data;
+      let left = 64, top = 64, right = -1, bottom = -1;
+      for (let y = 0; y < 64; y++) {
+        for (let x = 0; x < 64; x++) {
+          if (pixels[(y * 64 + x) * 4 + 3] < 8) continue;
+          left = Math.min(left, x);
+          top = Math.min(top, y);
+          right = Math.max(right, x);
+          bottom = Math.max(bottom, y);
+        }
+      }
+      if (right < 0 || left === 0 || top === 0 || right === 63 || bottom === 63) {
+        throw new Error("Empty or clipped glyph");
+      }
+      const width = right - left + 1, height = bottom - top + 1;
+      const fit = Math.min(22 / width, 22 / height);
+      const outputWidth = Math.max(1, Math.round(width * fit));
+      const outputHeight = Math.max(1, Math.round(height * fit));
+      const small = emojiSmallContext;
+      small.clearRect(0, 0, 24, 24);
+      small.imageSmoothingEnabled = true;
+      small.drawImage(emojiSource, left, top, width, height,
+        Math.floor((24 - outputWidth) / 2), Math.floor((24 - outputHeight) / 2),
+        outputWidth, outputHeight);
+      if (!small.getImageData(0, 0, 24, 24).data.some((_, i, data) =>
+        i % 4 === 3 && data[i] > 0)) throw new Error("Transparent output");
+      result = emojiSmall.toDataURL("image/png");
+      if (!result.startsWith("data:image/png;base64,")) result = null;
+    } catch {
+      result = null; // Keep the complete original emoji as visible text.
+    }
+    if (emojiPixels.size >= 150) emojiPixels.delete(emojiPixels.keys().next().value);
+    emojiPixels.set(emoji, result);
+    return result;
+  }
+
   function setAchievementArtwork(container, item) {
-    const secretLocked = Boolean(item.secret && !item.unlocked);
+    const emoji = String(item.secret && !item.unlocked ? "❓" : (item.icon || "🏆"));
     const fallback = document.createElement("span");
     fallback.className = "achievement-art-fallback";
-    fallback.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+    fallback.textContent = emoji;
     container.replaceChildren(fallback);
-    if (secretLocked || !/^[a-z0-9_-]+$/.test(String(item.id || ""))) return;
+    const src = pixelatedEmoji(emoji);
+    if (!src) return;
     const image = document.createElement("img");
     image.className = "achievement-art-image";
     image.alt = "";
-    image.loading = "lazy";
     image.decoding = "async";
-    image.src = "assets/achievements/" + item.id + ".svg";
     image.addEventListener("load", () => { fallback.hidden = true; });
-    image.addEventListener("error", () => { image.remove(); fallback.hidden = false; });
+    image.addEventListener("error", () => {
+      emojiPixels.set(emoji, null);
+      image.remove();
+      fallback.hidden = false;
+    });
     container.append(image);
+    image.src = src;
   }
 
   function createAchievementBadge(item) {

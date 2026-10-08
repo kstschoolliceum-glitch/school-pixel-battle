@@ -1465,11 +1465,12 @@
 .player-card-achievement-badge:hover { transform: translateY(-2px); }
 .player-card-achievement-badge-icon { position:relative; display:grid; place-items:center; width:100%; min-height:38px; }
 .achievement-art-fallback { line-height:1; }
-.achievement-art-image { width:42px; height:42px; max-width:100%; object-fit:contain; image-rendering:pixelated; }
+.achievement-art-image { display:block; width:40px; height:40px; max-width:100%; object-fit:contain; image-rendering:pixelated; }
 .achievement-art-fallback[hidden] { display:none; }
 .player-card-achievement-badge:not(.is-unlocked) .achievement-art-image { filter:grayscale(1) brightness(.55); }
 .player-achievement-popup-icon { position:relative; }
-.player-achievement-popup-icon .achievement-art-image { width:56px; height:56px; }
+.player-achievement-popup-icon .achievement-art-image { width:48px; height:48px; }
+.player-achievement-popup-icon.is-locked .achievement-art-image { filter:grayscale(1) brightness(.55); }
 .player-achievement-popup-icon[data-rarity="legendary"] { border-color:#ffcb58; }
 .player-achievement-popup-icon[data-rarity="epic"] { border-color:#bb77ed; }
 .player-achievement-popup-icon[data-rarity="rare"] { border-color:#55aaff; }
