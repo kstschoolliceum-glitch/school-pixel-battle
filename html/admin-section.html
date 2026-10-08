@@ -823,6 +823,26 @@
 
     <form id="admin-promo-form" class="admin-promo-create-card">
       <div class="admin-promo-grid">
+        <label>
+          Тип награды
+          <select id="admin-promo-reward-type">
+            <option value="pixel_hour">⚡ Пиксельный час</option>
+            <option value="map_item">🎒 Предмет из магазина</option>
+          </select>
+        </label>
+        <label class="admin-promo-item-field hidden">
+          Предмет
+          <select id="admin-promo-item-type">
+            <option value="bomb">💣 Бомба</option>
+            <option value="beacon">📍 Маяк</option>
+            <option value="detector">🕵️ Детектор</option>
+          </select>
+        </label>
+        <label class="admin-promo-item-field hidden">
+          Количество предметов
+          <input id="admin-promo-item-quantity" type="number" min="1" max="100" step="1" value="1">
+          <small>Не больше 100 единиц на одну активацию и 100 в инвентаре.</small>
+        </label>
         <label class="admin-promo-code-field">
           Промокод
           <div class="admin-promo-code-input">
@@ -853,7 +873,7 @@
           >
         </label>
 
-        <label>
+        <label class="admin-promo-hour-field">
           Длительность, минут
           <input
             id="admin-promo-duration"
@@ -865,7 +885,7 @@
           >
         </label>
 
-        <label>
+        <label class="admin-promo-hour-field">
           Скорость установки
           <select id="admin-promo-cooldown">
             <option value="1">1 пиксель в секунду</option>

@@ -124,6 +124,8 @@
   gap: 16px;
 }
 
+.admin-promo-grid .hidden { display: none; }
+
 .admin-promo-grid label {
   display: flex;
   flex-direction: column;

@@ -39,7 +39,7 @@
   "js/daily-tasks.js?v=5",
   "js/player-card.js?v=4",
   "js/unblock-me.js?v=1",
-  "js/promo-codes.js?v=1",
+  "js/promo-codes.js?v=2",
   "js/interface-sound.js?v=1",
   "js/pi-coin.js?v=8",
   "js/sokoban.js?v=1",

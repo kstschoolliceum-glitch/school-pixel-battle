@@ -7,6 +7,10 @@ const adminPromoCodes = (() => {
   const codeInput = document.getElementById("admin-promo-code");
   const generateButton = document.getElementById("admin-promo-generate");
   const titleInput = document.getElementById("admin-promo-title");
+  const rewardTypeInput = document.getElementById("admin-promo-reward-type");
+  const itemTypeInput = document.getElementById("admin-promo-item-type");
+  const itemQuantityInput = document.getElementById("admin-promo-item-quantity");
+  const itemNames = { bomb: "💣 Бомба", beacon: "📍 Маяк", detector: "🕵️ Детектор" };
   const durationInput = document.getElementById("admin-promo-duration");
   const cooldownInput = document.getElementById("admin-promo-cooldown");
   const usesInput = document.getElementById("admin-promo-uses");
@@ -103,12 +107,15 @@ const adminPromoCodes = (() => {
 
       const details = document.createElement("div");
       details.className = "admin-promo-details";
-      details.innerHTML = [
-        `<span>⚡ ${Number(promo.cooldown_seconds)} сек.</span>`,
-        `<span>⏱ ${formatDuration(promo.duration_seconds)}</span>`,
-        `<span>👤 ${Number(promo.redemption_count)} / ${Number(promo.max_redemptions)}</span>`,
-        `<span>📅 ${formatDate(promo.expires_at)}</span>`
-      ].join("");
+      const reward = promo.reward_type === "map_item"
+        ? `${itemNames[promo.item_type] || "Предмет"} ×${Number(promo.item_quantity)}`
+        : `⚡ ${Number(promo.cooldown_seconds)} сек. · ${formatDuration(promo.duration_seconds)}`;
+      [reward, `👤 ${Number(promo.redemption_count)} / ${Number(promo.max_redemptions)}`,
+        `📅 ${formatDate(promo.expires_at)}`].forEach(value => {
+        const detail = document.createElement("span");
+        detail.textContent = value;
+        details.appendChild(detail);
+      });
 
       const actions = document.createElement("div");
       actions.className = "admin-promo-actions";
@@ -182,6 +189,24 @@ const adminPromoCodes = (() => {
     }
   });
 
+  function syncRewardFields() {
+    const isItem = rewardTypeInput.value === "map_item";
+    form.querySelectorAll(".admin-promo-item-field").forEach(el => el.classList.toggle("hidden", !isItem));
+    form.querySelectorAll(".admin-promo-hour-field").forEach(el => el.classList.toggle("hidden", isItem));
+    durationInput.required = !isItem;
+    itemQuantityInput.required = isItem;
+    if (titleInput.value === "Пиксельный час" || /^Предмет: /.test(titleInput.value)) {
+      titleInput.value = isItem ? "Предмет: " + itemNames[itemTypeInput.value] : "Пиксельный час";
+    }
+  }
+  rewardTypeInput.addEventListener("change", syncRewardFields);
+  itemTypeInput.addEventListener("change", () => {
+    if (rewardTypeInput.value === "map_item" && /^Предмет: /.test(titleInput.value)) {
+      titleInput.value = "Предмет: " + itemNames[itemTypeInput.value];
+    }
+  });
+  syncRewardFields();
+
   generateButton?.addEventListener("click", generateCode);
 
   form.addEventListener("submit", async event => {
@@ -193,14 +218,28 @@ const adminPromoCodes = (() => {
     const maxRedemptions = Number(usesInput.value);
     const validDays = Number(validDaysInput.value);
 
+    const isItem = rewardTypeInput.value === "map_item";
+    const itemQuantity = Number(itemQuantityInput.value);
+    if (isItem && (!Number.isInteger(itemQuantity) || itemQuantity < 1 || itemQuantity > 100)) {
+      setMessage("Укажи целое количество предметов от 1 до 100.", true);
+      return;
+    }
+
     submitButton.disabled = true;
     submitButton.textContent = "СОЗДАЁМ…";
     createdBox.classList.add("hidden");
     setMessage("");
 
     const { data, error } = await supabaseClient.rpc(
-      "admin_create_promo_code",
-      {
+      isItem ? "admin_create_item_promo_code" : "admin_create_promo_code",
+      isItem ? {
+        p_code: codeInput.value.trim(),
+        p_title: titleInput.value.trim(),
+        p_item_type: itemTypeInput.value,
+        p_item_quantity: itemQuantity,
+        p_max_redemptions: maxRedemptions,
+        p_valid_days: validDays
+      } : {
         p_code: codeInput.value.trim(),
         p_title: titleInput.value.trim(),
         p_duration_seconds: Math.round(durationMinutes * 60),
@@ -326,9 +365,9 @@ const promoCodes = (() => {
       statusElement.classList.add("active");
       statusElement.textContent =
         `⚡ Пиксельный час активен · ${formatDuration(remaining)} · 1 пиксель/сек`;
-      input.disabled = true;
-      button.disabled = true;
-      button.textContent = "БОНУС АКТИВЕН";
+      input.disabled = false;
+      button.disabled = false;
+      button.textContent = "АКТИВИРОВАТЬ ДРУГОЙ КОД";
       return;
     }
 
@@ -378,7 +417,8 @@ const promoCodes = (() => {
       CODE_EXPIRED: "Срок действия промокода закончился.",
       CODE_ALREADY_USED: "Этот одноразовый промокод уже использован.",
       PROMO_ALREADY_ACTIVE: "У тебя уже действует бонус от промокода.",
-      ALREADY_REDEEMED: "Ты уже использовал этот промокод."
+      ALREADY_REDEEMED: "Ты уже использовал этот промокод.",
+      INVENTORY_LIMIT: "Недостаточно места в инвентаре для всей награды (максимум 100 предметов каждого типа)."
     };
 
     return messages[reason] || "Не удалось активировать промокод.";
@@ -413,6 +453,15 @@ const promoCodes = (() => {
 
     if (!data?.success) {
       showMessage(reasonMessage(data?.reason), true);
+      renderStatus();
+      return;
+    }
+
+    if (data.reward_type === "map_item") {
+      const names = { bomb: "💣 Бомба", beacon: "📍 Маяк", detector: "🕵️ Детектор" };
+      input.value = "";
+      showMessage(`🎉 Промокод активирован! Получено: ${names[data.item_type]} ×${data.item_quantity}`);
+      await mapItems.load();
       renderStatus();
       return;
     }
