@@ -82,17 +82,17 @@ function startSeasonCountdown() {
     if (days > 0) {
 
       countdownElement.textContent =
-        `Осталось ${days} дн. ${hours} ч.`;
+        `${days} дн. ${hours} ч.`;
 
     } else if (hours > 0) {
 
       countdownElement.textContent =
-        `Осталось ${hours} ч. ${minutes} мин.`;
+        `${hours} ч. ${minutes} мин.`;
 
     } else {
 
       countdownElement.textContent =
-        `Осталось ${minutes} мин.`;
+        `${minutes} мин.`;
 
     }
 

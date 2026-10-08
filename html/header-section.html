@@ -4,7 +4,7 @@
         👑 <span>PIXEL <b>BATTLE</b></span>
       </div>
       <button id="pi-ticker-open" class="pi-ticker" type="button"
-        aria-haspopup="dialog" aria-controls="pi-ticker-dialog" title="Разместить сообщение">
+        aria-haspopup="dialog" aria-controls="pi-ticker-info-dialog" title="Посмотреть объявление">
         <span class="pi-ticker-icon" aria-hidden="true">📢</span>
         <span class="pi-ticker-live">LIVE</span>
         <strong id="pi-ticker-nickname">Сегодня свободно</strong>
@@ -43,6 +43,18 @@
     </div>
   </header>
 
+
+  <dialog id="pi-ticker-info-dialog" class="pi-ticker-info-dialog" aria-labelledby="pi-ticker-info-title">
+    <button id="pi-ticker-info-close" class="pi-ticker-info-close" type="button">Закрыть</button>
+    <h2 id="pi-ticker-info-title">📢 Объявление</h2>
+    <dl class="pi-ticker-info-details">
+      <dt>Автор</dt><dd id="pi-ticker-info-author">—</dd>
+      <dt>Сообщение</dt><dd id="pi-ticker-info-message">—</dd>
+      <dt id="pi-ticker-info-date-label" hidden>День объявления</dt><dd id="pi-ticker-info-date" hidden></dd>
+    </dl>
+    <button id="pi-ticker-info-bid" type="button" aria-haspopup="dialog"
+      aria-controls="pi-ticker-dialog">Разместить или перебить объявление</button>
+  </dialog>
 
   <dialog id="pi-ticker-dialog" class="pi-ticker-dialog" aria-labelledby="pi-ticker-title">
     <button id="pi-ticker-close" class="pi-ticker-close" type="button" aria-label="Закрыть">×</button>

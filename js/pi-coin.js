@@ -437,7 +437,15 @@ const mapItems=(()=>{
 const piTicker=(()=>{
  const openButton=document.getElementById("pi-ticker-open"),dialog=document.getElementById("pi-ticker-dialog"),input=document.getElementById("pi-ticker-input"),bidInput=document.getElementById("pi-ticker-bid-price"),bidButton=document.getElementById("pi-ticker-bid"),statusEl=document.getElementById("pi-ticker-status");
  const nicknameEl=document.getElementById("pi-ticker-nickname"),messageEl=document.getElementById("pi-ticker-message"),dialogNickname=document.getElementById("pi-ticker-dialog-nickname"),dialogMessage=document.getElementById("pi-ticker-dialog-message"),minPriceEl=document.getElementById("pi-ticker-min-price"),priceEl=document.getElementById("pi-ticker-price");
+ const infoDialog=document.getElementById("pi-ticker-info-dialog"),infoAuthor=document.getElementById("pi-ticker-info-author"),infoMessage=document.getElementById("pi-ticker-info-message"),infoDate=document.getElementById("pi-ticker-info-date"),infoDateLabel=document.getElementById("pi-ticker-info-date-label");
  let state=null,busy=false,lastUserId=null;
+ function renderInfo(){
+  const hasMessage=Boolean(state?.message),date=hasMessage&&/^\d{4}-\d{2}-\d{2}$/.test(state?.date||"")?state.date:null;
+  infoAuthor.textContent=hasMessage?(state.nickname||"Не указан"):"Нет объявления";
+  infoMessage.textContent=hasMessage?state.message:"Сейчас место свободно.";
+  infoDate.hidden=infoDateLabel.hidden=!date;
+  infoDate.textContent=date?date.slice(8,10)+"."+date.slice(5,7)+"."+date.slice(0,4):"";
+ }
  function showStatus(text,error=false){if(!statusEl)return;statusEl.textContent=text;statusEl.classList.toggle("error",error)}
  function updateBid(){
   const minimum=Number(state?.next_price||10),price=Number(bidInput?.value);
@@ -449,11 +457,11 @@ const piTicker=(()=>{
   nicknameEl.textContent=nickname;messageEl.textContent=message;dialogNickname.textContent=hasMessage?nickname:"Сегодня место свободно";dialogMessage.textContent=hasMessage?message:"Начни торги первым.";
   minPriceEl.textContent=minimum.toLocaleString("ru-RU");bidInput.min=String(minimum);
   if(!Number.isInteger(Number(bidInput.value))||Number(bidInput.value)<minimum)bidInput.value=String(minimum);
-  updateBid();if(state?.is_mine)showStatus("Сейчас показывается твоё сообщение.");
+  updateBid();if(infoDialog?.open)renderInfo();if(state?.is_mine)showStatus("Сейчас показывается твоё сообщение.");
  }
  async function load(){
-  if(!currentUser)return;const userId=currentUser.id;const {data,error}=await supabaseClient.rpc("get_pi_ticker");
-  if(!currentUser||currentUser.id!==userId)return;if(error){console.warn("PI TICKER:",error);return}state=data;render();
+  if(!currentUser)return false;const userId=currentUser.id;const {data,error}=await supabaseClient.rpc("get_pi_ticker");
+  if(!currentUser||currentUser.id!==userId)return false;if(error){console.warn("PI TICKER:",error);infoDialog?.close();return false}state=data;render();return true;
  }
  async function bid(){
   const message=input.value.trim(),price=Number(bidInput.value),minimum=Number(state?.next_price||10);if(busy||!message)return;
@@ -464,7 +472,11 @@ const piTicker=(()=>{
   if(error||!data?.success){const e=data?.error,m={NOT_ENOUGH_COINS:"Недостаточно piCoin.",BID_TOO_LOW:"Ставку уже перебили. Укажите новую цену.",OWN_MESSAGE:"Нельзя перебивать своё сообщение.",PROFANITY:"Сообщение не прошло фильтр.",NO_LINKS:"Ссылки запрещены.",INVALID_MESSAGE:"Нужно от 1 до 80 символов.",INVALID_PRICE:"Укажите целое число piCoin."};showStatus(m[e]||"Не удалось разместить сообщение.",true);await load();return}
   state=data.status;input.value="";document.getElementById("pi-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");document.getElementById("pi-shop-balance").textContent=Number(state.balance||0).toLocaleString("ru-RU");showCoinFeedback(-price);showStatus("Сообщение размещено!");render();
  }
- openButton?.addEventListener("click",async()=>{await load();if(dialog&&!dialog.open)dialog.showModal()});
+ openButton?.addEventListener("click",async()=>{if(await load()&&infoDialog&&!infoDialog.open){renderInfo();infoDialog.showModal();openButton.classList.add("is-info-open")}});
+ document.getElementById("pi-ticker-info-bid")?.addEventListener("click",()=>{infoDialog?.close();if(dialog&&!dialog.open)dialog.showModal()});
+ document.getElementById("pi-ticker-info-close")?.addEventListener("click",()=>infoDialog?.close());
+ infoDialog?.addEventListener("close",()=>openButton?.classList.remove("is-info-open"));
+ infoDialog?.addEventListener("click",event=>{if(event.target!==infoDialog)return;const b=infoDialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)infoDialog.close()});
  document.getElementById("pi-ticker-close")?.addEventListener("click",()=>dialog?.close());bidInput?.addEventListener("input",updateBid);bidButton?.addEventListener("click",bid);
  dialog?.addEventListener("click",event=>{if(event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close()});
  setInterval(()=>{const id=currentUser?.id||null;if(id!==lastUserId){lastUserId=id;if(id)load()}else if(id&&!document.hidden)load()},15000);
