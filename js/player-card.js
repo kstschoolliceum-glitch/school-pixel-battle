@@ -200,7 +200,7 @@ const playerCard = (() => {
     image.alt = "";
     image.loading = "lazy";
     image.decoding = "async";
-    image.src = "assets/achievements/" + item.id + ".png";
+    image.src = "assets/achievements/" + item.id + ".svg";
     image.addEventListener("load", () => { fallback.hidden = true; });
     image.addEventListener("error", () => { image.remove(); fallback.hidden = false; });
     container.append(image);
