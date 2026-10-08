@@ -128,7 +128,8 @@ const playerCard = (() => {
     const percent = Math.min(100, Math.round(current / target * 100));
     const remaining = Math.max(0, 100 - percent);
     const secretLocked = Boolean(item.secret && !item.unlocked);
-    achievementPopupIcon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+    setAchievementArtwork(achievementPopupIcon, item);
+    achievementPopupIcon.dataset.rarity = achievementRarity(item);
     achievementPopupTitle.textContent = secretLocked
       ? "Секретное достижение"
       : (item.title || "Достижение");
@@ -177,11 +178,40 @@ const playerCard = (() => {
     return "Карта";
   }
 
+  function achievementRarity(item) {
+    if (item.secret) return "epic";
+    const target = Number(item.target) || 0;
+    if (item.id === "long_school_legend" || target >= 5000) return "legendary";
+    if (item.category === "Долгосрочные" || target >= 100) return "epic";
+    if (target >= 20) return "rare";
+    if (target >= 5) return "uncommon";
+    return "common";
+  }
+
+  function setAchievementArtwork(container, item) {
+    const secretLocked = Boolean(item.secret && !item.unlocked);
+    const fallback = document.createElement("span");
+    fallback.className = "achievement-art-fallback";
+    fallback.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+    container.replaceChildren(fallback);
+    if (secretLocked || !/^[a-z0-9_-]+$/.test(String(item.id || ""))) return;
+    const image = document.createElement("img");
+    image.className = "achievement-art-image";
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.src = "assets/achievements/" + item.id + ".png";
+    image.addEventListener("load", () => { fallback.hidden = true; });
+    image.addEventListener("error", () => { image.remove(); fallback.hidden = false; });
+    container.append(image);
+  }
+
   function createAchievementBadge(item) {
     const badge = document.createElement("button");
     badge.type = "button";
     badge.className = "player-card-achievement-badge";
     badge.classList.toggle("is-unlocked", Boolean(item.unlocked));
+    badge.dataset.rarity = achievementRarity(item);
     const secretLocked = Boolean(item.secret && !item.unlocked);
     badge.setAttribute(
       "aria-label",
@@ -192,7 +222,7 @@ const playerCard = (() => {
 
     const icon = document.createElement("span");
     icon.className = "player-card-achievement-badge-icon";
-    icon.textContent = secretLocked ? "❓" : (item.icon || "🏆");
+    setAchievementArtwork(icon, item);
 
     const label = document.createElement("span");
     label.className = "player-card-achievement-badge-label";
