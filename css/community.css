@@ -1442,3 +1442,35 @@
   }
 }
 
+
+
+/* Achievement pixel-art visual layer. Gameplay and unlock rules are unchanged. */
+.player-card-achievement-badge {
+  --rarity: #8c7766;
+  border: 3px solid var(--rarity);
+  border-radius: 3px;
+  background: linear-gradient(145deg,#283348,#101829 65%);
+  box-shadow: inset 2px 2px #ffffff20, inset -3px -3px #0008, 3px 3px 0 #050912;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.player-card-achievement-badge[data-rarity="uncommon"] { --rarity: #b8c7e2; }
+.player-card-achievement-badge[data-rarity="rare"] { --rarity: #55aaff; }
+.player-card-achievement-badge[data-rarity="epic"] { --rarity: #bb77ed; }
+.player-card-achievement-badge[data-rarity="legendary"] { --rarity: #ffcb58; }
+.player-card-achievement-badge.is-unlocked {
+  border-color: var(--rarity);
+  background: radial-gradient(circle at 50% 25%,#35496a,#101829 75%);
+  box-shadow: inset 2px 2px #ffffff33, inset -3px -3px #0008, 0 0 12px color-mix(in srgb,var(--rarity) 28%,transparent);
+}
+.player-card-achievement-badge:hover { transform: translateY(-2px); }
+.player-card-achievement-badge-icon { position:relative; display:grid; place-items:center; width:100%; min-height:38px; }
+.achievement-art-fallback { line-height:1; }
+.achievement-art-image { width:42px; height:42px; max-width:100%; object-fit:contain; image-rendering:pixelated; }
+.achievement-art-fallback[hidden] { display:none; }
+.player-card-achievement-badge:not(.is-unlocked) .achievement-art-image { filter:grayscale(1) brightness(.55); }
+.player-achievement-popup-icon { position:relative; }
+.player-achievement-popup-icon .achievement-art-image { width:56px; height:56px; }
+.player-achievement-popup-icon[data-rarity="legendary"] { border-color:#ffcb58; }
+.player-achievement-popup-icon[data-rarity="epic"] { border-color:#bb77ed; }
+.player-achievement-popup-icon[data-rarity="rare"] { border-color:#55aaff; }
+@media (prefers-reduced-motion: reduce) { .player-card-achievement-badge { transition:none; } .player-card-achievement-badge:hover { transform:none; } }
