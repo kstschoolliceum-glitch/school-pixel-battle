@@ -420,3 +420,21 @@
     white-space: nowrap;
   }
 }
+
+/* Restore compact online presence counter in the mobile season chip. */
+@media (max-width: 650px) {
+  .header .header-summary .season .online-users {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 3px;
+    padding-left: 4px;
+    border-left: 1px solid #334155;
+    font-size: 9px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .header .header-summary .season .online-label { display: none; }
+  .header .header-summary .season .season-topline { gap: 3px; }
+  .header .header-summary .season .online-dot { flex: 0 0 auto; }
+}
