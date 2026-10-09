@@ -1,0 +1,65 @@
+{
+  "format": "webm/opus",
+  "themes": {
+    "alternative": [
+      "assets/music/alternative/0.webm",
+      "assets/music/alternative/1.webm",
+      "assets/music/alternative/2.webm",
+      "assets/music/alternative/3.webm"
+    ],
+    "carnival": [
+      "assets/music/carnival/0.webm",
+      "assets/music/carnival/1.webm",
+      "assets/music/carnival/2.webm",
+      "assets/music/carnival/3.webm"
+    ],
+    "default": [
+      "assets/music/default/0.webm",
+      "assets/music/default/1.webm",
+      "assets/music/default/2.webm",
+      "assets/music/default/3.webm"
+    ],
+    "february_23": [
+      "assets/music/february_23/0.webm",
+      "assets/music/february_23/1.webm",
+      "assets/music/february_23/2.webm",
+      "assets/music/february_23/3.webm"
+    ],
+    "halloween": [
+      "assets/music/halloween/0.webm",
+      "assets/music/halloween/1.webm",
+      "assets/music/halloween/2.webm",
+      "assets/music/halloween/3.webm"
+    ],
+    "music": [
+      "assets/music/music/0.webm",
+      "assets/music/music/1.webm",
+      "assets/music/music/2.webm",
+      "assets/music/music/3.webm"
+    ],
+    "new_year": [
+      "assets/music/new_year/0.webm",
+      "assets/music/new_year/1.webm",
+      "assets/music/new_year/2.webm",
+      "assets/music/new_year/3.webm"
+    ],
+    "space": [
+      "assets/music/space/0.webm",
+      "assets/music/space/1.webm",
+      "assets/music/space/2.webm",
+      "assets/music/space/3.webm"
+    ],
+    "summer": [
+      "assets/music/summer/0.webm",
+      "assets/music/summer/1.webm",
+      "assets/music/summer/2.webm",
+      "assets/music/summer/3.webm"
+    ],
+    "wedding": [
+      "assets/music/wedding/0.webm",
+      "assets/music/wedding/1.webm",
+      "assets/music/wedding/2.webm",
+      "assets/music/wedding/3.webm"
+    ]
+  }
+}
