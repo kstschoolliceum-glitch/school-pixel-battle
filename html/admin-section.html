@@ -57,6 +57,10 @@
         data-admin-target="admin-seasons-content" aria-controls="admin-seasons-content" aria-selected="false">
         📚 Сезоны
       </button>
+      <button id="admin-music-tab" class="admin-tab" type="button"
+        data-admin-target="admin-music-content" aria-controls="admin-music-content" aria-selected="false">
+        🎵 Музыка
+      </button>
     </div>
 
     <div class="admin-tab-group">
@@ -77,6 +81,13 @@
   </nav>
 
 
+
+  <div id="admin-music-content" data-admin-panel class="music-admin-panel hidden">
+    <h2>🎵 Музыка</h2>
+    <p>Активная тема видна всем ученикам. Прослушивание изменяет музыку только у тебя.</p>
+    <div id="admin-music-list" class="hidden"></div>
+    <p id="admin-music-status" role="status"></p>
+  </div>
 
   <div
   class="admin-overview"
