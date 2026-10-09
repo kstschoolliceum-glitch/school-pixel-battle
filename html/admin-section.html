@@ -84,8 +84,11 @@
 
   <div id="admin-music-content" data-admin-panel class="music-admin-panel hidden">
     <h2>🎵 Музыка</h2>
-    <p>Активная тема видна всем ученикам. Прослушивание изменяет музыку только у тебя.</p>
-    <div id="admin-music-list" class="hidden"></div>
+    <p>Выбери тему и одну композицию. Прослушивание изменяет музыку только у тебя.</p>
+    <label for="admin-music-theme">Музыкальная тема</label>
+    <select id="admin-music-theme"></select>
+    <div id="admin-music-list" class="hidden" role="radiogroup" aria-label="Композиция"></div>
+    <button id="admin-music-apply" type="button" disabled>Применить для всех</button>
     <p id="admin-music-status" role="status"></p>
   </div>
 

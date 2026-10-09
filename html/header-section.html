@@ -12,9 +12,6 @@
       </button>
     </div>
 
-    <button id="music-open" class="music-open" type="button" aria-haspopup="dialog"
-      aria-controls="music-dialog" aria-label="Настройки музыки: выключена" aria-pressed="false">♪</button>
-
     <div class="header-summary">
       <button id="pi-balance-button" class="pi-balance-button" type="button"
         aria-haspopup="dialog" aria-controls="pi-shop-dialog" title="Открыть магазин">
@@ -46,16 +43,6 @@
     </div>
   </header>
 
-
-  <dialog id="music-dialog" class="music-dialog" aria-labelledby="music-dialog-title">
-    <button id="music-close" type="button">Закрыть</button>
-    <h2 id="music-dialog-title">♫ Музыка</h2>
-    <p>Тема: <strong id="music-current-theme">Классическая</strong></p>
-    <p>Композиция: <span id="music-current-track">Музыка выключена</span></p>
-    <label><input id="music-enabled" type="checkbox"> Музыка включена</label>
-    <label>Громкость <input id="music-volume" type="range" min="0" max="100" value="30">%</label>
-    <p id="music-status" class="music-status" role="status"></p>
-  </dialog>
 
   <dialog id="pi-ticker-info-dialog" class="pi-ticker-info-dialog" aria-labelledby="pi-ticker-info-title">
     <button id="pi-ticker-info-close" class="pi-ticker-info-close" type="button">Закрыть</button>

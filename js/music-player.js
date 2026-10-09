@@ -1,7 +1,5 @@
 // One lightweight player for music and local admin previews; no audio in Supabase.
 const musicPlayer = (() => {
-  const button = document.getElementById("music-open");
-  const dialog = document.getElementById("music-dialog");
   const toggle = document.getElementById("music-enabled");
   const volume = document.getElementById("music-volume");
   const themeLabel = document.getElementById("music-current-theme");
@@ -10,7 +8,9 @@ const musicPlayer = (() => {
   const adminTab = document.getElementById("admin-music-tab");
   const adminList = document.getElementById("admin-music-list");
   const adminStatus = document.getElementById("admin-music-status");
-  if (!button || !dialog || !toggle || !volume) return { stop() {} };
+  const adminTheme = document.getElementById("admin-music-theme");
+  const adminApply = document.getElementById("admin-music-apply");
+  if (!toggle || !volume) return { stop() {} };
 
   const titles = {
     default: "Классическая", alternative: "Альтернативная",
@@ -27,10 +27,11 @@ const musicPlayer = (() => {
   let level = Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 100
     && read(volumeKey) !== null ? savedVolume : 30;
   let catalog = null, catalogPromise = null, userId = null, epoch = 0;
-  let theme = "default", selected = null, index = 0, playingPreview = false;
-  let unlock = false, attempted = 0;
+  let theme = "default", selected = null, index = 0, activeIndex = 0, playingPreview = false;
+  let unlock = false;
   const audio = new Audio();
   audio.preload = "none";
+  audio.loop = true;
   audio.volume = level / 100;
   toggle.checked = enabled;
   volume.value = String(level);
@@ -39,12 +40,9 @@ const musicPlayer = (() => {
   const title = id => titles[id] || id || "—";
   const currentTrack = () => playlist(playingPreview ? selected : theme)[index];
   function updateUI(message = "") {
-    button.textContent = enabled ? "♫" : "♪";
-    button.setAttribute("aria-label", enabled ? "Настройки музыки: включена" : "Настройки музыки: выключена");
-    button.setAttribute("aria-pressed", String(enabled));
     themeLabel.textContent = title(theme);
     trackLabel.textContent = playingPreview ? "Предпрослушивание: " + (currentTrack()?.title || "—") :
-      (enabled ? (currentTrack()?.title || "—") : "Музыка выключена");
+      (playlist(theme)[activeIndex]?.title || "—");
     status.textContent = message;
     if (adminList && !adminList.classList.contains("hidden")) renderAdmin();
   }
@@ -82,43 +80,38 @@ const musicPlayer = (() => {
     if (!tracks.length) { updateUI("В этой теме нет композиций."); return; }
     if (!audio.getAttribute("src")) audio.src = tracks[index].src;
     audio.volume = level / 100;
-    try { await audio.play(); attempted = 0; updateUI(); }
+    try { await audio.play(); updateUI(); }
     catch (error) {
       if (error?.name === "NotAllowedError") unlock = false;
       updateUI("Нажми «Включить» для воспроизведения.");
     }
   }
-  function nextTrack(failed = false) {
-    const tracks = playlist(playingPreview ? selected : theme);
-    if (!tracks.length) return;
-    attempted = failed ? attempted + 1 : 0;
-    if (attempted >= tracks.length) {
-      unload(); attempted = 0; updateUI("Не удалось загрузить композиции этой темы."); return;
-    }
-    index = (index + 1) % tracks.length;
-    unload();
-    if (playingPreview || enabled) play();
-  }
-  audio.addEventListener("ended", () => nextTrack());
   audio.addEventListener("error", () => {
-    if (audio.getAttribute("src")) nextTrack(true);
+    if (audio.getAttribute("src")) {
+      unload();
+      updateUI("Не удалось загрузить выбранную композицию.");
+    }
   });
-  function changeTheme(id) {
-    if (!Object.prototype.hasOwnProperty.call(titles, id) || id === theme) return;
-    playingPreview = false; selected = null; theme = id; index = 0; attempted = 0;
+  function changeSelection(id, track) {
+    if (!Object.prototype.hasOwnProperty.call(titles, id) ||
+        !Number.isInteger(track) || track < 0 || track >= playlist(id).length ||
+        (id === theme && track === activeIndex)) return;
+    playingPreview = false; selected = null;
+    theme = id; activeIndex = track; index = track;
     unload(); updateUI();
     if (enabled) play();
   }
   function stopPreview() {
     if (!playingPreview) return;
-    playingPreview = false; selected = null; index = 0; attempted = 0;
+    playingPreview = false; selected = null; index = activeIndex;
     unload(); updateUI();
     if (enabled) play();
   }
-  async function preview(id) {
-    if (!Object.prototype.hasOwnProperty.call(titles, id) || !playlist(id).length) return;
-    if (playingPreview && selected === id) { stopPreview(); return; }
-    unload(); selected = id; playingPreview = true; index = 0; attempted = 0;
+  async function preview(id, track) {
+    if (!currentUserIsAdmin || !Object.prototype.hasOwnProperty.call(titles, id) ||
+        !Number.isInteger(track) || !playlist(id)[track]) return;
+    if (playingPreview && selected === id && index === track) { stopPreview(); return; }
+    unload(); selected = id; playingPreview = true; index = track;
     updateUI(); await play(true);
   }
   async function start(session) {
@@ -127,14 +120,14 @@ const musicPlayer = (() => {
     if (userId === id) return;
     stop(); userId = id; const request = ++epoch;
     const [config, result] = await Promise.all([
-      loadCatalog(), supabaseClient.from("game_music_settings").select("theme_id").eq("id", true).single()
+      loadCatalog(), supabaseClient.from("game_music_settings").select("theme_id,track_index").eq("id", true).single()
     ]);
     if (request !== epoch || userId !== id) return;
     if (result.error) { console.warn("MUSIC THEME:", result.error); updateUI("Музыкальная тема пока недоступна."); return; }
-    if (config) changeTheme(result.data?.theme_id);
+    if (config) changeSelection(result.data?.theme_id, result.data?.track_index);
     const channel = supabaseClient.channel("game-music-settings")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "game_music_settings" },
-        payload => changeTheme(payload.new?.theme_id))
+        payload => changeSelection(payload.new?.theme_id, payload.new?.track_index))
       .subscribe();
     if (request !== epoch) supabaseClient.removeChannel(channel);
     else liveChannel = channel;
@@ -148,50 +141,62 @@ const musicPlayer = (() => {
     unload(); updateUI();
   }
   function renderAdmin() {
-    if (!adminList || !catalog) return;
+    if (!adminList || !catalog || !adminTheme) return;
+    const id = adminTheme.value;
+    const tracks = playlist(id);
     adminList.replaceChildren();
-    for (const id of Object.keys(titles)) {
+    tracks.forEach((track, trackIndex) => {
       const row = document.createElement("div");
       row.className = "music-admin-row";
-      const label = document.createElement("span");
-      label.textContent = title(id) + " · " + playlist(id).length + " треков" + (theme === id ? " · активна" : "");
+      const label = document.createElement("label");
+      const radio = document.createElement("input");
+      radio.type = "radio"; radio.name = "admin-music-track";
+      radio.value = String(trackIndex);
+      radio.checked = Number(adminList.dataset.selectedTrack) === trackIndex;
+      radio.addEventListener("change", () => {
+        adminList.dataset.selectedTrack = String(trackIndex);
+        adminApply.disabled = false;
+      });
+      const text = document.createElement("span");
+      text.textContent = track.title + (id === theme && trackIndex === activeIndex ? " · активна" : "");
+      label.append(radio, text);
       const previewButton = document.createElement("button");
       previewButton.type = "button";
-      previewButton.textContent = playingPreview && selected === id ? "Остановить" : "Слушать";
-      previewButton.addEventListener("click", () => preview(id));
-      const activate = document.createElement("button");
-      activate.type = "button";
-      activate.textContent = "Сделать активной";
-      activate.disabled = theme === id || !playlist(id).length;
-      activate.addEventListener("click", async () => {
-        if (!currentUserIsAdmin) return;
-        activate.disabled = true;
-        adminStatus.textContent = "Сохраняем…";
-        const { data, error } = await supabaseClient.rpc("admin_set_music_theme", { p_theme_id: id });
-        if (error || data !== id) {
-          adminStatus.textContent = "Не удалось изменить тему.";
-          activate.disabled = false; return;
-        }
-        changeTheme(id);
-        adminStatus.textContent = "Тема сохранена.";
-      });
-      row.append(label, previewButton, activate);
+      previewButton.textContent = playingPreview && selected === id && index === trackIndex ? "Остановить" : "Слушать";
+      previewButton.addEventListener("click", () => preview(id, trackIndex));
+      row.append(label, previewButton);
       adminList.append(row);
-    }
+    });
+    adminApply.disabled = !tracks.length;
   }
-
-  button.addEventListener("click", () => { if (!dialog.open) dialog.showModal(); updateUI(); });
-  document.getElementById("music-close")?.addEventListener("click", () => dialog.close());
-  dialog.addEventListener("click", event => {
-    if (event.target !== dialog) return;
-    const r = dialog.getBoundingClientRect();
-    if (event.clientX < r.left || event.clientX > r.right ||
-        event.clientY < r.top || event.clientY > r.bottom) dialog.close();
+  adminTheme?.addEventListener("change", () => {
+    stopPreview();
+    adminList.dataset.selectedTrack = adminTheme.value === theme ? String(activeIndex) : "0";
+    renderAdmin();
+  });
+  adminApply?.addEventListener("click", async () => {
+    if (!currentUserIsAdmin) return;
+    const id = adminTheme.value, track = Number(adminList.dataset.selectedTrack);
+    if (!Object.prototype.hasOwnProperty.call(titles, id) ||
+        !Number.isInteger(track) || !playlist(id)[track]) return;
+    adminApply.disabled = true;
+    adminStatus.textContent = "Сохраняем…";
+    const { data, error } = await supabaseClient.rpc(
+      "admin_set_music_selection", { p_theme_id: id, p_track_index: track }
+    );
+    if (error || data?.theme_id !== id || data?.track_index !== track) {
+      adminStatus.textContent = "Не удалось изменить композицию.";
+      adminApply.disabled = false; return;
+    }
+    stopPreview();
+    changeSelection(id, track);
+    adminStatus.textContent = "Композиция сохранена для всех.";
+    renderAdmin();
   });
   toggle.addEventListener("change", () => {
     enabled = toggle.checked; save(enabledKey, String(enabled));
     if (!enabled) { if (!playingPreview) unload(); updateUI(); }
-    else { if (!playingPreview) { index = 0; play(true); } updateUI(); }
+    else { if (!playingPreview) { index = activeIndex; play(true); } updateUI(); }
   });
   volume.addEventListener("input", () => {
     level = Math.max(0, Math.min(100, Number(volume.value) || 0));
@@ -199,7 +204,16 @@ const musicPlayer = (() => {
   });
   adminTab?.addEventListener("click", async () => {
     if (!currentUserIsAdmin) return;
-    await loadCatalog();
+    const loaded = await loadCatalog();
+    if (!loaded) return;
+    adminTheme.replaceChildren();
+    for (const id of Object.keys(titles)) {
+      const option = document.createElement("option");
+      option.value = id; option.textContent = title(id) + " · " + playlist(id).length + " композиций";
+      adminTheme.append(option);
+    }
+    adminTheme.value = theme;
+    adminList.dataset.selectedTrack = String(activeIndex);
     adminList.classList.remove("hidden");
     renderAdmin();
   });
