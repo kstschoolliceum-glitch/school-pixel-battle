@@ -23,12 +23,25 @@ const musicPlayer = (() => {
   function read(key) { try { return localStorage.getItem(key); } catch { return null; } }
   function save(key, value) { try { localStorage.setItem(key, value); } catch {} }
   const savedVolume = Number(read(volumeKey));
-  let enabled = read(enabledKey) === "true";
+  let enabled = read(enabledKey) !== "false";
   let level = Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 100
-    && read(volumeKey) !== null ? savedVolume : 30;
+    && read(volumeKey) !== null ? savedVolume : 25;
   let catalog = null, catalogPromise = null, userId = null, epoch = 0;
   let theme = "default", selected = null, index = 0, activeIndex = 0, playingPreview = false;
-  let unlock = false;
+  let unlock = false, gesturePending = false;
+  function armGesture() {
+    document.addEventListener("pointerdown", onFirstGesture, { passive: true });
+    document.addEventListener("keydown", onFirstGesture);
+  }
+  function disarmGesture() {
+    document.removeEventListener("pointerdown", onFirstGesture);
+    document.removeEventListener("keydown", onFirstGesture);
+  }
+  function onFirstGesture(event) {
+    if (!enabled || !userId || gesturePending || event.repeat) return;
+    gesturePending = true;
+    play(true).finally(() => { gesturePending = false; });
+  }
   const audio = new Audio();
   audio.preload = "none";
   audio.loop = true;
@@ -122,7 +135,8 @@ const musicPlayer = (() => {
         audio.pause();
         source.start();
         updateUI();
-        return;
+        disarmGesture();
+        return true;
       } catch (error) {
         if (attempt !== generation || error?.name === "AbortError") return;
         if (error?.name === "NotAllowedError") { unlock = false; return; }
@@ -134,7 +148,7 @@ const musicPlayer = (() => {
     }
     if (!audio.getAttribute("src")) audio.src = tracks[index].src;
     audio.volume = level / 100;
-    try { await audio.play(); updateUI(); }
+    try { await audio.play(); updateUI(); disarmGesture(); return true; }
     catch (error) {
       if (error?.name === "NotAllowedError") unlock = false;
       updateUI("Нажми «Включить» для воспроизведения.");
@@ -172,7 +186,7 @@ const musicPlayer = (() => {
     const id = session?.user?.id;
     if (!id) { stop(); return; }
     if (userId === id) return;
-    stop(); userId = id; const request = ++epoch;
+    stop(); userId = id; if (enabled) armGesture(); const request = ++epoch;
     const [config, result] = await Promise.all([
       loadCatalog(), supabaseClient.from("game_music_settings").select("theme_id,track_index").eq("id", true).single()
     ]);
@@ -191,8 +205,8 @@ const musicPlayer = (() => {
   function stop() {
     epoch++;
     if (liveChannel) supabaseClient.removeChannel(liveChannel);
-    liveChannel = null; userId = null; playingPreview = false; selected = null;
-    unload(); updateUI();
+    liveChannel = null; userId = null; playingPreview = false; selected = null; unlock = false;
+    unload(); disarmGesture(); updateUI();
   }
   function renderAdmin() {
     if (!adminList || !catalog || !adminTheme) return;
@@ -249,8 +263,8 @@ const musicPlayer = (() => {
   });
   toggle.addEventListener("change", () => {
     enabled = toggle.checked; save(enabledKey, String(enabled));
-    if (!enabled) { if (!playingPreview) unload(); updateUI(); }
-    else { if (!playingPreview) { index = activeIndex; play(true); } updateUI(); }
+    if (!enabled) { disarmGesture(); if (!playingPreview) unload(); updateUI(); }
+    else { armGesture(); if (!playingPreview) { index = activeIndex; play(true); } updateUI(); }
   });
   volume.addEventListener("input", () => {
     level = Math.max(0, Math.min(100, Number(volume.value) || 0));
@@ -271,12 +285,6 @@ const musicPlayer = (() => {
     adminList.dataset.selectedTrack = String(activeIndex);
     adminList.classList.remove("hidden");
     renderAdmin();
-  });
-  document.addEventListener("pointerdown", () => {
-    if (enabled && !unlock && userId) play(true);
-  }, { passive: true });
-  document.addEventListener("keydown", event => {
-    if (enabled && !unlock && userId && !event.repeat) play(true);
   });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && enabled && unlock && userId && context?.state === "suspended") play();
