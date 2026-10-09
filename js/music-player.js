@@ -33,6 +33,11 @@ const musicPlayer = (() => {
   audio.preload = "none";
   audio.loop = true;
   audio.volume = level / 100;
+  // Decode only the selected track. AudioBufferSourceNode loops at sample boundaries;
+  // HTMLAudioElement remains the fallback when Web Audio is unavailable.
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  let context = null, gain = null, source = null, buffer = null, bufferUrl = null;
+  let loading = null, abort = null, generation = 0;
   toggle.checked = enabled;
   volume.value = String(level);
 
@@ -47,6 +52,10 @@ const musicPlayer = (() => {
     if (adminList && !adminList.classList.contains("hidden")) renderAdmin();
   }
   function unload() {
+    generation++;
+    abort?.abort(); abort = null; loading = null;
+    if (source) { source.stop(); source.disconnect(); source = null; }
+    buffer = null; bufferUrl = null;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
@@ -78,6 +87,51 @@ const musicPlayer = (() => {
     if (!unlock) return;
     const tracks = playlist(playingPreview ? selected : theme);
     if (!tracks.length) { updateUI("В этой теме нет композиций."); return; }
+    if (AudioContextClass) {
+      const attempt = generation;
+      try {
+        if (!context) {
+          context = new AudioContextClass();
+          gain = context.createGain(); gain.connect(context.destination);
+        }
+        gain.gain.value = level / 100;
+        await context.resume();
+        if (attempt !== generation) return;
+        if (source) return;
+        const url = tracks[index].src;
+        if (bufferUrl !== url || !buffer) {
+          if (!loading) {
+            const request = generation;
+            abort = new AbortController();
+            loading = fetch(url, { signal: abort.signal })
+              .then(response => { if (!response.ok) throw Error("MUSIC_FETCH"); return response.arrayBuffer(); })
+              .then(bytes => context.decodeAudioData(bytes))
+              .then(decoded => {
+                if (request === generation) { buffer = decoded; bufferUrl = url; }
+              });
+          }
+          await loading;
+          if (!buffer || bufferUrl !== url || !enabled && !playingPreview) return;
+          loading = null; abort = null;
+        }
+        if (source || attempt !== generation) return;
+        source = context.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(gain);
+        audio.pause();
+        source.start();
+        updateUI();
+        return;
+      } catch (error) {
+        if (attempt !== generation || error?.name === "AbortError") return;
+        if (error?.name === "NotAllowedError") { unlock = false; return; }
+        console.warn("MUSIC DECODE:", error);
+        // A failed decode can still play through the existing native player.
+        if (source) { source.stop(); source.disconnect(); source = null; }
+        loading = null; abort = null; buffer = null; bufferUrl = null;
+      }
+    }
     if (!audio.getAttribute("src")) audio.src = tracks[index].src;
     audio.volume = level / 100;
     try { await audio.play(); updateUI(); }
@@ -201,6 +255,7 @@ const musicPlayer = (() => {
   volume.addEventListener("input", () => {
     level = Math.max(0, Math.min(100, Number(volume.value) || 0));
     audio.volume = level / 100; save(volumeKey, String(level));
+    if (gain) gain.gain.value = level / 100;
   });
   adminTab?.addEventListener("click", async () => {
     if (!currentUserIsAdmin) return;
@@ -222,6 +277,9 @@ const musicPlayer = (() => {
   }, { passive: true });
   document.addEventListener("keydown", event => {
     if (enabled && !unlock && userId && !event.repeat) play(true);
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && enabled && unlock && userId && context?.state === "suspended") play();
   });
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") stop();

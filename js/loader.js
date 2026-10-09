@@ -46,7 +46,7 @@
   "js/fifteen.js?v=1",
   "js/tasks-tabs.js?v=1",
   "js/admin-tools.js?v=1",
-  "js/music-player.js?v=2",
+  "js/music-player.js?v=3",
   "js/user-agreement.js?v=1",
   "js/moderation-reports.js?v=1",
   "js/bootstrap.js?v=1"
