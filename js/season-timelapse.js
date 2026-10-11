@@ -1,6 +1,7 @@
 let openedArchivedSeason = null;
 
 let openedArchivedFinalPixels = [];
+let seasonTimelapseInitialPixels = [];
 
 let seasonTimelapseHistory = [];
 let seasonTimelapseIndex = 0;
@@ -219,6 +220,10 @@ function clearArchivedSeasonCanvas() {
     canvas.width,
     canvas.height
   );
+
+  for (const pixel of seasonTimelapseInitialPixels) {
+    drawSeasonTimelapseMove(context, pixel);
+  }
 
 }
 
@@ -495,6 +500,7 @@ function resetSeasonTimelapse() {
   seasonTimelapseHistory = [];
   seasonTimelapseIndex = 0;
   seasonTimelapseSeasonId = null;
+  seasonTimelapseInitialPixels = [];
 
   seasonTimelapseControls.classList.add(
     "hidden"
@@ -507,6 +513,37 @@ function resetSeasonTimelapse() {
 
 }
 
+
+// Week 5 inherited week 4's map without history rows. Only load that
+// archived starting map when a white starting canvas fails to reach the final map.
+function seasonTimelapseMatchesFinalWith(initialPixels, history) {
+  const state = createSeasonTimelapseStateCanvas();
+  for (const pixel of initialPixels) drawSeasonTimelapseMove(state.context, pixel);
+  for (const move of history) drawSeasonTimelapseMove(state.context, move);
+  return seasonTimelapseStateMatchesArchive(state.canvas);
+}
+
+async function loadCarriedSeasonTimelapsePixels(seasonId) {
+  const { data: seasons, error: archiveError } =
+    await supabaseClient.rpc("get_season_archive");
+  if (archiveError) throw archiveError;
+  const source = seasons?.find(season => Number(season.season_number) === 4);
+  if (!source?.season_id) throw new Error("Недоступна исходная карта недели 4");
+
+  const pixels = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabaseClient.rpc(
+      "get_season_map", { p_season_id: source.season_id }
+    ).order("y", { ascending: true })
+      .order("x", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (openedArchivedSeason?.season_id !== seasonId) return null;
+    pixels.push(...(data ?? []));
+    if (!data || data.length < pageSize) return pixels;
+  }
+}
 
 async function loadAndPlaySeasonTimelapse() {
 
@@ -610,6 +647,30 @@ async function loadAndPlaySeasonTimelapse() {
     return;
   }
 
+
+  if (!seasonTimelapseMatchesFinalWith([], history)) {
+    if (Number(openedArchivedSeason.season_number) !== 5) {
+      resetSeasonTimelapse();
+      alert("История ходов не совпадает с архивной картой. Экспорт остановлен.");
+      return;
+    }
+    let carried;
+    try {
+      carried = await loadCarriedSeasonTimelapsePixels(seasonId);
+    } catch (error) {
+      console.error("TIMELAPSE START MAP ERROR:", error);
+      resetSeasonTimelapse();
+      alert("Не удалось загрузить начальную карту таймлапса.");
+      return;
+    }
+    if (openedArchivedSeason?.season_id !== seasonId) return;
+    if (!carried || !seasonTimelapseMatchesFinalWith(carried, history)) {
+      resetSeasonTimelapse();
+      alert("История ходов не совпадает с архивной картой. Экспорт остановлен.");
+      return;
+    }
+    seasonTimelapseInitialPixels = carried;
+  }
 
   seasonTimelapseHistory =
     history;

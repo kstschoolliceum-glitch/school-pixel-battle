@@ -58,7 +58,7 @@ function downloadSeasonTimelapseBlob(
       );
 
     },
-    1000
+    30000
   );
 
 }
@@ -133,6 +133,10 @@ function createSeasonTimelapseStateCanvas() {
     stateCanvas.height
   );
 
+  for (const pixel of seasonTimelapseInitialPixels) {
+    drawSeasonTimelapseMove(context, pixel);
+  }
+
   return {
     canvas: stateCanvas,
     context
@@ -164,17 +168,6 @@ function renderSeasonTimelapseExportFrame(
   );
 }
 
-function requestSeasonTimelapseVideoFrame(
-  track
-) {
-  if (
-    track &&
-    typeof track.requestFrame === "function"
-  ) {
-    track.requestFrame();
-  }
-}
-
 function waitForSeasonTimelapseDeadline(
   deadline
 ) {
@@ -196,6 +189,8 @@ function seasonTimelapseStateMatchesArchive(
 ) {
   const expected =
     createSeasonTimelapseStateCanvas();
+  expected.context.fillStyle = "#ffffff";
+  expected.context.fillRect(0, 0, expected.canvas.width, expected.canvas.height);
 
   for (
     const pixel
@@ -259,9 +254,42 @@ function assertSeasonTimelapseFinalState(
       stateCanvas
     )
   ) {
-    throw new Error(
-      "Timelapse final state does not match archive"
-    );
+    throw new Error("TIMELAPSE_STATE_MISMATCH");
+  }
+}
+
+// The recorder has stopped only after its final dataavailable event. Verify
+// both the container header and that the browser can decode a video frame.
+async function validateSeasonTimelapseWebm(blob, width, height, minimumDuration) {
+  const header = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
+  if (header.length !== 4 || header[0] !== 0x1a || header[1] !== 0x45 ||
+      header[2] !== 0xdf || header[3] !== 0xa3) {
+    throw new Error("WEBM_HEADER_INVALID");
+  }
+  const url = URL.createObjectURL(blob);
+  const video = document.createElement("video");
+  video.preload = "auto";
+  video.muted = true;
+  try {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error("WEBM_DECODE_TIMEOUT")), 15000);
+      video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
+      video.onerror = () => { clearTimeout(timeout); reject(new Error("WEBM_DECODE_FAILED")); };
+      video.src = url;
+      video.load();
+    });
+    if (video.videoWidth !== width || video.videoHeight !== height) {
+      throw new Error("WEBM_DIMENSIONS_INVALID");
+    }
+    if (Number.isFinite(video.duration) && video.duration < minimumDuration) {
+      throw new Error("WEBM_TOO_SHORT");
+    }
+  } finally {
+    video.onloadeddata = null;
+    video.onerror = null;
+    video.removeAttribute("src");
+    video.load();
+    URL.revokeObjectURL(url);
   }
 }
 
@@ -274,7 +302,10 @@ async function exportSeasonTimelapseWebm() {
   }
 
   if (
-    typeof MediaRecorder === "undefined"
+    typeof MediaRecorder === "undefined" ||
+    typeof MediaRecorder.isTypeSupported !== "function" ||
+    typeof HTMLCanvasElement === "undefined" ||
+    typeof HTMLCanvasElement.prototype.captureStream !== "function"
   ) {
     alert(
       "Этот браузер не поддерживает запись WebM."
@@ -312,8 +343,9 @@ async function exportSeasonTimelapseWebm() {
   let recorder = null;
 
   try {
-    const scale = 2;
-    const framesPerSecond = 30;
+    const scale = 1;
+    const seasonId = seasonTimelapseSeasonId;
+    const framesPerSecond = 15;
     const plan =
       getSeasonTimelapseExportPlan(
         framesPerSecond
@@ -333,10 +365,13 @@ async function exportSeasonTimelapseWebm() {
     );
 
     stream =
-      output.canvas.captureStream(0);
+      output.canvas.captureStream(framesPerSecond);
 
     const videoTrack =
       stream.getVideoTracks()[0];
+    if (!videoTrack || videoTrack.readyState !== "live") {
+      throw new Error("VIDEO_CAPTURE_UNAVAILABLE");
+    }
 
     const chunks = [];
 
@@ -346,7 +381,7 @@ async function exportSeasonTimelapseWebm() {
         {
           mimeType,
           videoBitsPerSecond:
-            5000000
+            1500000
         }
       );
 
@@ -359,28 +394,27 @@ async function exportSeasonTimelapseWebm() {
       }
     );
 
-    const finished =
-      new Promise(
-        (resolve, reject) => {
-          recorder.addEventListener(
-            "stop",
-            resolve,
-            { once: true }
-          );
+    let recordingError = null;
+    const started = new Promise((resolve, reject) => {
+      recorder.addEventListener("start", resolve, { once: true });
+      recorder.addEventListener("error", event => {
+        recordingError = event.error || new Error("MEDIA_RECORDER_ERROR");
+        reject(recordingError);
+      }, { once: true });
+    });
+    const finished = new Promise((resolve, reject) => {
+      recorder.addEventListener("stop", () => {
+        if (recordingError) reject(recordingError);
+        else resolve();
+      }, { once: true });
+    });
+    // An early encoder failure must not become an unhandled rejection.
+    finished.catch(() => {});
 
-          recorder.addEventListener(
-            "error",
-            reject,
-            { once: true }
-          );
-        }
-      );
-
-    recorder.start(1000);
-
-    requestSeasonTimelapseVideoFrame(
-      videoTrack
-    );
+    recorder.start();
+    await started;
+    if (recorder.state !== "recording") throw new Error("MEDIA_RECORDER_NOT_RECORDING");
+    await new Promise(resolve => setTimeout(resolve, 150));
 
     const startedAt =
       performance.now();
@@ -396,6 +430,8 @@ async function exportSeasonTimelapseWebm() {
       frameIndex < plan.totalFrames;
       frameIndex++
     ) {
+      if (recordingError) throw recordingError;
+      if (seasonTimelapseSeasonId !== seasonId) throw new Error("TIMELAPSE_SEASON_CHANGED");
       const endIndex =
         Math.round(
           (
@@ -418,19 +454,15 @@ async function exportSeasonTimelapseWebm() {
         moveIndex++;
       }
 
-      renderSeasonTimelapseExportFrame(
-        output.context,
-        state.canvas
-      );
-
       await waitForSeasonTimelapseDeadline(
         startedAt +
         frameIndex *
         frameDuration
       );
 
-      requestSeasonTimelapseVideoFrame(
-        videoTrack
+      renderSeasonTimelapseExportFrame(
+        output.context,
+        state.canvas
       );
 
       if (
@@ -459,27 +491,12 @@ async function exportSeasonTimelapseWebm() {
     );
 
     await waitForSeasonTimelapseDeadline(
-      startedAt +
-      plan.durationSeconds *
-      1000
+      startedAt + plan.durationSeconds * 1000
     );
-
-    requestSeasonTimelapseVideoFrame(
-      videoTrack
-    );
-
-    await new Promise(
-      resolve =>
-        setTimeout(resolve, 250)
-    );
-
-    recorder.requestData();
-
-    await new Promise(
-      resolve =>
-        setTimeout(resolve, 100)
-    );
-
+    // Leave the final frame visible for the encoder's next capture tick.
+    await new Promise(resolve => setTimeout(resolve, 150));
+    if (recordingError) throw recordingError;
+    if (recorder.state !== "recording") throw new Error("MEDIA_RECORDER_STOPPED_EARLY");
     recorder.stop();
 
     await finished;
@@ -503,6 +520,8 @@ async function exportSeasonTimelapseWebm() {
       );
     }
 
+    await validateSeasonTimelapseWebm(blob, output.canvas.width, output.canvas.height, plan.durationSeconds * 0.8);
+
     downloadSeasonTimelapseBlob(
       blob,
       "webm"
@@ -522,7 +541,7 @@ async function exportSeasonTimelapseWebm() {
       recorder &&
       recorder.state !== "inactive"
     ) {
-      recorder.stop();
+      try { recorder.stop(); } catch (stopError) { console.warn("WEBM STOP ERROR:", stopError); }
     }
 
     if (stream) {
@@ -539,9 +558,9 @@ async function exportSeasonTimelapseWebm() {
       ""
     );
 
-    alert(
-      "Не удалось создать корректный WebM."
-    );
+    alert(error.message === "TIMELAPSE_STATE_MISMATCH"
+      ? "История ходов не совпадает с архивной картой. Видео не скачано."
+      : "Не удалось создать воспроизводимый WebM в этом браузере.");
   }
 }
 
