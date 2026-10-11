@@ -65,6 +65,10 @@ async function loadAdminCurrentSeason() {
     );
 
 
+  const mapButton = document.getElementById("admin-current-season-map-button");
+  mapButton.disabled = true;
+  mapButton.onclick = null;
+
   if (!data?.active_season) {
 
     titleElement.textContent =
@@ -82,6 +86,22 @@ async function loadAdminCurrentSeason() {
 
   const season =
     data.active_season;
+
+  // The display number is not the database identifier.
+  const seasonId = season.id ?? season.season_id ??
+    (activeSeason && Number(activeSeason.number) === Number(season.number)
+      ? activeSeason.id : null);
+  if (seasonId != null) {
+    mapButton.disabled = false;
+    mapButton.onclick = () => openArchivedSeasonMap({
+      season_id: seasonId,
+      season_number: season.number,
+      title: season.title,
+      map_width: season.map_width ?? activeSeason?.map_width,
+      map_height: season.map_height ?? activeSeason?.map_height,
+      finished_at: null
+    });
+  }
 
 
   titleElement.textContent =

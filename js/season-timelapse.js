@@ -2,6 +2,7 @@ let openedArchivedSeason = null;
 
 let openedArchivedFinalPixels = [];
 let seasonTimelapseInitialPixels = [];
+let seasonTimelapseFinalCheckComplete = false;
 
 let seasonTimelapseHistory = [];
 let seasonTimelapseIndex = 0;
@@ -501,6 +502,7 @@ function resetSeasonTimelapse() {
   seasonTimelapseIndex = 0;
   seasonTimelapseSeasonId = null;
   seasonTimelapseInitialPixels = [];
+  seasonTimelapseFinalCheckComplete = false;
 
   seasonTimelapseControls.classList.add(
     "hidden"
@@ -514,35 +516,50 @@ function resetSeasonTimelapse() {
 }
 
 
-// Week 5 inherited week 4's map without history rows. Only load that
-// archived starting map when a white starting canvas fails to reach the final map.
+// The archive is a final snapshot, not a snapshot of the season's first frame.
+// Its cells untouched by the returned history can be used as static background;
+// a full final-map comparison is only conclusive when the history alone matches.
+function prepareSeasonTimelapseHistory(seasonId, history) {
+  if (openedArchivedSeason?.season_id !== seasonId ||
+      openedArchivedFinalSeasonId !== seasonId) {
+    throw new Error("TIMELAPSE_SEASON_CHANGED");
+  }
+  const mapCanvas = document.getElementById("season-map-canvas");
+  const touched = new Set();
+  let previousTime = -Infinity;
+  for (const move of history) {
+    if (move.season_id != null && String(move.season_id) !== String(seasonId)) {
+      throw new Error("TIMELAPSE_WRONG_SEASON");
+    }
+    const x = Number(move.x), y = Number(move.y);
+    if (!Number.isInteger(x) || !Number.isInteger(y) ||
+        x < 0 || y < 0 || x >= mapCanvas.width || y >= mapCanvas.height) {
+      throw new Error("TIMELAPSE_INVALID_COORDINATES");
+    }
+    if (move.created_at != null) {
+      const time = Date.parse(move.created_at);
+      if (!Number.isFinite(time) || time < previousTime) {
+        throw new Error("TIMELAPSE_HISTORY_ORDER");
+      }
+      previousTime = time;
+    }
+    touched.add(y * mapCanvas.width + x);
+  }
+  seasonTimelapseFinalCheckComplete = Boolean(openedArchivedSeason.finished_at) &&
+    seasonTimelapseMatchesFinalWith([], history);
+  seasonTimelapseInitialPixels = openedArchivedFinalPixels.filter(pixel =>
+    !touched.has(Number(pixel.y) * mapCanvas.width + Number(pixel.x))
+  );
+  if (!seasonTimelapseFinalCheckComplete) {
+    console.info("TIMELAPSE: initial snapshot unavailable; final-map check is partial", seasonId);
+  }
+}
+
 function seasonTimelapseMatchesFinalWith(initialPixels, history) {
   const state = createSeasonTimelapseStateCanvas();
   for (const pixel of initialPixels) drawSeasonTimelapseMove(state.context, pixel);
   for (const move of history) drawSeasonTimelapseMove(state.context, move);
   return seasonTimelapseStateMatchesArchive(state.canvas);
-}
-
-async function loadCarriedSeasonTimelapsePixels(seasonId) {
-  const { data: seasons, error: archiveError } =
-    await supabaseClient.rpc("get_season_archive");
-  if (archiveError) throw archiveError;
-  const source = seasons?.find(season => Number(season.season_number) === 4);
-  if (!source?.season_id) throw new Error("Недоступна исходная карта недели 4");
-
-  const pixels = [];
-  const pageSize = 1000;
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await supabaseClient.rpc(
-      "get_season_map", { p_season_id: source.season_id }
-    ).order("y", { ascending: true })
-      .order("x", { ascending: true })
-      .range(from, from + pageSize - 1);
-    if (error) throw error;
-    if (openedArchivedSeason?.season_id !== seasonId) return null;
-    pixels.push(...(data ?? []));
-    if (!data || data.length < pageSize) return pixels;
-  }
 }
 
 async function loadAndPlaySeasonTimelapse() {
@@ -648,28 +665,13 @@ async function loadAndPlaySeasonTimelapse() {
   }
 
 
-  if (!seasonTimelapseMatchesFinalWith([], history)) {
-    if (Number(openedArchivedSeason.season_number) !== 5) {
-      resetSeasonTimelapse();
-      alert("История ходов не совпадает с архивной картой. Экспорт остановлен.");
-      return;
-    }
-    let carried;
-    try {
-      carried = await loadCarriedSeasonTimelapsePixels(seasonId);
-    } catch (error) {
-      console.error("TIMELAPSE START MAP ERROR:", error);
-      resetSeasonTimelapse();
-      alert("Не удалось загрузить начальную карту таймлапса.");
-      return;
-    }
-    if (openedArchivedSeason?.season_id !== seasonId) return;
-    if (!carried || !seasonTimelapseMatchesFinalWith(carried, history)) {
-      resetSeasonTimelapse();
-      alert("История ходов не совпадает с архивной картой. Экспорт остановлен.");
-      return;
-    }
-    seasonTimelapseInitialPixels = carried;
+  try {
+    prepareSeasonTimelapseHistory(seasonId, history);
+  } catch (error) {
+    console.error("TIMELAPSE HISTORY ERROR:", error);
+    resetSeasonTimelapse();
+    alert("История выбранного сезона некорректна или карта была переключена.");
+    return;
   }
 
   seasonTimelapseHistory =
@@ -690,6 +692,8 @@ async function loadAndPlaySeasonTimelapse() {
   seasonTimelapseControls.classList.remove(
     "hidden"
   );
+  seasonTimelapseExportStatus.textContent = seasonTimelapseFinalCheckComplete
+    ? "" : "Начальный снимок недоступен: проверка конечной карты частичная.";
 
 
   seasonTimelapseProgress.max =

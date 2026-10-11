@@ -246,16 +246,20 @@ function seasonTimelapseStateMatchesArchive(
   return true;
 }
 
-function assertSeasonTimelapseFinalState(
-  stateCanvas
-) {
-  if (
-    !seasonTimelapseStateMatchesArchive(
-      stateCanvas
-    )
-  ) {
+function assertSeasonTimelapseFinalState(stateCanvas) {
+  if (seasonTimelapseSeasonId !== openedArchivedSeason?.season_id ||
+      seasonTimelapseSeasonId !== openedArchivedFinalSeasonId) {
+    throw new Error("TIMELAPSE_SEASON_CHANGED");
+  }
+  const matches = seasonTimelapseStateMatchesArchive(stateCanvas);
+  if (seasonTimelapseFinalCheckComplete && !matches) {
     throw new Error("TIMELAPSE_STATE_MISMATCH");
   }
+  if (!matches) {
+    console.info("TIMELAPSE: cannot fully compare final map without an initial snapshot",
+      seasonTimelapseSeasonId);
+  }
+  return matches;
 }
 
 // The recorder has stopped only after its final dataavailable event. Verify
@@ -529,7 +533,8 @@ async function exportSeasonTimelapseWebm() {
 
     setSeasonTimelapseExporting(
       false,
-      `WebM скачан · ${plan.durationSeconds} сек.`
+      `WebM скачан · ${plan.durationSeconds} сек.` +
+        (seasonTimelapseFinalCheckComplete ? "" : " · проверка карты частичная")
     );
   } catch (error) {
     console.error(
@@ -558,9 +563,11 @@ async function exportSeasonTimelapseWebm() {
       ""
     );
 
-    alert(error.message === "TIMELAPSE_STATE_MISMATCH"
-      ? "История ходов не совпадает с архивной картой. Видео не скачано."
-      : "Не удалось создать воспроизводимый WebM в этом браузере.");
+    alert(error.message === "TIMELAPSE_SEASON_CHANGED"
+      ? "Выбранный сезон изменился. Откройте карту и повторите экспорт."
+      : error.message === "TIMELAPSE_STATE_MISMATCH"
+        ? "Проверка конечной карты выбранного сезона не пройдена."
+        : "Не удалось создать воспроизводимый WebM в этом браузере.");
   }
 }
 

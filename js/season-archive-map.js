@@ -1,3 +1,6 @@
+let archivedSeasonMapRequest = 0;
+let openedArchivedFinalSeasonId = null;
+
 async function openArchivedSeasonMap(
   season
 ) {
@@ -6,12 +9,14 @@ async function openArchivedSeasonMap(
     return;
   }
   
+const mapRequest = ++archivedSeasonMapRequest;
 openedArchivedSeason =
   season;
 
 resetSeasonTimelapse();
 
 openedArchivedFinalPixels = [];
+openedArchivedFinalSeasonId = null;
 
   const viewer =
     document.getElementById(
@@ -71,18 +76,11 @@ openedArchivedFinalPixels = [];
 
   while (true) {
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .rpc(
-          "get_season_map",
-          {
-            p_season_id:
-              season.season_id
-          }
-        )
+    const mapQuery = season.finished_at === null
+      ? supabaseClient.from("pixels").select("x,y,color")
+          .eq("season_id", season.season_id)
+      : supabaseClient.rpc("get_season_map", { p_season_id: season.season_id });
+    const { data, error } = await mapQuery
         .order(
           "y",
           {
@@ -100,6 +98,9 @@ openedArchivedFinalPixels = [];
           from + PAGE_SIZE - 1
         );
 
+
+    if (mapRequest !== archivedSeasonMapRequest ||
+        openedArchivedSeason?.season_id !== season.season_id) return;
 
     if (error) {
 
@@ -141,8 +142,12 @@ openedArchivedFinalPixels = [];
     `Архивная карта загружена полностью: ${allArchivedPixels.length} пикселей`
   );
 
+  if (mapRequest !== archivedSeasonMapRequest ||
+      openedArchivedSeason?.season_id !== season.season_id) return;
+
   openedArchivedFinalPixels =
     allArchivedPixels;
+  openedArchivedFinalSeasonId = season.season_id;
 
 
   /*
@@ -223,10 +228,12 @@ closeSeasonMapButton.addEventListener(
   "click",
   () => {
 
+    archivedSeasonMapRequest++;
     resetSeasonTimelapse();
 
     openedArchivedSeason = null;
     openedArchivedFinalPixels = [];
+    openedArchivedFinalSeasonId = null;
 
     document
       .getElementById(
