@@ -1,3 +1,35 @@
+const seasonTimelapseWebmQualities = [600, 720, 900, 1080];
+const seasonTimelapseWebmQualityKey = "pixelBattleTimelapseWebmQuality";
+
+const seasonTimelapseQuality =
+  document.getElementById("season-timelapse-quality");
+const seasonTimelapseExportResolution =
+  document.getElementById("season-timelapse-export-resolution");
+
+try {
+  const savedQuality = Number(
+    localStorage.getItem(seasonTimelapseWebmQualityKey)
+  );
+  if (seasonTimelapseWebmQualities.includes(savedQuality)) {
+    seasonTimelapseQuality.value = String(savedQuality);
+  }
+} catch (_) {
+  // Private browsing may prevent access to localStorage.
+}
+
+seasonTimelapseQuality.addEventListener("change", () => {
+  updateSeasonTimelapseExportResolution();
+  try {
+    localStorage.setItem(
+      seasonTimelapseWebmQualityKey,
+      seasonTimelapseQuality.value
+    );
+  } catch (_) {
+    // The quality selection still works for this session.
+  }
+});
+updateSeasonTimelapseExportResolution();
+
 function setSeasonTimelapseExporting(
   exporting,
   message = ""
@@ -64,8 +96,33 @@ function downloadSeasonTimelapseBlob(
 }
 
 
+function getSeasonTimelapseExportResolution(height) {
+  const sourceCanvas =
+    document.getElementById("season-map-canvas");
+
+  const mapWidth = sourceCanvas.width;
+  const mapHeight = sourceCanvas.height;
+
+  if (!mapWidth || !mapHeight) {
+    throw new Error("INVALID_SEASON_MAP_SIZE");
+  }
+
+  return {
+    width: Math.max(2, Math.round(height * mapWidth / mapHeight / 2) * 2),
+    height
+  };
+}
+
+function updateSeasonTimelapseExportResolution() {
+  const height = Number(seasonTimelapseQuality.value);
+  const resolution = getSeasonTimelapseExportResolution(height);
+  seasonTimelapseExportResolution.textContent =
+    `${resolution.width}×${resolution.height}`;
+}
+
 function createSeasonTimelapseExportCanvas(
-  scale
+  scale,
+  targetHeight = null
 ) {
   const sourceCanvas =
     document.getElementById(
@@ -77,13 +134,14 @@ function createSeasonTimelapseExportCanvas(
       "canvas"
     );
 
-  exportCanvas.width =
-    sourceCanvas.width *
-    scale;
-
-  exportCanvas.height =
-    sourceCanvas.height *
-    scale;
+  if (targetHeight !== null) {
+    const resolution = getSeasonTimelapseExportResolution(targetHeight);
+    exportCanvas.width = resolution.width;
+    exportCanvas.height = resolution.height;
+  } else {
+    exportCanvas.width = sourceCanvas.width * scale;
+    exportCanvas.height = sourceCanvas.height * scale;
+  }
 
   const context =
     exportCanvas.getContext(
@@ -347,7 +405,10 @@ async function exportSeasonTimelapseWebm() {
   let recorder = null;
 
   try {
-    const scale = 1;
+    const quality = Number(seasonTimelapseQuality.value);
+    if (!seasonTimelapseWebmQualities.includes(quality)) {
+      throw new Error("INVALID_WEBM_QUALITY");
+    }
     const seasonId = seasonTimelapseSeasonId;
     const framesPerSecond = 15;
     const plan =
@@ -357,7 +418,8 @@ async function exportSeasonTimelapseWebm() {
 
     const output =
       createSeasonTimelapseExportCanvas(
-        scale
+        1,
+        quality
       );
 
     const state =

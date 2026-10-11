@@ -46,6 +46,8 @@ openedArchivedFinalSeasonId = null;
       season.map_height ?? 424
     );
 
+  updateSeasonTimelapseExportResolution();
+
 
   /*
    * Начинаем с чистой белой карты.
