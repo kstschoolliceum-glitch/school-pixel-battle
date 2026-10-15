@@ -12,6 +12,7 @@ alter table public.promo_codes add column active boolean not null default true;
 alter table public.promo_codes add column redemption_count integer not null default 0;
 alter table public.promo_codes add column item_type text default 'detector';
 alter table public.promo_codes add column item_quantity integer not null default 1;
+alter table public.promo_codes add primary key(id);
 create table public.promo_redemptions(id bigint generated always as identity,
   promo_code_id bigint references public.promo_codes(id), user_id uuid,
   unique(promo_code_id,user_id));
