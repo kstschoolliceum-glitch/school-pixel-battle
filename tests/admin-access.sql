@@ -14,7 +14,12 @@ $$;
 create function pg_temp.assert_ok(value boolean, label text) returns void language plpgsql as $$
 begin if not coalesce(value,false) then raise exception 'Assertion failed: %',label; end if; end;
 $$;
-grant usage on schema pg_temp to authenticated;
+do $$
+begin
+  execute format('grant usage on schema %I to authenticated',
+    (select nspname from pg_catalog.pg_namespace where oid=pg_my_temp_schema()));
+end;
+$$;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',true);

@@ -1,6 +1,7 @@
 name: Administrative access regression
 on:
   push:
+    branches: [main]
     paths:
       - 'supabase/migrations/20261015_owner_and_assistant_admins.sql'
       - 'tests/admin-access*.sql'
