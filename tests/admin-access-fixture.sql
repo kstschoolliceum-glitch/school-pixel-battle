@@ -79,6 +79,8 @@ returns void language sql security definer as $$update public.seasons set finish
 create function public.admin_unknown_operation()
 returns integer language plpgsql security definer as $$begin return 42; end;$$;
 grant execute on all functions in schema public to authenticated;
+-- Exercise the legacy case where effective client EXECUTE came from PUBLIC.
+revoke execute on function public.finish_season(bigint) from authenticated;
 revoke execute on function public.add_season_to_active_quarter(bigint) from public,anon,authenticated;
 grant select,update on public.profiles to authenticated;
 alter table profiles enable row level security;

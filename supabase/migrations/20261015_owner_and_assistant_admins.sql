@@ -221,7 +221,9 @@ $guards$;
 do $rpc_guards$
 declare r record; definition text; delimiter text; body text; header_pos integer;
 begin
-  for r in select p.*, l.lanname from pg_catalog.pg_proc p
+  for r in select p.*, l.lanname,
+      has_function_privilege('authenticated', p.oid, 'EXECUTE') as client_execute
+    from pg_catalog.pg_proc p
     join pg_catalog.pg_namespace n on n.oid=p.pronamespace
     join pg_catalog.pg_language l on l.oid=p.prolang
     where n.nspname='public' and p.prokind='f'
@@ -240,11 +242,16 @@ begin
     header_pos := strpos(definition, 'AS ' || delimiter);
     body := '-- school-admin-access-v1' || E'\nBEGIN\nPERFORM public.assert_admin_operation(' ||
       quote_literal(format('public.%I(%s)', r.proname, pg_catalog.oidvectortypes(r.proargtypes))) || E');\n' ||
-      rtrim(rtrim(r.prosrc), ';') || E';\nEND;';
+      regexp_replace(r.prosrc, '[[:space:];]+$', '') || E';\nEND;';
     execute left(definition, header_pos - 1) || 'AS ' || quote_literal(body) || ';';
     execute format('alter function %s set search_path = public, pg_temp', r.oid::regprocedure);
     execute format('revoke execute on function %s from public, anon', r.oid::regprocedure);
-    -- Preserve authenticated EXECUTE exactly, including internal-only helpers.
+    if r.proname = 'add_season_to_active_quarter' then
+      execute format('revoke execute on function %s from authenticated', r.oid::regprocedure);
+    elsif r.client_execute then
+      -- Normalize an inherited PUBLIC privilege to an explicit client grant.
+      execute format('grant execute on function %s to authenticated', r.oid::regprocedure);
+    end if;
   end loop;
 end;
 $rpc_guards$;
