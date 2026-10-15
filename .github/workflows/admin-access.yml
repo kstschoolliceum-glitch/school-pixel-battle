@@ -1,0 +1,41 @@
+name: Administrative access regression
+on:
+  push:
+    paths:
+      - 'supabase/migrations/20261015_owner_and_assistant_admins.sql'
+      - 'tests/admin-access*.sql'
+      - '.github/workflows/admin-access.yml'
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261015_owner_and_assistant_admins.sql'
+      - 'tests/admin-access*.sql'
+      - '.github/workflows/admin-access.yml'
+permissions:
+  contents: read
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: spb_admin_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: test
+      PGDATABASE: spb_admin_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply to a disposable fixture, check repeatability and RPC permissions
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/admin-access-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261015_owner_and_assistant_admins.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261015_owner_and_assistant_admins.sql
+          psql -v ON_ERROR_STOP=1 -f tests/admin-access.sql

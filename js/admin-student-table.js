@@ -420,6 +420,10 @@ resetPasswordButton.textContent =
   "🔑 Сбросить пароль";
 
 
+// Resetting credentials remains an owner-only security operation.
+resetPasswordButton.hidden = !window.adminStaff?.isSuperAdmin();
+resetPasswordButton.setAttribute("data-super-admin-only", "");
+
 resetPasswordButton.addEventListener(
   "click",
   async () => {
@@ -580,3 +584,4 @@ studentsStatusFilter.addEventListener(
   "change",
   renderAdminStudents
 );
+

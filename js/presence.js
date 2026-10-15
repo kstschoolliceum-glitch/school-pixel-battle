@@ -121,6 +121,7 @@ async function checkAdminStatus() {
   if (!currentUser) {
 
     currentUserIsAdmin = false;
+    await window.adminStaff?.refreshAccess();
     syncChatMessageLimit();
 
     adminButton.classList.add(
@@ -150,6 +151,7 @@ async function checkAdminStatus() {
     );
 
     currentUserIsAdmin = false;
+    await window.adminStaff?.refreshAccess();
     syncChatMessageLimit();
 
     adminButton.classList.add(
@@ -164,6 +166,8 @@ async function checkAdminStatus() {
 
   currentUserIsAdmin =
     data === true;
+
+  await window.adminStaff?.refreshAccess();
 
   updateCooldown();
 
@@ -330,3 +334,4 @@ async function startOnlinePresence() {
   );
 
 }
+

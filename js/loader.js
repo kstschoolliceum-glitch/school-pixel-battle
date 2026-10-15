@@ -12,7 +12,7 @@
   "js/user-profile.js?v=1",
   "js/seasons.js?v=2",
   "js/referrals.js?v=1",
-  "js/presence.js?v=2",
+  "js/presence.js?v=3",
   "js/auth-session.js?v=2",
   "js/pixel-sync.js?v=1",
   "js/registration.js?v=2",
@@ -26,7 +26,7 @@
   "js/admin-invite-generator.js?v=1",
   "js/admin-invite-stats.js?v=1",
   "js/admin-student-data.js?v=1",
-  "js/admin-student-table.js?v=1",
+  "js/admin-student-table.js?v=2",
   "js/admin-student-section.js?v=1",
   "js/admin-school-link.js?v=1",
   "js/admin-referrals.js?v=1",
@@ -45,7 +45,8 @@
   "js/sokoban.js?v=1",
   "js/fifteen.js?v=1",
   "js/tasks-tabs.js?v=1",
-  "js/admin-tools.js?v=1",
+  "js/admin-staff.js?v=1",
+  "js/admin-tools.js?v=2",
   "js/music-player.js?v=4",
   "js/user-agreement.js?v=1",
   "js/moderation-reports.js?v=1",
@@ -87,3 +88,4 @@
 
   insertFragments().then(loadScripts).catch(error => showLoadError(error.message || error));
 })();
+

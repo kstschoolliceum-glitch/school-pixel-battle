@@ -165,3 +165,18 @@ body.admin-view .sidebar {
   }
 
 }
+
+
+/* Scoped owner/staff controls; no changes to the game screen. */
+[data-super-admin-only][hidden] { display: none !important; }
+#admin-staff-content .admin-staff-search { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+#admin-staff-content .admin-staff-search label { flex-basis: 100%; }
+#admin-staff-content input { min-width: 0; flex: 1 1 180px; }
+#admin-staff-content button { min-height: 40px; white-space: normal; overflow-wrap: anywhere; }
+#admin-staff-content .admin-staff-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #334155; }
+#admin-staff-content .admin-staff-row > div { flex: 1 1 180px; min-width: 0; overflow-wrap: anywhere; }
+#admin-staff-content .admin-staff-row p { margin: 4px 0; color: #94a3b8; }
+#admin-staff-content .admin-staff-avatar { width: 40px; height: 40px; flex: 0 0 40px; }
+#admin-staff-content .admin-staff-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+#admin-staff-audit { max-height: 360px; overflow: auto; padding-left: 20px; overflow-wrap: anywhere; }
+#admin-staff-audit li { margin: 8px 0; font-size: 13px; }
