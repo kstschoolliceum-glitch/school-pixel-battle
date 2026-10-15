@@ -84,7 +84,7 @@ const unblockMeGame = (() => {
     }
 
     if (state === "completed") {
-      if (currentUserIsAdmin) {
+      if (currentUserIsGameplayAdmin) {
         openButton.disabled = false;
         openButton.textContent = "🧪 ПРОВЕРИТЬ СЛЕДУЮЩУЮ ИГРУ";
         badge.textContent = "Режим проверки";
@@ -343,7 +343,7 @@ const unblockMeGame = (() => {
 
     const adminReplay =
       status?.state === "completed" &&
-      currentUserIsAdmin;
+      currentUserIsGameplayAdmin;
 
     if (
       status?.state === "completed" &&
@@ -422,3 +422,4 @@ const unblockMeGame = (() => {
     }
   };
 })();
+

@@ -1,4 +1,5 @@
 let currentUserIsAdmin = false;
+let currentUserIsGameplayAdmin = false;
 
 function hideAdminOnlineUsers() {
   const host = document.getElementById("admin-online-users");
@@ -121,6 +122,7 @@ async function checkAdminStatus() {
   if (!currentUser) {
 
     currentUserIsAdmin = false;
+    currentUserIsGameplayAdmin = false;
     await window.adminStaff?.refreshAccess();
     syncChatMessageLimit();
 
@@ -151,6 +153,7 @@ async function checkAdminStatus() {
     );
 
     currentUserIsAdmin = false;
+    currentUserIsGameplayAdmin = false;
     await window.adminStaff?.refreshAccess();
     syncChatMessageLimit();
 

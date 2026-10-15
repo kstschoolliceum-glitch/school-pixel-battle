@@ -278,7 +278,9 @@ banButton.addEventListener(
       );
 
       alert(
-        "Не удалось изменить статус ученика."
+        error.message?.includes("MODERATION_EVIDENCE_REQUIRED")
+          ? "Нужна жалоба другого игрока или зарегистрированное нарушение. Иначе блокировку должен выполнить владелец."
+          : "Не удалось изменить статус ученика."
       );
 
       banButton.disabled = false;
@@ -379,7 +381,9 @@ if (!student.banned) {
           error || data
         );
         alert(
-          "Не удалось временно заблокировать ученика."
+          error?.message?.includes("MODERATION_EVIDENCE_REQUIRED")
+            ? "Нужна жалоба другого игрока или зарегистрированное нарушение. Иначе блокировку должен выполнить владелец."
+            : "Не удалось временно заблокировать ученика."
         );
         temporaryBanButton.disabled = false;
         temporaryBanButton.textContent =

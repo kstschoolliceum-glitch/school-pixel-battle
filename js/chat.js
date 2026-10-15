@@ -32,7 +32,7 @@ function syncChatMessageLimit() {
     return;
   }
 
-  if (currentUserIsAdmin) {
+  if (currentUserIsGameplayAdmin) {
     chatInput.removeAttribute("maxlength");
     chatInput.placeholder =
       "Сообщение администратора...";
@@ -752,7 +752,7 @@ chatForm.addEventListener(
     }
 
     if (
-      !currentUserIsAdmin &&
+      !currentUserIsGameplayAdmin &&
       message.length > 200
     ) {
       setChatSendStatus(
@@ -802,3 +802,4 @@ chatForm.addEventListener(
     chatInput.focus();
   }
 );
+

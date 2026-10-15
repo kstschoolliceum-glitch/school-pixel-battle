@@ -79,7 +79,9 @@
 
         if (error || !data?.success) {
           console.error("ADMIN VIOLATION BAN ERROR:", error || data);
-          alert("Не удалось заблокировать ученика.");
+          alert(error?.message?.includes("MODERATION_EVIDENCE_REQUIRED")
+            ? "Нужна жалоба другого игрока или зарегистрированное нарушение; иначе требуется владелец."
+            : "Не удалось заблокировать ученика.");
           button.disabled = false;
           button.textContent = "ЗАБЛОКИРОВАТЬ";
           return;

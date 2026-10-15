@@ -126,13 +126,15 @@ const adminPromoCodes = (() => {
         disableButton.dataset.promoId = String(promo.id);
         disableButton.dataset.promoActive = "false";
         disableButton.textContent = "ОТКЛЮЧИТЬ";
+        disableButton.disabled = !window.adminStaff?.isSuperAdmin();
         actions.appendChild(disableButton);
       } else if (promo.status === "disabled") {
         const enableButton = document.createElement("button");
         enableButton.type = "button";
         enableButton.dataset.promoId = String(promo.id);
         enableButton.dataset.promoActive = "true";
-        enableButton.textContent = "ВКЛЮЧИТЬ";
+        enableButton.textContent = promo.needs_owner_approval ? "ОДОБРИТЬ И ВКЛЮЧИТЬ" : "ВКЛЮЧИТЬ";
+        enableButton.disabled = !window.adminStaff?.isSuperAdmin();
         actions.appendChild(enableButton);
       }
 
@@ -275,7 +277,9 @@ const adminPromoCodes = (() => {
 
     createdCode.textContent = data.code;
     createdBox.classList.remove("hidden");
-    setMessage("Промокод создан. Скопируй его сейчас — позже будет видна только часть кода.");
+    setMessage(window.adminStaff?.isSuperAdmin()
+      ? "Промокод создан. Скопируй его сейчас — позже будет видна только часть кода."
+      : "Промокод создан выключенным. Владелец должен одобрить его в этом списке. Свой код получить нельзя.");
     generateCode();
     await load();
   });
@@ -446,7 +450,9 @@ const promoCodes = (() => {
 
     if (error) {
       console.error("PROMO REDEEM ERROR:", error);
-      showMessage("Не удалось проверить промокод. Попробуй ещё раз.", true);
+      showMessage(error.message?.includes("PROMO_CONFLICT_OF_INTEREST")
+        ? "Этот промокод требует одобрения владельца или создан вами: получить собственную награду нельзя."
+        : "Не удалось проверить промокод. Попробуй ещё раз.", true);
       renderStatus();
       return;
     }
@@ -490,3 +496,4 @@ const promoCodes = (() => {
   renderStatus();
   return { load };
 })();
+

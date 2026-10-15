@@ -33,12 +33,14 @@ window.adminStaff = (() => {
   async function refreshAccess() {
     const ownRequest = ++request;
     superAdmin = false;
+    currentUserIsGameplayAdmin = false;
     syncControls();
     if (!currentUserIsAdmin || !currentUser) return;
     const userId = currentUser.id;
     const { data, error } = await supabaseClient.rpc("get_my_admin_access");
     if (ownRequest !== request || currentUser?.id !== userId) return;
     superAdmin = !error && data?.is_super_admin === true;
+    currentUserIsGameplayAdmin = superAdmin && data?.is_gameplay_admin !== false;
     if (!error && data?.is_admin === false) currentUserIsAdmin = false;
     syncControls();
     if (superAdmin && document.getElementById("admin-staff-tab").classList.contains("active")) await load();
