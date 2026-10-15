@@ -146,7 +146,7 @@ async function placePixel() {
   }
 
 
-  if (cooldownRemaining > 0 && !currentUserIsAdmin) {
+  if (cooldownRemaining > 0 && !currentUserIsGameplayAdmin) {
     showPlacementError();
     return;
   }
@@ -359,7 +359,7 @@ function resetPixelCooldownAfterReward() {
 
 function updateCooldown() {
 
-  if (cooldownRemaining <= 0 || currentUserIsAdmin) {
+  if (cooldownRemaining <= 0 || currentUserIsGameplayAdmin) {
 
     cooldownText.textContent =
       "Пиксель готов";
@@ -382,7 +382,7 @@ function updatePlaceButton() {
    * Идёт cooldown.
    */
 
-  if (cooldownRemaining > 0 && !currentUserIsAdmin) {
+  if (cooldownRemaining > 0 && !currentUserIsGameplayAdmin) {
 
     placeButton.disabled = true;
 
@@ -420,3 +420,4 @@ function updatePlaceButton() {
 }
 
 if (placeButtonSwatch) placeButtonSwatch.style.backgroundColor = selectedColor;
+

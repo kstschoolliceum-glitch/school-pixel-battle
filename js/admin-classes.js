@@ -186,6 +186,9 @@ function renderAdminClasses() {
     actionButton.className =
       "class-action-button";
 
+    actionButton.hidden = !window.adminStaff?.isSuperAdmin();
+    actionButton.setAttribute("data-super-admin-only", "");
+
 
     actionButton.textContent =
       item.is_active
@@ -452,3 +455,4 @@ adminClassesTab.addEventListener(
   "click",
   openAdminClasses
 );
+

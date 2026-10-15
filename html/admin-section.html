@@ -78,7 +78,33 @@
         🎁 Промокоды
       </button>
     </div>
+    <div class="admin-tab-group" data-super-admin-only hidden>
+      <span class="admin-tab-group-title">Владелец</span>
+      <button id="admin-staff-tab" class="admin-tab" type="button"
+        data-admin-target="admin-staff-content" data-super-admin-only hidden
+        aria-controls="admin-staff-content" aria-selected="false">🛡️ Администраторы</button>
+    </div>
   </nav>
+
+  <div id="admin-staff-content" data-admin-panel data-super-admin-only hidden class="hidden">
+    <h2>🛡️ Администраторы</h2>
+    <p>Владелец защищён от удаления, блокировки и смены роли через админ-панель.</p>
+    <p>Помощник играет за свой класс с обычными ограничениями. Управление администраторами,
+      проверка мини-игр, сброс паролей и операции с результатами соревнования остаются у владельца.
+      Промокоды помощника включаются после одобрения владельца.</p>
+    <form id="admin-staff-search-form" class="admin-staff-search">
+      <label for="admin-staff-search">Ник зарегистрированного ученика</label>
+      <input id="admin-staff-search" type="search" minlength="2" maxlength="80" required autocomplete="off">
+      <button type="submit">Найти</button>
+    </form>
+    <p id="admin-staff-status" role="status"></p>
+    <div id="admin-staff-search-results"></div>
+    <h3>Помощники</h3>
+    <div id="admin-staff-list"></div>
+    <h3>История назначений и административных действий</h3>
+    <ul id="admin-staff-audit"></ul>
+    <button id="admin-staff-audit-more" type="button" hidden>Показать ещё</button>
+  </div>
 
 
 
@@ -696,7 +722,7 @@
 
 
       <button
-        id="admin-quarter-start-button"
+        id="admin-quarter-start-button" data-super-admin-only hidden
         type="button"
         class="hidden"
       >
@@ -705,7 +731,7 @@
 
 
       <button
-        id="admin-quarter-finish-button"
+        id="admin-quarter-finish-button" data-super-admin-only hidden
         type="button"
         class="hidden"
       >
@@ -1146,3 +1172,4 @@
 </div>
   
 </section>
+

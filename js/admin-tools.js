@@ -79,7 +79,9 @@
 
         if (error || !data?.success) {
           console.error("ADMIN VIOLATION BAN ERROR:", error || data);
-          alert("Не удалось заблокировать ученика.");
+          alert(error?.message?.includes("MODERATION_EVIDENCE_REQUIRED")
+            ? "Нужна жалоба другого игрока или зарегистрированное нарушение; иначе требуется владелец."
+            : "Не удалось заблокировать ученика.");
           button.disabled = false;
           button.textContent = "ЗАБЛОКИРОВАТЬ";
           return;
@@ -158,6 +160,7 @@
   if (!tabs.length || !panels.length) return;
 
   function activateAdminPanel(tab) {
+    if (tab.hasAttribute("data-super-admin-only") && !window.adminStaff?.isSuperAdmin()) return;
     const targetId = tab.dataset.adminTarget;
     const targetPanel = document.getElementById(targetId);
 
@@ -192,9 +195,10 @@
 
       event.preventDefault();
       const direction = event.key === "ArrowRight" ? 1 : -1;
-      const currentIndex = tabs.indexOf(tab);
-      const nextTab = tabs[
-        (currentIndex + direction + tabs.length) % tabs.length
+      const visibleTabs = tabs.filter(item => !item.hidden && !item.classList.contains("hidden"));
+      const currentIndex = visibleTabs.indexOf(tab);
+      const nextTab = visibleTabs[
+        (currentIndex + direction + visibleTabs.length) % visibleTabs.length
       ];
 
       nextTab.focus();
@@ -205,3 +209,4 @@
   const initialTab = tabs.find(tab => tab.classList.contains("active")) || tabs[0];
   activateAdminPanel(initialTab);
 })();
+
