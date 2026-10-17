@@ -1,0 +1,69 @@
+.jg-dialog {
+  box-sizing: border-box; width: min(580px, calc(100vw - 16px)); max-width: none;
+  max-height: calc(100dvh - 16px); padding: 16px; border: 2px solid #6d5b9c;
+  border-radius: 3px; background: #10182b; color: #f1f5ff;
+  font: 14px/1.4 Arial, sans-serif; overflow: auto; overscroll-behavior: contain;
+}
+.jg-dialog *, .jg-dialog *::before, .jg-dialog *::after { box-sizing: border-box; }
+.jg-dialog [hidden] { display: none !important; }
+.jg-dialog::backdrop { background: #020617db; }
+.jg-dialog h2 { margin: 0 0 12px; font: 800 19px/1.3 "Courier New", monospace; }
+.jg-dialog h3, .jg-dialog p { margin: 0 0 10px; }
+.jg-dialog button, .jg-dialog select {
+  min-height: 44px; padding: 8px 10px; border: 1px solid #697da5;
+  border-radius: 3px; background: #23334f; color: #f8fafc;
+  font: 700 13px/1.2 "Courier New", monospace; cursor: pointer;
+}
+.jg-dialog button:focus-visible, #java-games-open:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+.jg-dialog button:disabled { opacity: .45; cursor: default; }
+.jg-dialog .jg-exit { border-color: #b45353; background: #681c27; color: #ffe4e6; }
+.jg-card { display: flex; gap: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334766; }
+.jg-card p { color: #b6c4dd; font-size: 12px; }
+.jg-cover { display: grid; place-items: center; width: 52px; height: 70px; flex: none; background: #24334d; font-size: 28px; }
+.jg-notice { color: #fde68a; }
+.jg-file-label { display: grid; gap: 8px; margin: 12px 0; }
+.jg-file-label input { max-width: 100%; }
+.jg-catalog-footer { display: flex; justify-content: flex-end; margin-top: 12px; }
+.jg-playing[open] {
+  height: calc(100dvh - 16px); display: grid; grid-template-rows: auto minmax(80px, 1fr) auto;
+  gap: 8px; overflow: hidden;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+}
+.jg-playing > h2 { font-size: 14px; margin: 0; }
+.jg-stage { min-width: 0; min-height: 0; display: flex; justify-content: center; align-items: center; background: #080e1b; overflow: hidden; }
+.jg-stage canvas { display: block; max-width: 100%; max-height: 100%; width: auto; height: 100%; aspect-ratio: 3 / 4; object-fit: contain; image-rendering: pixelated; }
+.jg-screen-content { width: 100%; max-height: 100%; overflow: auto; padding: 12px; overscroll-behavior: contain; }
+.jg-screen-content:empty { display: none; }
+.jg-screen-content > button { margin: 6px 6px 0 0; }
+.jg-tutorial { max-width: 450px; margin: auto; }
+.jg-tutorial h2 { margin: 8px 0; font-size: 18px; }
+.jg-tutorial strong { display: block; color: #86efac; margin-bottom: 8px; }
+.jg-tutorial small { color: #b5a6de; }
+.jg-tutorial > button { width: 100%; }
+.jg-panel { min-width: 0; }
+.jg-keys { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.jg-navigation, .jg-digits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.jg-navigation { grid-template-rows: repeat(3, 1fr); align-self: center; }
+.jg-navigation button { min-height: 44px; }
+.jg-navigation:has(+ .jg-digits[hidden]) { grid-column: 1 / -1; width: min(300px, 100%); justify-self: center; }
+.jg-keys button { padding: 6px; -webkit-touch-callout: none; }
+.jg-dialog .jg-held { background: #5d4385; border-color: #c4b5fd; }
+.jg-dialog .jg-highlight { outline: 2px solid #fbbf24; outline-offset: -2px; }
+.jg-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 8px; }
+.jg-tools button { font-size: 11px; padding: 6px; }
+.jg-tools .jg-exit { grid-column: 3; }
+.jg-confirm, .jg-bindings { width: min(390px, calc(100vw - 24px)); }
+.jg-confirm > div { display: flex; justify-content: flex-end; gap: 8px; }
+.jg-bindings label { display: inline-flex; align-items: center; gap: 8px; margin: 0 10px 12px 0; }
+@media (max-width: 380px) {
+  .jg-dialog { padding: 10px; }
+  .jg-keys { gap: 8px; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .jg-playing[open] { width: calc(100vw - 16px); grid-template: auto minmax(0, 1fr) / minmax(0, 1fr) minmax(260px, 42%); }
+  .jg-playing > h2 { grid-column: 1 / -1; }
+  .jg-panel { align-self: end; }
+  .jg-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .jg-tools .jg-exit { grid-column: 2; }
+  .jg-tutorial h2 { font-size: 16px; }
+}

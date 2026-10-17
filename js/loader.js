@@ -38,6 +38,7 @@
   "js/notifications.js?v=2",
   "js/daily-tasks.js?v=5",
   "js/player-card.js?v=4",
+  "js/java-games-entry.js?v=1",
   "js/unblock-me.js?v=2",
   "js/promo-codes.js?v=3",
   "js/interface-sound.js?v=1",
@@ -88,4 +89,5 @@
 
   insertFragments().then(loadScripts).catch(error => showLoadError(error.message || error));
 })();
+
 

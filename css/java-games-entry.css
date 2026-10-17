@@ -1,0 +1,22 @@
+/* Match the existing map actions without adding a navigation row. */
+#java-games-open {
+  flex: none;
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #a78bfa;
+  border-radius: 0;
+  background: #31204e;
+  color: #ede9fe;
+  box-shadow: 2px 2px 0 #070b15;
+  font: 800 12px/1.15 "Courier New", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.map-header .map-title { flex-wrap: nowrap; }
+@media (max-width: 650px) {
+  #java-games-open { min-height: 22px; padding: 3px 4px; font-size: 8px; line-height: 1; }
+  /* Keep coordinates in their existing slot; the actions can scroll on very narrow screens. */
+  .map-header .map-title { overflow-x: auto; scrollbar-width: none; flex-shrink: 1; }
+  .map-header .map-title::-webkit-scrollbar { display: none; }
+  .map-header .map-title > * { flex-shrink: 0; }
+}
