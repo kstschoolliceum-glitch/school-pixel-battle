@@ -1,0 +1,54 @@
+name: Java ME browser check
+on:
+  pull_request:
+    paths:
+      - 'javagames/**'
+      - 'js/java-games/**'
+      - 'js/java-games-entry.js'
+      - 'css/java-games*.css'
+      - 'tests/java-games*.mjs'
+      - 'tests/java-me/**'
+      - '.github/workflows/java-me-browser.yml'
+  push:
+    branches: [codex/java-games-ui-isolation-research]
+    paths:
+      - 'javagames/**'
+      - 'js/java-games/**'
+      - 'tests/java-me/**'
+      - '.github/workflows/java-me-browser.yml'
+permissions:
+  contents: read
+concurrency:
+  group: java-me-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test-only Playwright
+        timeout-minutes: 2
+        run: npm install --prefix "$RUNNER_TEMP/java-me-test" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+      - name: Install Chromium in CI
+        timeout-minutes: 3
+        run: |
+          "$RUNNER_TEMP/java-me-test/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Unit checks and real browser MIDlets
+        timeout-minutes: 3
+        env:
+          NODE_PATH: ${{ runner.temp }}/java-me-test/node_modules
+          JAVA_ME_SCREENSHOT: ${{ runner.temp }}/java-me.png
+        run: |
+          node --test tests/java-games.test.mjs tests/java-games-rms.test.mjs tests/java-games-protocol.test.mjs
+          node tests/java-me/browser-e2e.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: java-me-browser-frame
+          path: ${{ runner.temp }}/java-me.png
+          if-no-files-found: ignore
+          retention-days: 3

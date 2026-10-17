@@ -1,5 +1,8 @@
 # Этап 5: настоящий JS2ME runtime внутри проекта
 
+Продолжение и исправления перед выпуском: [актуальный отчёт](java-me-release.md).
+Браузерная проверка теперь подготовлена также в GitHub Actions; результат виден в Checks PR.
+
 Ветка: `codex/java-games-ui-isolation-research`, существующий Draft PR №2.
 Основа продолжения: `90584ff59b21ffe1cb5e0e0072fb1f9cbcce1342`. `main` не изменяется.
 

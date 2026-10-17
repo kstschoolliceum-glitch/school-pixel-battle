@@ -52,6 +52,9 @@ RMS в IndexedDB и звук **не проверены**. Полные прич�
 Текущие fixtures используют явный StringBuffer вместо StringBuilder, автоматически создаваемого Java 8 компилятором при конкатенации. Их classfile version по-прежнему 52; JS2ME пропускает необязательный StackMapTable, но это не CLDC preverification.
 # Автоматическая проверка в настоящем браузере
 
+Этот же сценарий запускается workflow `Java ME browser check` в GitHub Actions для PR №2.
+Его наличие не заменяет успешный результат Checks. [Статус подготовки выпуска](../../docs/java-me-release.md).
+
 `browser-e2e.cjs` запускает локальный HTTP-сервер и установленный Chromium через Playwright.
 Браузер и пакеты автоматически не скачиваются. В тестовой среде должны быть доступны
 `playwright` и Chromium; при необходимости задайте `CHROMIUM_PATH`.

@@ -166,9 +166,17 @@ function play(game) {
     try {
       let jar = fileBytes;
       if (game.jarUrl) {
-        const response = await fetch(game.jarUrl, { signal: state.abort.signal });
-        if (!response.ok) throw new Error('Не удалось загрузить тестовый JAR.');
-        jar = await response.arrayBuffer();
+        const download = new AbortController();
+        const abortDownload = () => download.abort(state.abort.signal.reason);
+        state.abort.signal.addEventListener('abort', abortDownload, { once:true });
+        const timeout = setTimeout(() => download.abort(new Error('Не удалось загрузить JAR за 20 секунд. Повтори запуск.')), 20000);
+        try {
+          const response = await fetch(game.jarUrl, { signal:download.signal });
+          if (!response.ok) throw new Error('Не удалось загрузить тестовый JAR.');
+          jar = await response.arrayBuffer();
+        } finally {
+          clearTimeout(timeout); state.abort.signal.removeEventListener('abort', abortDownload);
+        }
       }
       const runtime = await startRuntime({ jar, canvas: dialog.querySelector('canvas'), game, signal: state.abort.signal });
       if (state.abort.signal.aborted) { runtime.stop(); return; }

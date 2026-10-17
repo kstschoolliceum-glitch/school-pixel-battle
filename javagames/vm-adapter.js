@@ -8,6 +8,7 @@
     let sequence = Promise.resolve();
     let rmsDepth = 0;
     let audioContext;
+    let displayable = null, commandMenu = null;
     const held = new Map(), tasks = new Map();
     let taskId = 0;
     const cache = Object.assign(Object.create(null), records);
@@ -19,6 +20,7 @@
         return cache[key];
       },
       set(_, key, value) { cache[key] = String(value); return true; },
+      deleteProperty(_, key) { delete cache[key]; return true; },
       ownKeys() { return Object.keys(cache); },
       getOwnPropertyDescriptor(_, key) { if (Object.hasOwn(cache, key)) return { configurable:true, enumerable:true, value:cache[key] }; }
     });
@@ -82,11 +84,85 @@
       oscillator.start(); oscillator.stop(audioContext.currentTime + Math.max(1, Math.min(10000, duration)) / 1000);
       oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
     }
+    function invokeCommand(command, target = displayable) {
+      if (command && target?.commandListener) machine.launchThread(() => target.commandListener.$commandAction$Ljavax_microedition_lcdui_Command_Ljavax_microedition_lcdui_Displayable_$V(command, target));
+    }
+    function selectItem(target) {
+      const index = Math.max(0, target.selectedItem || 0);
+      target.selectedItem = index;
+      target.items?.forEach((item, i) => item.element.classList.toggle('spb-selected', i === index));
+    }
+    function closeCommands() { commandMenu?.element.remove(); commandMenu = null; }
+    function uiKey(code) {
+      if (commandMenu) {
+        if (code === -7) closeCommands();
+        else if (code === -1 || code === -2) {
+          commandMenu.index = (commandMenu.index + (code === -1 ? -1 : 1) + commandMenu.commands.length) % commandMenu.commands.length;
+          Array.from(commandMenu.element.children).forEach((node, i) => node.classList.toggle('spb-selected', i === commandMenu.index));
+        } else if (code === -5 || code === -6) {
+          const command = commandMenu.commands[commandMenu.index]; closeCommands(); invokeCommand(command);
+        }
+        return true;
+      }
+      if (!displayable) return false;
+      const choices = code === -6 ? displayable.choiceCommands : code === -7 ? displayable.backCommands : null;
+      if (choices?.length) {
+        if (choices.length === 1) invokeCommand(choices[0]);
+        else {
+          const element = global.document.createElement('div'); element.className = 'spb-command-menu';
+          choices.forEach((command, i) => {
+            const item = global.document.createElement('div'); item.textContent = command.label.text;
+            item.className = i === 0 ? 'spb-selected' : ''; element.appendChild(item);
+          });
+          global.document.getElementById('screen').appendChild(element);
+          commandMenu = { element, commands:choices, index:0 };
+        }
+        return true;
+      }
+      if (!displayable.keyPressListener && displayable.items) {
+        if (code === -1 || code === -2) {
+          if (displayable.items.length) displayable.selectedItem = ((displayable.selectedItem || 0) + (code === -1 ? -1 : 1) + displayable.items.length) % displayable.items.length;
+          selectItem(displayable);
+        } else if (code === -5) invokeCommand(displayable.command || displayable.choiceCommands?.[0]);
+        return true;
+      }
+      if (!displayable.keyPressListener && code === -5) { invokeCommand(displayable.choiceCommands?.[0]); return true; }
+      return false;
+    }
     machine.loadScript = (name, success, failure) => schedule(() => {
       const load = global.JS2ME_CLASS_SOURCES[name];
       if (!load) { if (failure) failure(); else onError(new Error('Java API не поддерживается: ' + name)); return; }
       try {
         load();
+        if (name.endsWith('/lcdui/Display.js')) {
+          const proto = machine.classBucket.prototype;
+          const original = proto.$setCurrent$Ljavax_microedition_lcdui_Displayable_$V;
+          proto.$setCurrent$Ljavax_microedition_lcdui_Displayable_$V = function(next) {
+            closeCommands(); displayable = next;
+            original.call(this, next);
+            schedule(() => {
+              if (next !== displayable || !next?.element?.isConnected) return;
+              selectItem(next);
+              // A real LCDUI List/Alert is rendered by DOM, rather than Canvas.paint().
+              if (!next.keyPressListener) onFrame(next.element);
+            }, 2);
+          };
+        }
+        if (name.endsWith('/lcdui/List.js')) {
+          const proto = machine.classBucket.prototype;
+          const append = proto.$append$Ljava_lang_String_Ljavax_microedition_lcdui_Image_$I;
+          proto.$append$Ljava_lang_String_Ljavax_microedition_lcdui_Image_$I = function(...args) { append.apply(this,args); selectItem(this); return this.items.length - 1; };
+          const clear = proto.$deleteAll$$V;
+          proto.$deleteAll$$V = function() { clear.call(this); this.items = []; this.selectedItem = 0; };
+          const select = proto.$setSelectedIndex$IZ$V;
+          proto.$setSelectedIndex$IZ$V = function(...args) { select.apply(this,args); selectItem(this); };
+        }
+        if (name.endsWith('/lcdui/Alert.js')) {
+          const proto = machine.classBucket.prototype;
+          const init = proto._init$Ljava_lang_String_$V;
+          proto._init$Ljava_lang_String_$V = function(title) { this.element = global.document.createElement('div'); init.call(this,title); };
+          proto.$setString$Ljava_lang_String_$V = function(text) { this.text = text; this.element.textContent = text?.text || ''; };
+        }
         if (name.endsWith('/rms/RecordStore.js')) {
           const proto = machine.classBucket.prototype;
           for (const method of ['$openRecordStore$Ljava_lang_String_Z$Ljavax_microedition_rms_RecordStore_', '$addRecord$_BII$I', '$setRecord$I_BII$V', '$closeRecordStore$$V', '$deleteRecordStore$Ljava_lang_String_$V']) {
@@ -162,6 +238,7 @@
         if (stopped || paused) return;
         if (down) {
           if (held.has(code)) return;
+          if (uiKey(code)) return;
           machine.sendKeyPressEvent(code);
           if (code === -6) global.document.getElementById('choice').dispatchEvent(new Event('mousedown'));
           if (code === -7) global.document.getElementById('back').dispatchEvent(new Event('mousedown'));
@@ -171,6 +248,7 @@
         }
       },
       pause() {
+        if (paused || stopped) return;
         releaseKeys(); paused = true;
         for (const task of tasks.values()) { nativeClearTimeout(task.timer); task.remaining = Math.max(0, task.remaining - (Date.now() - task.at)); }
         global.document.querySelectorAll?.('audio').forEach(audio => { audio.spbWasPlaying = !audio.paused; audio.pause(); });
