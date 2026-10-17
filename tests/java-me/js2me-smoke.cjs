@@ -62,6 +62,18 @@ async function createVm(jar, records={}, extras={}) {
   const keys=await createVm(path.join(root,'javagames/fixtures/nokia-test.jar'));
   const image=keys.nodes.screen.children[0];assert.equal(image.width,240);assert.equal(image.height,320);
   assert.ok(image.toBuffer('image/png').length>1000,'Actual image/text rendering must not be an empty framebuffer');
+  vm.runInContext(`
+    var imageApi=javaRoot.$javax.$microedition.$lcdui.$Image.prototype;
+    var rgbImage=imageApi.$createRGBImage$_IIIZ$Ljavax_microedition_lcdui_Image_([-65536,-16711936,-16776961,-1],2,2,1);
+    var sampled=[0,0,0,0]; rgbImage.$getRGB$_IIIIIII$V(sampled,1,2,1,0,1,2);
+    var reversed=[0,0,0,0]; rgbImage.$getRGB$_IIIIIII$V(reversed,2,-2,0,0,2,2);
+    var rgbaImage=imageApi.$createImage$II$Ljavax_microedition_lcdui_Image_(2,2);
+    rgbaImage.$getGraphics$$Ljavax_microedition_lcdui_Graphics_().$drawRGB$_IIIIIIIZ$V([-65536,0],0,2,0,0,2,1,1);
+    var alphaPixels=Array.from(rgbaImage.element.getContext('2d').getImageData(0,0,2,1).data);
+  `,keys.context);
+  assert.deepEqual(Array.from(keys.context.sampled),[0,-16711936,0,-1],'getRGB uses signed ARGB and correct subrectangle offset');
+  assert.deepEqual(Array.from(keys.context.reversed),[-16776961,-1,-65536,-16711936],'getRGB supports negative scanlength');
+  assert.deepEqual(Array.from(keys.context.alphaPixels),[255,0,0,255,0,0,0,0],'drawRGB preserves signed-int alpha');
   for(const code of [-1,-2,-3,-4,-5,-6,-7,...Array.from({length:10},(_,i)=>48+i),42,35]){
     keys.context.bridge.key(code,true);await wait(35);assert.equal(keys.field('$lastKeyI'),code);assert.equal(keys.field('$downZ'),1);
     keys.context.bridge.key(code,false);await wait(35);assert.equal(keys.field('$downZ'),0);

@@ -10,6 +10,7 @@
 - L/R запускают commandListener в Java-потоке. Несколько команд открывают внутреннее LCDUI-меню, управляемое стрелками/OK/R. Клавиатура Pixel Battle не дублируется.
 - Настоящие DOM-экраны LCDUI также сообщают готовность runtime. Ранее игра с первым экраном List вместо Canvas могла ждать 90 секунд.
 - Повторная pause стала идемпотентной: оставшееся время таймеров и состояние аудио не пересчитываются дважды.
+- Исправлены Image.getRGB (ARGB, подпрямоугольник, offset/scanlength) и Graphics.drawRGB (альфа signed Java int). Проверены цветовые образцы и отрицательный scanlength.
 - Загрузка тестового JAR и его тела ограничена 20 секундами; выход отменяет загрузку.
 - Добавлен GitHub Actions browser check для этой ветки/PR: без secrets, contents:read, только разрешённые JAR. Установка и запуск имеют тайм-ауты.
 
@@ -34,13 +35,16 @@
 к parent storage, RMS после reload, возвращение через каталог. Скриншот сохраняется
 артефактом `java-me-browser-frame`.
 
-Само наличие workflow не означает успешного browser E2E. Результат следует смотреть в Checks PR.
-Если GitHub Actions недоступен или проверка падает, browser readiness остаётся неподтверждённой.
+**Первый browser E2E успешно выполнен в Chromium:** [run 39051540791](https://github.com/kstschoolliceum-glitch/school-pixel-battle/actions/runs/39051540791), commit 73631b1.
+Подтверждены реальный кадр тестового MIDlet, 19 клавиш, удержание/отпускание,
+opaque iframe, прохождение обучения, RMS после reload и переходы каталога.
+Для последующих исправлений результат следует смотреть в Checks текущего commit.
+Само наличие workflow не означает успешного результата для изменённого кода.
 Слышимый звук, Android/iOS, реальная скорость карты и её таймеры требуют отдельной проверки.
 
 ## Ограничения выпуска
 
-Разрешён выпуск интерфейса и **двух тестовых MIDlet** после успешного browser check.
+Объём выпуска — интерфейс и **два тестовых MIDlet** после успешного browser check текущего commit.
 Это частичная реализация MIDP/CLDC, а не обещание запуска любого Java ME JAR.
 Новый код управления List проверяет IMPLICIT List с явно назначенной командой;
 неполная upstream поддержка иных List типов, Forms/Items, Alert timeout и RMS enumeration остаётся ограничением.
@@ -71,6 +75,6 @@ High School Hook Ups не включена в публичные ресурсы 
 - `javagames/vm-adapter.js` — RMS deletion, LCDUI input/readiness и pause.
 - `javagames/index.html` — стили оригинальных LCDUI экранов и меню внутри VM.
 - `js/java-games/catalog.js` — ограничение времени загрузки.
-- `tests/java-me/js2me-smoke.cjs` — проверки исправлений и audio API.
+- `tests/java-me/js2me-smoke.cjs`, `browser-e2e.cjs` — проверки исправлений графики, меню и audio API.
 - `.github/workflows/java-me-browser.yml` — проверка настоящего браузера в CI.
 - `docs/java-me-release.md`, `docs/java-me-stage5.md`, `tests/java-me/README.md` — актуальный статус.

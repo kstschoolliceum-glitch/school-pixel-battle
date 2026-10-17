@@ -134,6 +134,38 @@
       if (!load) { if (failure) failure(); else onError(new Error('Java API не поддерживается: ' + name)); return; }
       try {
         load();
+        if (name.endsWith('/lcdui/Image.js')) {
+          const proto = machine.classBucket.prototype;
+          proto.require = [...(proto.require || []), 'javaRoot.$java.$lang.$IllegalArgumentException'];
+          proto.$getRGB$_IIIIIII$V = function(target, offset, scanlength, x, y, width, height) {
+            if (!target) throw new global.javaRoot.$java.$lang.$NullPointerException();
+            if (width < 0 || height < 0 || x < 0 || y < 0 || x + width > this.element.width || y + height > this.element.height) throw new global.javaRoot.$java.$lang.$IllegalArgumentException();
+            if (!width || !height) return;
+            const last = offset + (height - 1) * scanlength;
+            if (Math.min(offset,last) < 0 || Math.max(offset,last) + width > target.length) throw new global.javaRoot.$java.$lang.$ArrayIndexOutOfBoundsException();
+            const rgba = this.element.getContext('2d').getImageData(x,y,width,height).data;
+            for (let row=0; row<height; row++) for (let col=0; col<width; col++) {
+              const i = (row * width + col) * 4;
+              target[offset + row * scanlength + col] = (rgba[i+3] << 24) | (rgba[i] << 16) | (rgba[i+1] << 8) | rgba[i+2];
+            }
+          };
+        }
+        if (name.endsWith('/lcdui/Graphics.js')) {
+          machine.classBucket.prototype.$drawRGB$_IIIIIIIZ$V = function(data, offset, scanlength, x, y, width, height, alpha) {
+            if (!data) throw new global.javaRoot.$java.$lang.$NullPointerException();
+            if (width <= 0 || height <= 0) return;
+            const last = offset + (height - 1) * scanlength;
+            if (Math.min(offset,last) < 0 || Math.max(offset,last) + width > data.length) throw new global.javaRoot.$java.$lang.$ArrayIndexOutOfBoundsException();
+            const tile = global.document.createElement('canvas'); tile.width = width; tile.height = height;
+            const context = tile.getContext('2d'), pixels = context.createImageData(width,height);
+            for (let row=0; row<height; row++) for (let col=0; col<width; col++) {
+              const value = data[offset + row * scanlength + col], i = (row * width + col) * 4;
+              pixels.data[i] = (value >>> 16) & 255; pixels.data[i+1] = (value >>> 8) & 255;
+              pixels.data[i+2] = value & 255; pixels.data[i+3] = alpha ? value >>> 24 : 255;
+            }
+            context.putImageData(pixels,0,0); this.context.drawImage(tile,x,y);
+          };
+        }
         if (name.endsWith('/lcdui/Display.js')) {
           const proto = machine.classBucket.prototype;
           const original = proto.$setCurrent$Ljavax_microedition_lcdui_Displayable_$V;

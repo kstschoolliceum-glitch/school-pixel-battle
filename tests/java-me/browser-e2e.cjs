@@ -86,6 +86,16 @@ async function main() {
   });
   assert.equal(pixels.width,240); assert.equal(pixels.height,320);
   assert.ok(pixels.colors > 3, 'real text and Image must appear, not a blank frame');
+  const rgb = await frame.locator('body').evaluate(() => {
+    const api = javaRoot.$javax.$microedition.$lcdui.$Image.prototype;
+    const image = api.$createRGBImage$_IIIZ$Ljavax_microedition_lcdui_Image_([-65536,-16711936,-16776961,-1],2,2,1);
+    const sample = [0,0,0,0]; image.$getRGB$_IIIIIII$V(sample,1,2,1,0,1,2);
+    const target = api.$createImage$II$Ljavax_microedition_lcdui_Image_(2,1);
+    target.$getGraphics$$Ljavax_microedition_lcdui_Graphics_().$drawRGB$_IIIIIIIZ$V([-65536,0],0,2,0,0,2,1,1);
+    return { sample, alpha:Array.from(target.element.getContext('2d').getImageData(0,0,2,1).data) };
+  });
+  assert.deepEqual(rgb.sample,[0,-16711936,0,-1]);
+  assert.deepEqual(rgb.alpha,[255,0,0,255,0,0,0,0]);
   assert.equal(await page.locator('iframe').getAttribute('sandbox'), 'allow-scripts');
   assert.equal(await frame.locator('body').evaluate(() => {
     try { return parent.localStorage.length; } catch(e) { return e.name; }
