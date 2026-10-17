@@ -50,3 +50,26 @@ RMS в IndexedDB и звук **не проверены**. Полные прич�
 Настоящий JS2ME подключён в `/javagames/`. Native Canvas/bytecode/RMS smoke: `node tests/java-me/js2me-smoke.cjs` (нужен `@napi-rs/canvas` в тестовой среде). Браузерная страница без Supabase: `tests/java-me/browser-smoke.html`. Подробности и ограничения: [этап 5](../../docs/java-me-stage5.md).
 
 Текущие fixtures используют явный StringBuffer вместо StringBuilder, автоматически создаваемого Java 8 компилятором при конкатенации. Их classfile version по-прежнему 52; JS2ME пропускает необязательный StackMapTable, но это не CLDC preverification.
+# Автоматическая проверка в настоящем браузере
+
+`browser-e2e.cjs` запускает локальный HTTP-сервер и установленный Chromium через Playwright.
+Браузер и пакеты автоматически не скачиваются. В тестовой среде должны быть доступны
+`playwright` и Chromium; при необходимости задайте `CHROMIUM_PATH`.
+
+```sh
+CHROMIUM_PATH=/usr/bin/chromium node tests/java-me/browser-e2e.cjs
+```
+
+Сценарий проходит настоящее обучение, запускает разрешённый JAR в iframe,
+проверяет содержимое кадра, 19 клавиш, удержание и отпускание, запрет доступа
+к storage родителя, восстановление RMS после reload и возврат через каталог.
+Java-поля читаются через отладочный канал Playwright, который не добавляется в приложение.
+Каждое ожидание ограничено; весь запуск ограничен 120 секундами.
+`JAVA_ME_SCREENSHOT=/tmp/java-me.png` позволяет сохранить кадр проверки.
+
+**Статус продолжения 17.10.2026:** синтаксис сценария проверен; browser E2E не пройден:
+Playwright сообщает `Executable doesn't exist` для Chromium. Альтернативный доступ
+к `deb.debian.org` оборвался с `Proxy CONNECT aborted due to timeout` за 5 секунд.
+Зависших загрузок нет. Хеши и ранее успешные тесты повторно не выполнялись.
+Звук на слух, коммерческий JAR и физические смартфоны этим сценарием не проверяются.
+
