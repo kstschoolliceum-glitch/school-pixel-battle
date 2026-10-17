@@ -2,6 +2,7 @@ import { createControls } from './nokia-controls.js';
 import { createTutorial } from './tutorial.js';
 import { readMode, writeMode, readBindings, writeBindings, readSetting, writeSetting, TUTORIAL_KEY } from './settings.js';
 import { GAME, LOCAL_TEST, validateLocalJar, startRuntime } from './runtime.js';
+import { GAMES } from './games.js';
 
 let dialog;
 let cssLoading;
@@ -11,7 +12,7 @@ function styles() {
   if (cssLoading) return cssLoading;
   cssLoading = new Promise((resolve, reject) => {
     const link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = 'css/java-games.css?v=1';
+    link.rel = 'stylesheet'; link.href = 'css/java-games.css?v=2';
     link.onload = resolve;
     link.onerror = () => { link.remove(); cssLoading = null; reject(new Error('Java games CSS unavailable')); };
     document.head.append(link);
@@ -25,7 +26,7 @@ function cleanup() {
   previous.abort.abort();
   previous.controls?.destroy();
   previous.tutorial?.destroy();
-  previous.runtime?.stop();
+  // Abort removes the iframe; normal game exits await stop() before reaching here.
 }
 function close() {
   cleanup(); fileBytes = null;
@@ -36,15 +37,21 @@ function close() {
 function catalog() {
   cleanup();
   dialog.classList.remove('jg-playing');
-  dialog.innerHTML = `<h2 id="jg-title">🎮 Игры</h2>
-    <article class="jg-card"><span class="jg-cover" aria-hidden="true">🎮</span>
-    <div><h3>High School Hook Ups</h3><p>Gameloft · Nokia S40 · 240×320 · Русский</p>
-    <p>Совместимость пока не подтверждена. Сохранения: не проверены.</p></div></article>
-    <p class="jg-notice">Локальный тест. Эмулятор ещё не подключён; запуск игры недоступен.</p>
-    <div id="jg-local"></div>
-    <p id="jg-file-status" role="status"></p>
-    <button id="jg-play" type="button">Играть · обучение</button>
-    <div class="jg-catalog-footer"><button id="jg-catalog-close" class="jg-exit" type="button">✕ Выход</button></div>`;
+  dialog.innerHTML = `<h2 id="jg-title">🎮 Игры</h2><div id="jg-cards"></div>
+    <div id="jg-local"></div><p id="jg-file-status" role="status"></p>
+    <div class="jg-catalog-footer"><button id="jg-catalog-close" type="button">Закрыть</button></div>`;
+  for (const game of GAMES) {
+    const card = document.createElement('article'); card.className = 'jg-card';
+    const cover = document.createElement('span'); cover.className = 'jg-cover'; cover.textContent = '🎮'; cover.setAttribute('aria-hidden', 'true');
+    const body = document.createElement('div');
+    const title = document.createElement('h3'); title.textContent = game.name;
+    const type = document.createElement('p'); type.textContent = game.type;
+    const description = document.createElement('p'); description.textContent = game.description;
+    const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Играть'; button.dataset.game = game.id;
+    button.disabled = game.localOnly && (!LOCAL_TEST || !fileBytes);
+    button.addEventListener('click', () => play(game));
+    body.append(title, type, description, button); card.append(cover, body); dialog.querySelector('#jg-cards').append(card);
+  }
   if (LOCAL_TEST) {
     const label = document.createElement('label');
     label.className = 'jg-file-label';
@@ -58,27 +65,28 @@ function catalog() {
       const generation = ++selection;
       const file = input.files[0];
       fileBytes = null;
+      dialog.querySelector(`[data-game="${GAME.id}"]`).disabled = true;
       const status = dialog.querySelector('#jg-file-status');
       status.textContent = 'Проверяем файл…';
       try {
         const bytes = await validateLocalJar(file);
         if (generation !== selection || !input.isConnected || !dialog.open) return;
         fileBytes = bytes;
-        status.textContent = 'Версия JAR подтверждена по SHA-256. Реальный запуск ещё не проверен.';
+        dialog.querySelector(`[data-game="${GAME.id}"]`).disabled = false;
+        status.textContent = 'Версия JAR подтверждена по SHA-256. Совместимость этой игры пока не подтверждена.';
       } catch (error) {
         if (generation === selection && input.isConnected && dialog.open) status.textContent = error.message;
       }
     });
   }
-  dialog.querySelector('#jg-play').addEventListener('click', play);
   dialog.querySelector('#jg-catalog-close').addEventListener('click', close);
 }
-function play() {
+function play(game) {
   cleanup();
   const state = { abort: new AbortController(), runtime: null, controls: null, tutorial: null, starting: false };
   session = state;
   dialog.classList.add('jg-playing');
-  dialog.innerHTML = `<h2 id="jg-title">${GAME.name}</h2>
+  dialog.innerHTML = `<h2 id="jg-title">${game.name}</h2>
     <div class="jg-stage"><canvas width="240" height="320" aria-label="Экран Java ME 240 на 320" hidden></canvas>
       <div class="jg-screen-content"></div></div>
     <div class="jg-panel"><div class="jg-keys"></div>
@@ -115,7 +123,15 @@ function play() {
   }
   state.askExit = askExit;
   confirmDialog.querySelector('[data-confirm="no"]').onclick = () => { confirmDialog.close(); if (!state.tutorial) resume(); };
-  confirmDialog.querySelector('[data-confirm="yes"]').onclick = close;
+  confirmDialog.querySelector('[data-confirm="yes"]').onclick = async () => {
+    const button = confirmDialog.querySelector('[data-confirm="yes"]'); button.disabled = true;
+    try {
+      if (state.runtime) await state.runtime.stop();
+      confirmDialog.close(); catalog();
+    } catch (error) {
+      confirmDialog.querySelector('p').textContent = error.message;
+    } finally { button.disabled = false; }
+  };
   confirmDialog.addEventListener('cancel', event => { event.preventDefault(); confirmDialog.close(); if (!state.tutorial) resume(); });
   settings.querySelector('[data-dismiss]').onclick = () => { settings.close(); if (!state.tutorial) resume(); };
   settings.addEventListener('cancel', () => { if (!state.tutorial) resume(); });
@@ -148,11 +164,23 @@ function play() {
     const status = document.createElement('p'); status.setAttribute('role', 'status');
     status.textContent = 'Запускаем игру…'; content.append(status);
     try {
-      const runtime = await startRuntime({ jar: fileBytes, canvas: dialog.querySelector('canvas'), game: GAME, signal: state.abort.signal });
+      let jar = fileBytes;
+      if (game.jarUrl) {
+        const response = await fetch(game.jarUrl, { signal: state.abort.signal });
+        if (!response.ok) throw new Error('Не удалось загрузить тестовый JAR.');
+        jar = await response.arrayBuffer();
+      }
+      const runtime = await startRuntime({ jar, canvas: dialog.querySelector('canvas'), game, signal: state.abort.signal });
       if (state.abort.signal.aborted) { runtime.stop(); return; }
       state.runtime = runtime;
       content.replaceChildren();
-      dialog.querySelector('canvas').hidden = false;
+      runtime.onExit = async () => { try { await runtime.stop(); catalog(); } catch (error) { runtime.onError(error); } };
+      runtime.onError = error => {
+        state.runtime = null;
+        content.replaceChildren(); const message = document.createElement('p'); message.textContent = error.message;
+        const back = document.createElement('button'); back.type = 'button'; back.textContent = 'К каталогу'; back.onclick = catalog;
+        content.append(message, back);
+      };
     } catch (error) {
       if (state.abort.signal.aborted) return;
       status.textContent = error.message;
@@ -165,7 +193,7 @@ function play() {
   function tutorial() {
     if (state.tutorial || state.starting) return;
     state.controls.releaseAll(); state.runtime?.pause();
-    dialog.querySelector('canvas').hidden = true;
+    if (state.runtime) state.runtime.frame.hidden = true;
     content.replaceChildren();
     state.tutorial = createTutorial(content, {
       controls: state.controls, exitButton: exit, resume: Boolean(state.runtime),
@@ -174,7 +202,7 @@ function play() {
         const saved = writeSetting(TUTORIAL_KEY, 'done');
         state.tutorial.destroy(); state.tutorial = null;
         updateMode();
-        if (state.runtime) { content.replaceChildren(); dialog.querySelector('canvas').hidden = false; resume(); }
+        if (state.runtime) { content.replaceChildren(); state.runtime.frame.hidden = false; resume(); }
         else void start();
         if (!saved) {
           const warning = document.createElement('p'); warning.textContent = 'Браузер не сохранил прохождение обучения. При следующем входе оно появится снова.';
@@ -200,7 +228,7 @@ export async function openGames() {
     dialog = document.createElement('dialog');
     dialog.id = 'java-games-dialog'; dialog.className = 'jg-dialog';
     dialog.setAttribute('aria-labelledby', 'jg-title');
-    dialog.addEventListener('cancel', event => { event.preventDefault(); if (session) session.askExit(); else close(); });
+    dialog.addEventListener('cancel', event => { event.preventDefault(); if (session) session.askExit(); else dialog.querySelector('#jg-catalog-close')?.focus(); });
     dialog.addEventListener('close', () => { cleanup(); fileBytes = null; });
     document.body.append(dialog);
   }

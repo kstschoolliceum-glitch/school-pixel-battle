@@ -8,7 +8,7 @@
     loading = true;
     button.disabled = true;
     try {
-      const { openGames } = await import('./java-games/catalog.js?v=1');
+      const { openGames } = await import('./java-games/catalog.js?v=2');
       await openGames();
     } catch (error) {
       console.error('Java games UI could not load', error);

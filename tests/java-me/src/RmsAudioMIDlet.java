@@ -16,8 +16,8 @@ public final class RmsAudioMIDlet extends MIDlet {
             byte[] value = { (byte)(count + 1) };
             if (rs.getNumRecords() == 0) rs.addRecord(value, 0, 1); else rs.setRecord(1, value, 0, 1);
             rs.closeRecordStore();
-            result = "RMS launches: " + (count + 1);
-        } catch (Exception e) { result = "RMS ERROR: " + e.getClass().getName(); }
+            result = new StringBuffer("RMS launches: ").append(count + 1).toString();
+        } catch (Exception e) { result = new StringBuffer("RMS ERROR: ").append(e.getClass().getName()).toString(); }
         Display.getDisplay(this).setCurrent(new Screen(result));
     }
     protected void pauseApp() { }
@@ -28,7 +28,7 @@ public final class RmsAudioMIDlet extends MIDlet {
         public void keyPressed(int code) {
             if (code == 53 || code == -5 || getGameAction(code) == FIRE) {
                 try { Manager.playTone(69, 150, 40); }
-                catch (Exception e) { status = "AUDIO ERROR: " + e.getClass().getName(); }
+                catch (Exception e) { status = new StringBuffer("AUDIO ERROR: ").append(e.getClass().getName()).toString(); }
                 repaint();
             }
         }

@@ -23,7 +23,7 @@ public final class CanvasKeysMIDlet extends MIDlet {
             g.setColor(0x10182b); g.fillRect(0, 0, getWidth(), getHeight());
             g.setColor(0xffffff);
             g.drawString("Canvas / Image / Nokia", 8, 12, Graphics.TOP | Graphics.LEFT);
-            g.drawString("Key: " + lastKey, 8, 40, Graphics.TOP | Graphics.LEFT);
+            g.drawString(new StringBuffer("Key: ").append(lastKey).toString(), 8, 40, Graphics.TOP | Graphics.LEFT);
             g.drawString(down ? "PRESSED" : "RELEASED", 8, 68, Graphics.TOP | Graphics.LEFT);
             g.drawImage(tile, 8, 104, Graphics.TOP | Graphics.LEFT);
         }

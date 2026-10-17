@@ -67,3 +67,5 @@
   .jg-tools .jg-exit { grid-column: 2; }
   .jg-tutorial h2 { font-size: 16px; }
 }
+
+.jg-runtime-frame { border: 0; width: auto; height: 100%; max-width: 100%; aspect-ratio: 3 / 4; flex: none; pointer-events: none; background: #080e1b; }

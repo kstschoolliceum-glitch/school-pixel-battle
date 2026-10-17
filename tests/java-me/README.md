@@ -40,7 +40,13 @@ Fixtures собраны `--release 8`, classfile version 52, для загруз
 Они не проходили CLDC preverification и не объявляются переносимыми на Nokia/PluotSorbet.
 Для независимого тестирования PluotSorbet потребуется его совместимая компиляция против CLDC-классов,
 без автоматического обращения Java 8 компилятора к `StringBuilder` при конкатенации строк.
-Бинарники не включены в PR; их можно получить указанными командами.
+В этапе 5 два разрешённых JAR включены в `javagames/fixtures/`; остальные можно получить указанными командами.
 
 Текущий результат: Java-сборка и запуск boundary MIDlet выполнены; Canvas в браузере, Nokia в настоящей игре,
 RMS в IndexedDB и звук **не проверены**. Полные причины — [отчёт](../../docs/java-me-runtime-audit.md).
+
+## Новый runtime этапа 5
+
+Настоящий JS2ME подключён в `/javagames/`. Native Canvas/bytecode/RMS smoke: `node tests/java-me/js2me-smoke.cjs` (нужен `@napi-rs/canvas` в тестовой среде). Браузерная страница без Supabase: `tests/java-me/browser-smoke.html`. Подробности и ограничения: [этап 5](../../docs/java-me-stage5.md).
+
+Текущие fixtures используют явный StringBuffer вместо StringBuilder, автоматически создаваемого Java 8 компилятором при конкатенации. Их classfile version по-прежнему 52; JS2ME пропускает необязательный StackMapTable, но это не CLDC preverification.

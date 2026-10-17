@@ -95,10 +95,10 @@ test('versioned preferences tolerate corrupt and denied storage', () => {
   assert.equal(settings.readMode(), 'full'); assert.equal(settings.writeSetting(settings.TUTORIAL_KEY, 'done'), false);
   globalThis.localStorage = original;
 });
-test('runtime fails explicitly instead of reporting fake gameplay or progress', async () => {
+test('runtime refuses missing, corrupt or aborted JAR launches', async () => {
   const signal = new AbortController().signal;
   await assert.rejects(runtime.startRuntime({ signal }), /JAR недоступен/);
-  await assert.rejects(runtime.startRuntime({ signal, jar: new ArrayBuffer(1) }), /эмулятор ещё не подключён/);
+  await assert.rejects(runtime.startRuntime({ signal, jar: new ArrayBuffer(1), game: runtime.GAME }), /Контрольная сумма/);
   const abort = new AbortController(); abort.abort();
   await assert.rejects(runtime.startRuntime({ signal: abort.signal }), /aborted/i);
   const file = new Blob(['invalid']); file.name = 'test.jar';
@@ -143,12 +143,6 @@ test('tutorial gates interactive steps and only starts after the final button', 
 });
 
 
-test('unavailable runtime reports the concrete isolation gate, never a no-op adapter', async () => {
-  await assert.rejects(runtime.startRuntime({ jar: new ArrayBuffer(1), canvas: {}, game: runtime.GAME, signal: new AbortController().signal }), error => {
-    assert.ok(error instanceof runtime.JavaMeUnavailableError);
-    assert.equal(error.code, 'JAVA_ME_ISOLATION_REQUIRED');
-    assert.match(error.message, /FreeJ2ME-Web/);
-    assert.match(error.message, /PluotSorbet/);
-    return true;
-  });
+test('runtime accepts only catalog hashes', async () => {
+  await assert.rejects(runtime.startRuntime({ jar: new ArrayBuffer(1), canvas: {}, game: {id:'unknown',sha256:'a'.repeat(64)}, signal: new AbortController().signal }), /Контрольная сумма/);
 });
