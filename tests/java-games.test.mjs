@@ -141,3 +141,14 @@ test('tutorial gates interactive steps and only starts after the final button', 
   click(); assert.equal(completed, 1);
   tutorial.destroy(); assert.deepEqual(highlighted, []); assert.ok(section.removed);
 });
+
+
+test('unavailable runtime reports the concrete isolation gate, never a no-op adapter', async () => {
+  await assert.rejects(runtime.startRuntime({ jar: new ArrayBuffer(1), canvas: {}, game: runtime.GAME, signal: new AbortController().signal }), error => {
+    assert.ok(error instanceof runtime.JavaMeUnavailableError);
+    assert.equal(error.code, 'JAVA_ME_ISOLATION_REQUIRED');
+    assert.match(error.message, /FreeJ2ME-Web/);
+    assert.match(error.message, /PluotSorbet/);
+    return true;
+  });
+});

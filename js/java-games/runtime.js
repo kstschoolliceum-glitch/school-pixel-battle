@@ -1,5 +1,6 @@
-// Intentionally fail closed: no unreviewed VM runs beside the authenticated app.
-// Replace this module only with an audited, restricted Worker adapter. See docs/java-games.md.
+// Capability gate, NOT a Java ME engine. No no-op runtime object is returned.
+// Verified source/build blockers: docs/java-me-runtime-audit.md.
+// Do not attach upstream CheerpJ/PluotSorbet to the authenticated page without isolation.
 export const LOCAL_TEST = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 export const GAME = Object.freeze({
   id: 'high-school-hook-ups-1.0.7-s40-ru',
@@ -15,8 +16,15 @@ export async function validateLocalJar(file) {
   if (hash !== GAME.sha256) throw new Error('Этот JAR не соответствует проверяемой версии игры.');
   return bytes;
 }
-export async function startRuntime({ jar, signal }) {
+export class JavaMeUnavailableError extends Error {
+  constructor() {
+    super('Запуск пока недоступен: изолированный Java ME-эмулятор ещё не подключён. FreeJ2ME-Web требует изоляции загрузчика и CheerpJ; PluotSorbet требует переноса DOM и медиамоста. Совместимость и сохранения не подтверждены.');
+    this.name = 'JavaMeUnavailableError';
+    this.code = 'JAVA_ME_ISOLATION_REQUIRED';
+  }
+}
+export async function startRuntime({ jar, canvas, game, signal }) {
   signal.throwIfAborted();
   if (!LOCAL_TEST || !jar) throw new Error('JAR недоступен. Для локальной проверки выбери исходный файл игры на localhost.');
-  throw new Error('Запуск пока недоступен: изолированный Java ME-эмулятор ещё не подключён. Совместимость и сохранения не подтверждены.');
+  throw new JavaMeUnavailableError();
 }
