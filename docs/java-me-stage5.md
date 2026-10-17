@@ -63,7 +63,7 @@ JAR, распакованные классы, графика и звуки Gamel
 - Iframe имеет **только** `sandbox="allow-scripts"`, не `allow-same-origin`.
 - `allow="autoplay"` — единственное делегированное разрешение; камера, микрофон, буфер обмена, popup и top navigation не разрешаются.
 - VM не получает auth, Supabase или storage основной страницы. Передаются только JAR и собственный RMS snapshot.
-- Протокол `spb-j2me-v1`: boot/start/started, key, pause/resume, stop/stopped, rms-save/rms-ack, error и game-exit.
+- Протокол `spb-j2me-v1`: boot/start/started, key, pause/resume, stop/stopped, rms-save/rms-ack, error, game-exit и фиксированный запрос focus-controls.
 - На host проверяются точный iframe WindowProxy, origin `null` и случайный 128-bit channel.
 - В iframe проверяются parent WindowProxy, origin страницы проекта и тот же channel.
 - `postMessage('*')` на host нужен для opaque frame; он адресуется конкретному WindowProxy и имеет случайный channel.
@@ -105,6 +105,7 @@ Native Canvas стенд подтвердил восстановление snaps
 Пауза приостанавливает audio context и активные audio elements, stop закрывает context и освобождает media.
 MIDI, музыкальные ресурсы Gameloft и прочие форматы не заявляются поддержанными этим движком.
 Никаких изменений оригинальных звуковых ресурсов нет.
+Тап по оригинальному экрану вызывает unlock AudioContext и повторную попытку HTMLAudio; затем фокус возвращается к существующим кнопкам для ПК. Дополнительной клавиатуры или звуковых кнопок в iframe нет.
 Слышимый звук, autoplay/delegation на Android/iOS и отсутствие остаточного звука после удаления iframe требуют браузерной проверки.
 Пауза останавливает планировщик VM и release keys; абсолютное Java-время продолжает идти.
 
@@ -140,7 +141,7 @@ RMS transport snapshot проверен в памяти; browser IDB — отд�
 7. «✕ Выход» справа снизу → отменить → подтвердить → каталог; «Закрыть» → исходная страница.
 8. Снова выбрать игру: обучения нет, режим сохранён, новый instance ровно один.
 9. Выбрать «Проверка сохранений и звука»: счётчик 1; выйти и открыть → 2; обновить страницу → 3.
-   В Application → IndexedDB проверить namespace. Нажать 5/OK, оценить звук/громкость, выйти и проверить тишину.
+   В Application → IndexedDB проверить namespace. Нажать 5/OK, оценить звук/громкость. Если браузер блокирует звук, один раз коснуться оригинального игрового экрана и повторить 5/OK. Затем выйти и проверить тишину.
 10. Проверить iframe sandbox и невозможность чтения `parent.localStorage`; не добавлять same-origin флаг.
 11. Для Gameloft на localhost выбрать оригинальный JAR. Другой файл должен быть отклонён.
     Считать проверку сюжета непройденной, пока вместо чёрного экрана не получен управляемый игровой процесс.

@@ -65,10 +65,16 @@
         });
       });
     }
+    function unlockAudio() {
+      if (global.AudioContext || global.webkitAudioContext) {
+        audioContext ||= new (global.AudioContext || global.webkitAudioContext)();
+        audioContext.resume().catch(error => console.warn('Audio activation:', error.message));
+      }
+      global.document.querySelectorAll?.('audio').forEach(audio => { if (audio.spbWanted) audio.play().catch(error => console.warn('Audio activation:', error.message)); });
+    }
     function tone(note, duration, volume) {
-      if (!global.AudioContext && !global.webkitAudioContext) throw new Error('Web Audio недоступен.');
-      audioContext ||= new (global.AudioContext || global.webkitAudioContext)();
-      audioContext.resume().catch(error => console.warn('Audio activation:', error.message));
+      unlockAudio();
+      if (!audioContext) throw new Error('Web Audio недоступен.');
       const oscillator = audioContext.createOscillator(), gain = audioContext.createGain();
       oscillator.frequency.value = 440 * Math.pow(2, (note - 69) / 12);
       gain.gain.value = Math.max(0, Math.min(100, volume)) / 300;
@@ -91,6 +97,18 @@
         if (name.endsWith('/java/lang/Throwable.js')) machine.classBucket.prototype.$printStackTrace$$V = function() { console.warn(this.className, this.message?.text || '', this.stack || ''); };
         if (name.endsWith('/lcdui/Canvas.js')) machine.classBucket.prototype.$keyRepeated$I$V = function() {};
         if (name.endsWith('/midlet/MIDlet.js')) machine.classBucket.prototype.$notifyDestroyed$$V = onExit;
+        if (name.endsWith('/media/PlayerImpl.js')) {
+          const proto = machine.classBucket.prototype;
+          proto.$start$$V = function() {
+            if (this.state === this.$CLOSEDI) throw new global.javaRoot.$java.$lang.$IllegalStateException();
+            this.state = this.$STARTEDI; this.repeated = 0; this.element.spbWanted = true;
+            this.element.play().catch(error => console.warn('Audio activation:', error.message));
+          };
+          for (const name of ['$stop$$V', '$close$$V', '$deallocate$$V']) {
+            const previous = proto[name];
+            proto[name] = function() { this.element.spbWanted = false; this.element.pause(); return previous.apply(this, arguments); };
+          }
+        }
         if (name.endsWith('/media/Manager.js')) machine.classBucket.prototype.$playTone$III$V = tone;
         success();
       } catch (error) { onError(error); }
@@ -134,6 +152,7 @@
       held.set(key, schedule(() => repeat(key), 100));
     }
     return {
+      unlockAudio,
       boot(bytes) {
         machine.loadJAR(new Blob([bytes]), () => {
           machine.launchMidlet(1);

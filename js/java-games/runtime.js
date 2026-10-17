@@ -62,7 +62,8 @@ export async function startRuntime({ jar, canvas, game, signal }) {
       try { await store.save(data.records); send('rms-ack', { id:data.id, ok:true }); }
       catch (error) { send('rms-ack', { id:data.id, ok:false, message:error.message }); }
       finally { saveBusy = false; }
-    } else if (data.type === 'game-exit') adapter?.onExit?.();
+    } else if (data.type === 'focus-controls') canvas.closest?.('dialog')?.querySelector('.jg-panel button')?.focus({ preventScroll:true });
+    else if (data.type === 'game-exit') adapter?.onExit?.();
     else if (data.type === 'stopped') { clearTimeout(stopTimeout); resolveStop?.(); dispose(); }
     else if (data.type === 'error') failure(new Error(String(data.message || 'Ошибка Java ME').slice(0, 500)));
   }

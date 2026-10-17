@@ -36,6 +36,9 @@
       else if (message.type === 'stop') { await machine?.stop(); send('stopped'); }
     } catch (error) { fail(error); }
   });
+  // A tap on the original game screen can unlock audio on mobile browsers.
+  window.addEventListener('pointerdown', () => machine?.unlockAudio(), { capture:true });
+  window.addEventListener('pointerup', () => send('focus-controls'));
   window.addEventListener('error', event => fail(event.error || event.message));
   window.addEventListener('unhandledrejection', event => fail(event.reason));
   send('boot');
