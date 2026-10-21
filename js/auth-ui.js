@@ -1,3 +1,14 @@
+// On iOS the keyboard can shrink the visual viewport without changing 100dvh.
+if (window.visualViewport) {
+  const fitAuthToKeyboard = () => {
+    authScreen.style.height = `${window.visualViewport.height}px`;
+    authScreen.style.top = `${window.visualViewport.offsetTop}px`;
+  };
+  window.visualViewport.addEventListener("resize", fitAuthToKeyboard);
+  window.visualViewport.addEventListener("scroll", fitAuthToKeyboard);
+  fitAuthToKeyboard();
+}
+
 async function testSupabaseConnection() {
 
   console.log("Проверяем Supabase...");
@@ -165,7 +176,8 @@ if (!easyLabel) {
    * Ставим курсор сразу в никнейм.
    */
 
-  registerNickname.focus();
+  // Keep the form fully visible on phones until the student chooses a field.
+  if (window.innerWidth >= 700) registerNickname.focus();
 
 }
 
@@ -233,7 +245,7 @@ function applySchoolRegistrationFromUrl() {
     "🏫 Регистрация ученика школы";
 
   loadReferralRegistrationClasses();
-  referralClassSelect.focus();
+  if (window.innerWidth >= 700) referralClassSelect.focus();
   return true;
 }
 
@@ -282,7 +294,7 @@ function applyReferralFromUrl() {
     "✓ Реферальное приглашение принято";
 
   loadReferralRegistrationClasses();
-  registerNickname.focus();
+  if (window.innerWidth >= 700) registerNickname.focus();
   return true;
 }
 

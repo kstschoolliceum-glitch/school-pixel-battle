@@ -207,7 +207,9 @@
 }
 
 
-.generated-invite-copy {
+.generated-invite-copy,
+.generated-invite-download,
+#retry-invites-qr-button {
   min-height: 34px;
   padding: 0 12px;
 
@@ -224,7 +226,9 @@
 }
 
 
-.generated-invite-copy:hover {
+.generated-invite-copy:hover,
+.generated-invite-download:hover,
+#retry-invites-qr-button:hover {
   border-color: #8b5cf6;
   color: white;
 }

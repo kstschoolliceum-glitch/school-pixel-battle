@@ -10,12 +10,7 @@ async function loadInviteClasses() {
     data,
     error
   } =
-    await supabaseClient
-      .from("classes")
-      .select("id,name,grade")
-      .eq("is_active", true)
-      .order("grade")
-      .order("name");
+    await supabaseClient.rpc("admin_get_classes");
 
 
   if (error) {
@@ -36,7 +31,9 @@ async function loadInviteClasses() {
     '<option value="">Выберите класс</option>';
 
 
-  for (const item of data) {
+  for (const item of data ?? []) {
+
+    if (!item.is_active) continue;
 
     const option =
       document.createElement(
@@ -44,10 +41,10 @@ async function loadInviteClasses() {
       );
 
     option.value =
-      item.id;
+      item.class_id;
 
     option.textContent =
-      item.name;
+      item.class_name;
 
     select.appendChild(
       option

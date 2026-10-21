@@ -12,6 +12,50 @@ const printInvitesButton =
     "print-invites-button"
   );
 let lastGeneratedInvites = [];
+const inviteQrImages = new Map();
+const retryInviteQrButton = document.getElementById("retry-invites-qr-button");
+
+function inviteLink(code) {
+  const url = new URL(window.location.pathname, window.location.href);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("invite", code);
+  return url.href;
+}
+
+function renderInviteQrs() {
+  inviteQrImages.clear();
+  if (typeof QRCode !== "function" || !QRCode.CorrectLevel) {
+    throw new Error("QRCode library is unavailable");
+  }
+  for (const card of document.querySelectorAll(".generated-invite-card")) {
+    const code = card.querySelector(".generated-invite-code").textContent;
+    const qr = card.querySelector(".generated-invite-qr");
+    qr.replaceChildren();
+    new QRCode(qr, {
+      text: inviteLink(code), width: 150, height: 150,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    const png = qr.querySelector("canvas")?.toDataURL("image/png");
+    if (!png?.startsWith("data:image/png;base64,") || png.length < 100) {
+      throw new Error("QRCode produced no PNG");
+    }
+    inviteQrImages.set(code, png);
+    card.querySelector(".generated-invite-download").hidden = false;
+  }
+}
+
+retryInviteQrButton.addEventListener("click", () => {
+  try {
+    renderInviteQrs();
+    retryInviteQrButton.hidden = true;
+    document.getElementById("invite-generator-message").textContent = "QR-коды готовы.";
+  } catch (error) {
+    console.error("INVITE QR RENDER ERROR:", error);
+    document.getElementById("invite-generator-message").textContent =
+      "QR не создан. Ссылки сохранены, попробуйте ещё раз.";
+  }
+});
 
 
 generateInvitesButton.addEventListener(
@@ -95,25 +139,17 @@ generateInvitesButton.addEventListener(
       "ГЕНЕРАЦИЯ...";
 
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.rpc(
-        "admin_generate_invites",
-        {
-          p_class_id: classId,
-          p_count: count,
-          p_expires_days: expiration
-        }
-      );
-
-
-    generateInvitesButton.disabled =
-      false;
-
-    generateInvitesButton.textContent =
-      "СГЕНЕРИРОВАТЬ КОДЫ";
+    let data, error;
+    try {
+      ({ data, error } = await supabaseClient.rpc("admin_generate_invites", {
+        p_class_id: classId, p_count: count, p_expires_days: expiration
+      }));
+    } catch (requestError) {
+      error = requestError;
+    } finally {
+      generateInvitesButton.disabled = false;
+      generateInvitesButton.textContent = "СГЕНЕРИРОВАТЬ КОДЫ";
+    }
 
 
     if (error) {
@@ -124,8 +160,15 @@ generateInvitesButton.addEventListener(
       );
 
       message.textContent =
-        "Не удалось создать коды.";
+        "Не удалось создать коды. Проверьте выбранный класс и попробуйте ещё раз.";
 
+      return;
+    }
+
+    if (!Array.isArray(data) || !data.length ||
+        data.some(item => typeof item.invite_code !== "string" || !item.invite_code)) {
+      console.error("GENERATE INVITES ERROR: invalid RPC response");
+      message.textContent = "Сервер вернул некорректный ответ. Повторите попытку.";
       return;
     }
 
@@ -134,6 +177,7 @@ generateInvitesButton.addEventListener(
       data.map(
         item => item.invite_code
       );
+    retryInviteQrButton.hidden = true;
 
 
     resultList.innerHTML = "";
@@ -148,8 +192,7 @@ generateInvitesButton.addEventListener(
    * Полная ссылка приглашения.
    */
 
-  const inviteUrl =
-    `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`;
+  const inviteUrl = inviteLink(code);
 
 
   /*
@@ -266,26 +309,25 @@ generateInvitesButton.addEventListener(
     copyButton
   );
 
+  const downloadButton = document.createElement("button");
+  downloadButton.type = "button";
+  downloadButton.className = "generated-invite-download";
+  downloadButton.textContent = "⬇️ QR PNG";
+  downloadButton.hidden = true;
+  downloadButton.addEventListener("click", () => {
+    const png = inviteQrImages.get(code);
+    if (!png) return;
+    const link = document.createElement("a");
+    link.href = png;
+    link.download = `pixel-battle-invite-${code}.png`;
+    link.click();
+  });
+  card.appendChild(downloadButton);
+
   resultList.appendChild(
     card
   );
 
-
-  /*
-   * Генерируем QR уже после того,
-   * как контейнер создан.
-   */
-
-  new QRCode(
-    qrContainer,
-    {
-      text: inviteUrl,
-      width: 150,
-      height: 150,
-      correctLevel:
-        QRCode.CorrectLevel.M
-    }
-  );
 
 }
 
@@ -301,12 +343,16 @@ generateInvitesButton.addEventListener(
     );
 
 
-    message.classList.add(
-      "success"
-    );
-
-    message.textContent =
-      "Коды успешно созданы.";
+    try {
+      renderInviteQrs();
+      message.classList.add("success");
+      message.textContent = "Коды и QR успешно созданы.";
+    } catch (qrError) {
+      console.error("INVITE QR RENDER ERROR:", qrError);
+      retryInviteQrButton.hidden = false;
+      message.textContent =
+        "Коды созданы, но QR не нарисовался. Скопируйте ссылку или повторите QR.";
+    }
     await loadInviteStats();
 
   }
@@ -326,7 +372,7 @@ copyInvitesButton.addEventListener(
   lastGeneratedInvites
     .map(
       code =>
-        `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`
+        inviteLink(code)
     )
     .join(
       "\n"
@@ -376,6 +422,11 @@ printInvitesButton.addEventListener(
         "Сначала создайте приглашения."
       );
 
+      return;
+    }
+
+    if (inviteQrImages.size !== lastGeneratedInvites.length) {
+      alert("Сначала повторите создание QR. Коды приглашений уже сохранены.");
       return;
     }
 
@@ -429,9 +480,7 @@ printInvitesButton.addEventListener(
 
         <meta charset="UTF-8">
 
-        <title>
-          Pixel Battle — ${className}
-        </title>
+        <title>Pixel Battle — приглашения</title>
 
         <style>
 
@@ -581,7 +630,7 @@ printInvitesButton.addEventListener(
           </h1>
 
           <p>
-            Приглашения • ${className}
+            Приглашения
           </p>
 
         </div>
@@ -599,6 +648,9 @@ printInvitesButton.addEventListener(
 
 
     printWindow.document.close();
+    printWindow.document.title = `Pixel Battle — ${className}`;
+    printWindow.document.querySelector(".print-header p").textContent =
+      `Приглашения • ${className}`;
 
 
     const cardsContainer =
@@ -616,10 +668,6 @@ printInvitesButton.addEventListener(
       const code
       of lastGeneratedInvites
     ) {
-
-      const inviteUrl =
-        `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`;
-
 
       const card =
         printWindow.document.createElement(
@@ -713,40 +761,31 @@ printInvitesButton.addEventListener(
       );
 
 
-      /*
-       * QRCode загружен в основном окне,
-       * поэтому используем его отсюда.
-       */
-
-      new QRCode(
-        qr,
-        {
-          text: inviteUrl,
-          width: 180,
-          height: 180,
-          correctLevel:
-            QRCode.CorrectLevel.M
-        }
-      );
+      const image = printWindow.document.createElement("img");
+      image.src = inviteQrImages.get(code);
+      image.alt = "QR приглашения";
+      qr.appendChild(image);
 
     }
 
 
-    /*
-     * Даём браузеру время нарисовать QR,
-     * затем открываем стандартную печать.
-     */
-
-    setTimeout(
-      () => {
-
-        printWindow.focus();
-
-        printWindow.print();
-
-      },
-      500
-    );
+    Promise.all(Array.from(cardsContainer.querySelectorAll("img"), image =>
+      image.decode ? image.decode() : new Promise((resolve, reject) => {
+        if (image.complete) {
+          image.naturalWidth ? resolve() : reject(new Error("QR image failed to load"));
+        } else {
+          image.onload = resolve;
+          image.onerror = reject;
+        }
+      })
+    )).then(() => {
+      printWindow.focus();
+      printWindow.print();
+    }).catch(error => {
+      console.error("INVITE PRINT ERROR:", error);
+      alert("Не удалось подготовить QR для печати. Скачайте PNG из карточки.");
+      printWindow.close();
+    });
 
   }
 );
