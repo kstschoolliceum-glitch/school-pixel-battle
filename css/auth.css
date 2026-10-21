@@ -6,10 +6,17 @@
   inset: 0;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
-  padding: 20px;
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
 
   background:
     radial-gradient(
@@ -26,6 +33,8 @@
 .auth-card {
   width: min(380px, 100%);
   padding: 32px;
+  margin: auto;
+  flex: 0 0 auto;
 
   text-align: center;
 
@@ -78,7 +87,7 @@
   background: #0b1220;
   color: white;
 
-  font-size: 15px;
+  font-size: 16px;
 }
 
 #login-form input:focus {
@@ -168,7 +177,7 @@
   background: #0b1220;
   color: white;
 
-  font-size: 15px;
+  font-size: 16px;
 }
 
 #register-form input:focus {
@@ -418,5 +427,19 @@
 
   font-weight: 800;
   cursor: pointer;
+}
+
+@media (max-width: 600px), (max-height: 700px) {
+  .auth-card { padding: 18px; }
+  .auth-logo { margin-bottom: 4px; font-size: 32px; }
+  .auth-card h1 { font-size: 22px; }
+  .auth-tabs { margin: 12px 0; }
+  #login-form, #register-form,
+  #register-username-fields, #register-password-fields { gap: 8px; }
+  #register-form small { margin-top: -4px; }
+  #login-form input, #register-form input,
+  #login-form button, #register-form button { height: 44px; }
+  #referral-class-select { min-height: 44px; font-size: 16px; }
+  .easy-register-success { margin-top: 12px; gap: 8px; }
 }
 
