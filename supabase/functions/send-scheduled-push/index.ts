@@ -148,6 +148,12 @@ Deno.serve(
           }
         );
 
+      const { data: rules, error: rulesError } = await adminClient.rpc("get_game_rules");
+      if (rulesError) throw rulesError;
+      if (!rules?.seasons_enabled) {
+        return jsonResponse({ success: true, skipped: "SEASONS_DISABLED" });
+      }
+
       const {
         data: season,
         error: seasonError
@@ -519,3 +525,4 @@ Deno.serve(
 
   }
 );
+

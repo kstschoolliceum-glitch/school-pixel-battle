@@ -65,14 +65,14 @@ const unblockMeGame = (() => {
 
   function renderProfile() {
     const state = status?.state || "loading";
-    const boostSeconds = remainingSeconds(status?.boost_until);
+    const boostSeconds = GAME_CONFIG.BOOSTS_ENABLED ? remainingSeconds(status?.boost_until) : 0;
     const retrySeconds = remainingSeconds(status?.next_available_at);
 
     openButton.disabled = false;
     badge.textContent = "Каждые 3 часа";
 
     if (state === "available") {
-      setProfileMessage("Сегодня игра ещё не пройдена. Победи и сразу получи ускорение.");
+      setProfileMessage("Головоломка: продолжайте игру или вернитесь на карту.");
       openButton.textContent = "🎮 ИГРАТЬ";
       return;
     }
@@ -99,7 +99,7 @@ const unblockMeGame = (() => {
         openButton.disabled = false;
         openButton.textContent = "🎮 ИГРАТЬ СНОВА";
         badge.textContent = "Новая игра доступна";
-        setProfileMessage("Прошло 3 часа — можно снова получить Турбокисть.");
+        setProfileMessage("Головоломка: продолжайте игру или вернитесь на карту.");
         return;
       }
 
@@ -110,7 +110,7 @@ const unblockMeGame = (() => {
         : `Через ${formatDuration(retrySeconds)}`;
       setProfileMessage(
         boostSeconds > 0
-          ? `Победа! Турбокисть активна ещё ${formatDuration(boostSeconds)}. Следующая игра через ${formatDuration(retrySeconds)}.`
+          ? `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`
           : `Следующая игра станет доступна через ${formatDuration(retrySeconds)}.`,
         "success"
       );
@@ -251,7 +251,7 @@ const unblockMeGame = (() => {
     submitting = true;
     resetButton.disabled = true;
     message.className = "unblock-message";
-    message.textContent = "Проверяем победу и выдаём Турбокисть…";
+    message.textContent = "Головоломка: продолжайте игру или вернитесь на карту.";
 
     const { data, error } = await supabaseClient.rpc(
       "finish_unblock_me",
@@ -283,7 +283,7 @@ const unblockMeGame = (() => {
     resetPixelCooldownAfterReward();
     message.className = "unblock-message success";
     message.textContent =
-      "Победа! ⚡ Турбокисть уже включена на 10 минут. Можно возвращаться на карту.";
+      "Головоломка: продолжайте игру или вернитесь на карту.";
     resetButton.disabled = true;
   }
 
@@ -422,4 +422,5 @@ const unblockMeGame = (() => {
     }
   };
 })();
+
 

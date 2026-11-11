@@ -22,6 +22,7 @@ function showWeeklyLeaderToast(name) {
 }
 
 async function loadClassRanking() {
+  if (!GAME_CONFIG.WEEKLY_LEADERBOARD_ENABLED) return loadStudentRanking();
 
   const rankingElement =
     document.getElementById(
@@ -139,6 +140,7 @@ async function loadClassRanking() {
 ========================= */
 
 async function loadQuarterRanking() {
+  if (!GAME_CONFIG.QUARTERLY_LEADERBOARD_ENABLED) return loadStudentRanking();
 
   const rankingElement =
     document.getElementById(
@@ -286,7 +288,7 @@ function scheduleRankingRefresh() {
          */
 
         if (
-          !weeklyRankingTab.classList.contains(
+          GAME_CONFIG.WEEKLY_LEADERBOARD_ENABLED && !weeklyRankingTab.classList.contains(
             "active"
           )
         ) {
@@ -312,7 +314,7 @@ function scheduleRankingRefresh() {
 
         try {
 
-          await loadClassRanking();
+          await loadActiveRanking();
 
         } finally {
 
@@ -342,6 +344,7 @@ const studentsRankingTab =
   );
 
 function setActiveRankingTab(activeTab) {
+  if (!GAME_CONFIG.SEASONS_ENABLED) activeTab = studentsRankingTab;
   [
     weeklyRankingTab,
     quarterRankingTab,
@@ -355,6 +358,7 @@ function setActiveRankingTab(activeTab) {
 }
 
 async function loadActiveRanking() {
+  if (!GAME_CONFIG.SEASONS_ENABLED) return loadStudentRanking();
   if (
     studentsRankingTab.classList.contains(
       "active"
@@ -484,3 +488,4 @@ async function loadStudentRanking() {
     rankingElement.appendChild(row);
   });
 }
+

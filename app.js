@@ -297,12 +297,12 @@ let moved = false;
 let pixelCount = 0;
 
 /*
- * Пока cooldown делаем локальным.
- * Когда подключим Supabase, проверка будет серверной.
+ * Интерфейс отсчитывает время локально; Supabase проверяет каждую установку.
  */
-const COOLDOWN_SECONDS = 5;
+const COOLDOWN_SECONDS = GAME_CONFIG.PIXEL_COOLDOWN_MS / 1000;
 
 let cooldownRemaining = 0;
 let cooldownTimer = null;
 
 // Application features are loaded from /js in index.html.
+

@@ -40,6 +40,10 @@ const piCoin = (() => {
   let statusUserId = null;
 
   function refreshTurboIndicator() {
+    if (!GAME_CONFIG.BOOSTS_ENABLED) {
+      document.getElementById("place-button")?.classList.remove("pixel-turbo-active");
+      return;
+    }
     const duration = Date.parse(status?.boost_until || "") - Date.parse(status?.server_now || "");
     const purchasedActive = currentUser?.id === statusUserId && Number.isFinite(duration) && duration > performance.now() - statusLoadedAt;
     document.getElementById("place-button")?.classList.toggle("pixel-turbo-active", Boolean(currentUser) && (purchasedActive || Boolean(dailyTasks?.isBoostActive?.())));
@@ -170,6 +174,7 @@ const piCoin = (() => {
   }
 
   async function buy() {
+    if (!GAME_CONFIG.BOOSTS_ENABLED) return;
     if (busy || (!currentUserIsGameplayAdmin && Number(status?.balance || 0) < 180)) return;
     if (!confirm(currentUserIsGameplayAdmin ? "Включить Турбокисть для тестирования бесплатно?" : "Купить Турбокисть на 10 минут за 180 piCoin? Она включится сразу.")) return;
     busy = true;
@@ -405,7 +410,7 @@ const mapItems=(()=>{
   else result=await supabaseClient.rpc("reveal_pixel_owner",{p_x:selectedX,p_y:selectedY});busy=false;const data=result.data,error=result.error;
   if(error||!data?.success){const e=data?.error||"",m={EDGE_LIMIT:type==="bomb"?"Выберите центр не ближе 12 клеток к краю.":"Выберите клетку дальше от края.",ANONYMOUS_BOMB:"Автор бомбы скрыт.",OWN_PIXEL:"Это ваш пиксель.",EMPTY_PIXEL:"Клетка свободна.",BEACON_LIMIT:"Лимит маяков достигнут.",PROFANITY:"Подпись не прошла фильтр.",NO_LINKS:"Ссылки запрещены.",SEASON_LIMIT:"Две бомбы за неделю уже использованы.",CELL_OCCUPIED:"На клетке уже есть маяк."};say(m[e]||"Предмет не использован.",true);return}
   if(type==="beacon")newBeaconId=data.status?.beacons?.find(b=>Number(b.x)===useX&&Number(b.y)===useY)?.id??null;
-  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});playBombEffect({event_id:data.event_id,season_id:data.season_id,center_x:useX,center_y:useY});say("💥 БА-БАХ! Бомба взорвана · 313 клеток.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен до конца недели.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));if(selectedX===useX&&selectedY===useY){selectionIndicator.classList.remove("pixel-detector-scan");void selectionIndicator.offsetWidth;selectionIndicator.classList.add("pixel-detector-scan");setTimeout(()=>selectionIndicator.classList.remove("pixel-detector-scan"),260)}setTimeout(()=>alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса")),220)}drawMap()}
+  applyStatus(data.status);if(type==="bomb"){(data.cells||[]).forEach(c=>{const i=Number(c.y)*MAP_WIDTH+Number(c.x),ci=COLORS.indexOf(c.color);if(ci>=0){pixels[i]=ci;pixelOwners[i]=null}});playBombEffect({event_id:data.event_id,season_id:data.season_id,center_x:useX,center_y:useY});say("💥 БА-БАХ! Бомба взорвана · 313 клеток.");scheduleRankingRefresh()}else if(type==="beacon")say("Маяк установлен.");else{say("Владелец: "+data.nickname+" · "+(data.class_name||"без класса"));if(selectedX===useX&&selectedY===useY){selectionIndicator.classList.remove("pixel-detector-scan");void selectionIndicator.offsetWidth;selectionIndicator.classList.add("pixel-detector-scan");setTimeout(()=>selectionIndicator.classList.remove("pixel-detector-scan"),260)}setTimeout(()=>alert("🕵️ Владелец пикселя\n"+data.nickname+" · "+(data.class_name||"без класса")),220)}drawMap()}
  function describeCell(x,y){if(bombCells.has(key(x,y)))return{type:"bomb"};const b=beacons.find(v=>Number(v.x)===x&&Number(v.y)===y);return b?{type:"beacon",label:b.label,class_name:b.class_name}:null}
  function updateMarkers(){if(!beaconLayer)return;beaconLayer.querySelectorAll(".map-beacon-flag").forEach(button=>{const b=beacons.find(v=>String(v.id)===button.dataset.beaconId);if(!b)return;const px=(Number(b.x)+.5-MAP_WIDTH/2)*scale,py=(Number(b.y)+.5-MAP_HEIGHT/2)*scale;button.style.transform="translate(calc(-50% + "+(offsetX+px)+"px),calc(-100% + "+(offsetY+py)+"px))"})}
  function openBeacon(beacon){openedBeacon=beacon;beaconClass.textContent=beacon.class_name||"Без класса";beaconLabel.textContent=beacon.label;beaconRemove.classList.toggle("hidden",!beacon.is_owner);beaconStatus.textContent="";if(beaconDialog&&!beaconDialog.open)beaconDialog.showModal()}
@@ -482,4 +487,5 @@ const piTicker=(()=>{
  setInterval(()=>{const id=currentUser?.id||null;if(id!==lastUserId){lastUserId=id;if(id)load()}else if(id&&!document.hidden)load()},15000);
  return {load};
 })();
+
 
