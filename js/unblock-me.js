@@ -72,7 +72,7 @@ const unblockMeGame = (() => {
     badge.textContent = "Каждые 3 часа";
 
     if (state === "available") {
-      setProfileMessage("Головоломка: продолжайте игру или вернитесь на карту.");
+      setProfileMessage("Освободи красный блок, чтобы пройти головоломку.");
       openButton.textContent = "🎮 ИГРАТЬ";
       return;
     }
@@ -99,7 +99,7 @@ const unblockMeGame = (() => {
         openButton.disabled = false;
         openButton.textContent = "🎮 ИГРАТЬ СНОВА";
         badge.textContent = "Новая игра доступна";
-        setProfileMessage("Головоломка: продолжайте игру или вернитесь на карту.");
+        setProfileMessage("Прошло 3 часа — новая игра доступна.");
         return;
       }
 
@@ -251,7 +251,7 @@ const unblockMeGame = (() => {
     submitting = true;
     resetButton.disabled = true;
     message.className = "unblock-message";
-    message.textContent = "Головоломка: продолжайте игру или вернитесь на карту.";
+    message.textContent = "Проверяем победу…";
 
     const { data, error } = await supabaseClient.rpc(
       "finish_unblock_me",
@@ -283,7 +283,7 @@ const unblockMeGame = (() => {
     resetPixelCooldownAfterReward();
     message.className = "unblock-message success";
     message.textContent =
-      "Головоломка: продолжайте игру или вернитесь на карту.";
+      "Победа! Можно возвращаться на карту.";
     resetButton.disabled = true;
   }
 

@@ -176,7 +176,7 @@ const sokobanGame = (() => {
 
     if (data.level_completed) {
       if (data.reward_granted) {
-        setMessage("Головоломка: продолжайте игру или вернитесь на карту.", "success");
+        setMessage("Три уровня пройдены! Новая игра — через 4 часа.", "success");
         setTimeout(() => {
           if (dialog.open) dialog.close();
         }, 1600);

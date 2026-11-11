@@ -171,7 +171,7 @@ const fifteenGame = (() => {
     applyStatus(data);
 
     if (data.level_completed) {
-      setMessage("Головоломка: продолжайте игру или вернитесь на карту.", "success");
+      setMessage("Головоломка собрана!", "success");
       resetPixelCooldownAfterReward();
       setTimeout(() => {
         if (dialog.open) dialog.close();
