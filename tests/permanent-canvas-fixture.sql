@@ -20,6 +20,10 @@ insert into profiles(id,nickname,class_id,total_pixels) values
  ('00000000-0000-4000-8000-000000000002','Второй',1,0);
 insert into seasons values(7,7,'Existing canvas',true,'active',now()-interval '7 days',now()+interval '1 day',300,424);
 insert into pixels values(7,0,0,'#ef4444','00000000-0000-4000-8000-000000000001',1,now());
+-- Ten historical placements overlap the optional profile counter of ten.
+insert into pixel_history(season_id,x,y,color,user_id,class_id,created_at)
+select 7,n,0,'#ef4444','00000000-0000-4000-8000-000000000001',1,now()-interval '1 day'
+from generate_series(1,10) n;
 create function public.activate_daily_task_boost() returns jsonb language sql as $$select '{}'::jsonb$$;
 create function public.claim_daily_task_reward() returns jsonb language sql as $$select '{}'::jsonb$$;
 create function public.buy_pi_coin_turbo() returns jsonb language sql as $$select '{}'::jsonb$$;

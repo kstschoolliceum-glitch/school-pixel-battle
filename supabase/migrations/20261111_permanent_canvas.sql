@@ -216,12 +216,14 @@ create trigger permanent_pixel_clock before update on public.profiles for each r
 
 -- Snapshot a conservative all-time baseline once. Never SUM overlapping profile
 -- and history totals. Existing unique-cell scores cannot exceed history count.
+-- total_pixels is optional: production profiles may expose totals only via RPC.
+-- Read an optional JSON key instead of referencing a possibly absent column.
 create table if not exists pixel_game_private.all_time_totals (
   user_id uuid primary key references public.profiles(id) on delete cascade,
   pixels_count bigint not null check(pixels_count>=0)
 );
 insert into pixel_game_private.all_time_totals(user_id,pixels_count)
-select p.id,greatest(coalesce(p.total_pixels,0),coalesce(h.n,0))
+select p.id,greatest(coalesce((to_jsonb(p)->>'total_pixels')::bigint,0),coalesce(h.n,0))
 from public.profiles p left join (select user_id,count(*) n from public.pixel_history group by user_id) h on h.user_id=p.id
 on conflict(user_id) do nothing;
 create or replace function pixel_game_private.count_placement()

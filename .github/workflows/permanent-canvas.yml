@@ -9,6 +9,9 @@ permissions:
   contents: read
 jobs:
   postgres:
+    strategy:
+      matrix:
+        profile_counter: [present, absent]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -37,6 +40,9 @@ jobs:
       - name: Migration, repeatability, preservation, cooldown and ranking
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/permanent-canvas-fixture.sql
+          if [ "${{ matrix.profile_counter }}" = "absent" ]; then
+            psql -v ON_ERROR_STOP=1 -c 'alter table public.profiles drop column total_pixels;'
+          fi
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261111_permanent_canvas.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261111_permanent_canvas.sql
           psql -v ON_ERROR_STOP=1 -f tests/permanent-canvas.sql
