@@ -114,7 +114,10 @@ function showPixelUnchangedMessage() {
 }
 
 
+let pixelPlacementInFlight = false;
+
 async function placePixel() {
+  if (pixelPlacementInFlight) return;
 
   if (
     selectedX === null ||
@@ -146,13 +149,15 @@ async function placePixel() {
   }
 
 
-  if (cooldownRemaining > 0 && !currentUserIsGameplayAdmin) {
+  if (cooldownRemaining > 0) {
     showPlacementError();
     return;
   }
 
 
+  pixelPlacementInFlight = true;
   placeButton.disabled = true;
+  try {
   const previousOwner = pixelOwners[selectedIndex];
   const ownClass = document.getElementById("profile-class")?.textContent?.trim();
   const {
@@ -221,35 +226,7 @@ async function placePixel() {
       data.reason === "COOLDOWN"
     ) {
 
-      cooldownRemaining =
-        data.remaining;
-
-      updateCooldown();
-
-      clearInterval(
-        cooldownTimer
-      );
-
-      cooldownTimer =
-        setInterval(() => {
-
-          cooldownRemaining--;
-
-          if (
-            cooldownRemaining <= 0
-          ) {
-
-            cooldownRemaining = 0;
-
-            clearInterval(
-              cooldownTimer
-            );
-
-          }
-
-          updateCooldown();
-
-        }, 1000);
+      startCooldown(Number(data.remaining) || COOLDOWN_SECONDS);
 
     }
 
@@ -297,6 +274,13 @@ async function placePixel() {
 
   scheduleRankingRefresh();
   updateDisplayedProfileAfterPixel();
+  } catch (error) {
+    console.error("PIXEL REQUEST:", error);
+    showPlacementError();
+  } finally {
+    pixelPlacementInFlight = false;
+    updatePlaceButton();
+  }
 }
 
 placeButton.addEventListener(
@@ -316,50 +300,31 @@ placeButton.addEventListener("pointerdown", () => {
    COOLDOWN
 ------------------------- */
 
+let cooldownDeadline = 0;
 function startCooldown(seconds = COOLDOWN_SECONDS) {
-
-  cooldownRemaining =
-    seconds;
-
-  updateCooldown();
-
   clearInterval(cooldownTimer);
-
-  if (cooldownRemaining <= 0) return;
-
-  cooldownTimer =
-    setInterval(() => {
-
-      cooldownRemaining--;
-
-      if (cooldownRemaining <= 0) {
-
-        cooldownRemaining = 0;
-
-        clearInterval(
-          cooldownTimer
-        );
-
-      }
-
-      updateCooldown();
-
-    }, 1000);
-
+  cooldownDeadline = performance.now() + Math.max(0, seconds) * 1000;
+  const tick = () => {
+    cooldownRemaining = Math.max(0, Math.ceil((cooldownDeadline - performance.now()) / 1000));
+    updateCooldown();
+    if (!cooldownRemaining) clearInterval(cooldownTimer);
+  };
+  tick();
+  if (cooldownRemaining) cooldownTimer = setInterval(tick, 50);
 }
 
-
 function resetPixelCooldownAfterReward() {
+  if (!GAME_CONFIG.BOOSTS_ENABLED) return;
+  cooldownDeadline = 0;
   cooldownRemaining = 0;
   clearInterval(cooldownTimer);
-  cooldownTimer = null;
   updateCooldown();
 }
 
 
 function updateCooldown() {
 
-  if (cooldownRemaining <= 0 || currentUserIsGameplayAdmin) {
+  if (cooldownRemaining <= 0) {
 
     cooldownText.textContent =
       "Пиксель готов";
@@ -377,12 +342,13 @@ function updateCooldown() {
 
 
 function updatePlaceButton() {
+  if (pixelPlacementInFlight) { placeButton.disabled = true; return; }
 
   /*
    * Идёт cooldown.
    */
 
-  if (cooldownRemaining > 0 && !currentUserIsGameplayAdmin) {
+  if (cooldownRemaining > 0) {
 
     placeButton.disabled = true;
 
@@ -420,4 +386,5 @@ function updatePlaceButton() {
 }
 
 if (placeButtonSwatch) placeButtonSwatch.style.backgroundColor = selectedColor;
+
 

@@ -1,16 +1,17 @@
 // Insert HTML fragments, then load classic scripts in dependency order.
 (() => {
   const sources = [
-  "app.js?v=126",
+  "js/game-config.js?v=1",
+  "app.js?v=127",
   "js/map-render.js?v=1",
   "js/stencil.js?v=2",
   "js/palette.js?v=2",
-  "js/pixel-placement.js?v=6",
+  "js/pixel-placement.js?v=7",
   "js/map-input.js?v=1",
   "js/auth-ui.js?v=4",
-  "js/rankings.js?v=2",
+  "js/rankings.js?v=3",
   "js/user-profile.js?v=1",
-  "js/seasons.js?v=2",
+  "js/seasons.js?v=3",
   "js/referrals.js?v=1",
   "js/presence.js?v=4",
   "js/auth-session.js?v=2",
@@ -20,7 +21,7 @@
   "js/logout.js?v=3",
   "js/chat.js?v=2",
   "js/mobile-navigation.js?v=1",
-  "js/admin-overview.js?v=1",
+  "js/admin-overview.js?v=2",
   "js/admin-invite-navigation.js?v=1",
   "js/admin-invite-data.js?v=2",
   "js/admin-invite-generator.js?v=2",
@@ -31,19 +32,19 @@
   "js/admin-school-link.js?v=1",
   "js/admin-referrals.js?v=1",
   "js/admin-classes.js?v=2",
-  "js/admin-season-management.js?v=2",
+  "js/admin-season-management.js?v=3",
   "js/season-timelapse.js?v=5",
   "js/season-timelapse-export.js?v=6",
   "js/season-archive-map.js?v=3",
   "js/notifications.js?v=2",
-  "js/daily-tasks.js?v=5",
+  "js/daily-tasks.js?v=6",
   "js/player-card.js?v=4",
-  "js/unblock-me.js?v=2",
+  "js/unblock-me.js?v=4",
   "js/promo-codes.js?v=3",
   "js/interface-sound.js?v=1",
-  "js/pi-coin.js?v=10",
-  "js/sokoban.js?v=1",
-  "js/fifteen.js?v=1",
+  "js/pi-coin.js?v=11",
+  "js/sokoban.js?v=3",
+  "js/fifteen.js?v=3",
   "js/tasks-tabs.js?v=1",
   "js/admin-staff.js?v=2",
   "js/admin-tools.js?v=3",
@@ -88,4 +89,5 @@
 
   insertFragments().then(loadScripts).catch(error => showLoadError(error.message || error));
 })();
+
 

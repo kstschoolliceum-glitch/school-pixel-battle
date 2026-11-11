@@ -44,6 +44,7 @@ const dailyTasks = (() => {
   }
 
   function effectiveRewardState() {
+    if (!GAME_CONFIG.BOOSTS_ENABLED) return "disabled";
     if (!status) return "locked";
     if (status.reward_state === "active" && secondsUntil(status.boost_until) === 0) return "used";
     if (status.reward_state === "claimed" && secondsUntil(status.reward_expires_at) === 0) return "expired";
@@ -110,6 +111,7 @@ const dailyTasks = (() => {
   }
 
   function renderReward(host) {
+    if (!GAME_CONFIG.BOOSTS_ENABLED) return;
     const reward = document.createElement("section");
     reward.className = "daily-reward";
     const heading = document.createElement("h3");
@@ -299,7 +301,8 @@ const dailyTasks = (() => {
     const note = document.createElement("small");
     note.textContent = "Уровень хранится в аккаунте, а недельная экспедиция начинается заново с новым сезоном.";
 
-    careerHost.append(title, caption, progress, goal, weekTitle, stages, note);
+    careerHost.append(title, caption, progress, goal);
+    if (GAME_CONFIG.SEASONS_ENABLED) careerHost.append(weekTitle, stages, note);
   }
 
   function render() {
@@ -410,6 +413,7 @@ const dailyTasks = (() => {
   }
 
   async function activateBoost() {
+    if (!GAME_CONFIG.BOOSTS_ENABLED) return;
     const confirmed = window.confirm(
       "Включить Турбокисть сейчас? 10 минут пойдут сразу и не остановятся, даже если закрыть сайт."
     );
@@ -523,3 +527,4 @@ const dailyTasks = (() => {
 })();
 
 // Feature modules are loaded from /js in index.html.
+

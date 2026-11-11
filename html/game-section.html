@@ -163,8 +163,8 @@
 
         <div class="player-card-stats" aria-label="Игровая статистика">
           <div>
-            <span>За неделю</span>
-            <strong id="player-card-weekly">—</strong>
+            <span data-season-only>За неделю</span>
+            <strong id="player-card-weekly" hidden>—</strong>
             <small>пикселей</small>
           </div>
           <div>
@@ -433,15 +433,15 @@
         <div class="ranking-tabs">
 
     <button
-        id="weekly-ranking-tab"
-        class="ranking-tab active"
+        id="weekly-ranking-tab" hidden
+        class="ranking-tab"
         type="button"
       >
         НЕДЕЛЯ
       </button>
 
       <button
-        id="quarter-ranking-tab"
+        id="quarter-ranking-tab" hidden
         class="ranking-tab"
         type="button"
       >
@@ -450,10 +450,10 @@
 
       <button
         id="students-ranking-tab"
-        class="ranking-tab"
+        class="ranking-tab active"
         type="button"
       >
-        УЧЕНИКИ
+        ТОП УЧЕНИКОВ
       </button>
 
     </div>
@@ -469,7 +469,7 @@
 
       <div class="panel">
 
-        <h2>📊 Эта неделя</h2>
+        <h2>📊 Постоянная карта</h2>
 
         <div class="stats">
 
@@ -620,7 +620,7 @@
       <div class="unblock-profile-heading">
         <div>
           <h3 id="unblock-profile-title">🧱 Unblock Me</h3>
-          <p>Освободи красный блок и получи Турбокисть на 10 минут.</p>
+          <p>Освободи красный блок.</p>
         </div>
         <span id="unblock-me-badge">1 раз в сутки</span>
       </div>
@@ -640,7 +640,7 @@
       <div class="unblock-profile-heading">
         <div>
           <h3 id="sokoban-profile-title">📦 Ящики</h3>
-          <p>Пройди 3 уровня и получи Турбокисть. Следующая игра будет доступна через 4 часа.</p>
+          <p>Пройди 3 уровня. Следующая игра будет доступна через 4 часа.</p>
         </div>
         <span id="sokoban-badge">0 из 3</span>
       </div>
@@ -660,7 +660,7 @@
       <div class="unblock-profile-heading">
         <div>
           <h3 id="fifteen-profile-title">🧩 Пятнашки</h3>
-          <p>Собери плитки от 1 до 15 и получи Турбокисть на 20 минут. Новая игра — через 5 часов.</p>
+          <p>Собери плитки от 1 до 15. Новая игра — через 5 часов.</p>
         </div>
         <span id="fifteen-badge">Уровень 1</span>
       </div>
@@ -694,8 +694,8 @@
     <div class="profile-stats">
 
       <p>
-        За эту неделю
-        <strong id="profile-weekly-pixels">0</strong>
+        <span data-season-only>За эту неделю</span>
+        <strong id="profile-weekly-pixels" hidden>0</strong>
       </p>
 
       <p>
@@ -812,7 +812,7 @@
       <div class="connection-option">
         <div>
           <strong>✈️ Telegram-канал</strong>
-          <span>Новости, итоги недель и важные объявления Pixel Battle.</span>
+          <span>Новости и важные объявления Pixel Battle.</span>
         </div>
         <a href="https://t.me/elttabxelip" target="_blank" rel="noopener noreferrer">
           ОТКРЫТЬ TELEGRAM
@@ -944,3 +944,4 @@
 </section>
 <div data-html-fragment="html/admin-section.html"></div>
   </main>
+

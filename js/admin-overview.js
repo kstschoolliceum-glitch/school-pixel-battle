@@ -107,7 +107,9 @@ async function loadAdminOverview() {
     );
 
 
-  if (data.active_season) {
+  if (!GAME_CONFIG.SEASONS_ENABLED) {
+    seasonElement.textContent = "Постоянная карта";
+  } else if (data.active_season) {
 
     seasonElement.textContent =
       `Неделя #${data.active_season.number}`;
@@ -345,3 +347,4 @@ broadcastPushButton.addEventListener(
 
   }
 );
+

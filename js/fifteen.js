@@ -54,7 +54,7 @@ const fifteenGame = (() => {
 
   function renderProfile() {
     const retrySeconds = remainingSeconds(status?.next_available_at);
-    const boostSeconds = remainingSeconds(status?.boost_until);
+    const boostSeconds = GAME_CONFIG.BOOSTS_ENABLED ? remainingSeconds(status?.boost_until) : 0;
     const level = Number(status?.level) || 1;
 
     statusText.classList.remove("error");
@@ -65,7 +65,7 @@ const fifteenGame = (() => {
       openButton.textContent = `СНОВА ЧЕРЕЗ ${formatDuration(retrySeconds)}`;
       statusText.classList.add("success");
       statusText.textContent = boostSeconds > 0
-        ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}. Новая игра через ${formatDuration(retrySeconds)}.`
+        ? `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`
         : `Следующая игра станет доступна через ${formatDuration(retrySeconds)}.`;
       return;
     }
@@ -74,7 +74,7 @@ const fifteenGame = (() => {
     openButton.textContent = status ? "🧩 ИГРАТЬ" : "ЗАГРУЗКА…";
     statusText.classList.toggle("success", boostSeconds > 0);
     statusText.textContent = boostSeconds > 0
-      ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}.`
+      ? `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`
       : `Продолжи уровень ${level}. Прогресс сохраняется.`;
   }
 
@@ -171,7 +171,7 @@ const fifteenGame = (() => {
     applyStatus(data);
 
     if (data.level_completed) {
-      setMessage("Головоломка собрана! Турбокисть включена на 20 минут.", "success");
+      setMessage("Головоломка собрана!", "success");
       resetPixelCooldownAfterReward();
       setTimeout(() => {
         if (dialog.open) dialog.close();
@@ -265,3 +265,4 @@ const fifteenGame = (() => {
 
   return { loadStatus, reset };
 })();
+

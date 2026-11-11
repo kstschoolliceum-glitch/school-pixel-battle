@@ -1,0 +1,62 @@
+name: Permanent canvas regression
+on:
+  pull_request:
+    paths: ['js/**', 'app.js', 'html/**', 'supabase/migrations/20261111_permanent_canvas.sql', 'tests/permanent*', '.github/workflows/permanent-canvas.yml']
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/20261111_permanent_canvas.sql', 'tests/permanent*']
+permissions:
+  contents: read
+jobs:
+  postgres:
+    strategy:
+      matrix:
+        profile_counter: [present, absent]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: pixel_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: test
+      PGDATABASE: pixel_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: JavaScript syntax
+        run: |
+          for f in app.js js/*.js sw.js; do node --check "$f"; done
+      - name: Client cooldown
+        run: node tests/permanent-cooldown.cjs
+      - name: Migration, repeatability, preservation, cooldown and ranking
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/permanent-canvas-fixture.sql
+          if [ "${{ matrix.profile_counter }}" = "absent" ]; then
+            psql -v ON_ERROR_STOP=1 -c 'alter table public.profiles drop column total_pixels;'
+          fi
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261111_permanent_canvas.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261111_permanent_canvas.sql
+          psql -v ON_ERROR_STOP=1 -f tests/permanent-canvas.sql
+          bash tests/permanent-concurrency.sh
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright
+      - run: playwright install --with-deps chromium
+      - name: Desktop and mobile smoke test with mocked Supabase
+        run: |
+          python -m http.server 8080 &
+          python tests/permanent-ui.py

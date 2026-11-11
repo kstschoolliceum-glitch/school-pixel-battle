@@ -706,6 +706,7 @@ mapButton.addEventListener(
 
 }
 async function openAdminSeasons() {
+  if (!GAME_CONFIG.SEASONS_ENABLED) return;
 
   if (!currentUserIsAdmin) {
     return;
@@ -765,3 +766,4 @@ adminSeasonsTab.addEventListener(
   "click",
   openAdminSeasons
 );
+

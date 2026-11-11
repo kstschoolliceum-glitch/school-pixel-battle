@@ -55,7 +55,7 @@ const sokobanGame = (() => {
 
   function renderProfile() {
     const completed = Number(status?.completed_in_reward) || 0;
-    const boostSeconds = remainingSeconds(status?.boost_until);
+    const boostSeconds = GAME_CONFIG.BOOSTS_ENABLED ? remainingSeconds(status?.boost_until) : 0;
     const retrySeconds = remainingSeconds(status?.next_available_at);
 
     statusText.classList.remove("error");
@@ -66,7 +66,7 @@ const sokobanGame = (() => {
       openButton.textContent = `СНОВА ЧЕРЕЗ ${formatDuration(retrySeconds)}`;
       statusText.classList.add("success");
       statusText.textContent = boostSeconds > 0
-        ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}. Новая игра через ${formatDuration(retrySeconds)}.`
+        ? `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`
         : `Следующая игра станет доступна через ${formatDuration(retrySeconds)}.`;
       return;
     }
@@ -76,8 +76,8 @@ const sokobanGame = (() => {
     openButton.textContent = status ? "📦 ИГРАТЬ" : "ЗАГРУЗКА…";
     statusText.classList.toggle("success", boostSeconds > 0);
     statusText.textContent = boostSeconds > 0
-      ? `Турбокисть активна ещё ${formatDuration(boostSeconds)}.`
-      : `До следующей Турбокисти: ${3 - completed} ур.`;
+      ? `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`
+      : `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`;
   }
 
   function renderBoard() {
@@ -176,14 +176,14 @@ const sokobanGame = (() => {
 
     if (data.level_completed) {
       if (data.reward_granted) {
-        setMessage("Три уровня пройдены! Турбокисть включена на 15 минут. Новая игра — через 4 часа.", "success");
+        setMessage("Три уровня пройдены! Новая игра — через 4 часа.", "success");
         setTimeout(() => {
           if (dialog.open) dialog.close();
         }, 1600);
         resetPixelCooldownAfterReward();
       } else {
         setMessage(
-          `Уровень пройден! До Турбокисти осталось ${3 - Number(data.completed_in_reward)}.`,
+          `Пройдено уровней: ${Number(status?.completed_in_reward || 0)}.`,
           "success"
         );
       }
@@ -304,3 +304,4 @@ const sokobanGame = (() => {
 
   return { loadStatus, reset };
 })();
+

@@ -3,6 +3,7 @@ let seasonCountdownTimer = null;
 let seasonCheckTimer = null;
 
 function startSeasonCountdown() {
+  if (!GAME_CONFIG.SEASONS_ENABLED) return;
 
   clearInterval(
     seasonCountdownTimer
@@ -110,6 +111,19 @@ function startSeasonCountdown() {
 
 }
 async function loadActiveSeason() {
+  if (GAME_CONFIG.PERMANENT_CANVAS) {
+    const { data, error } = await supabaseClient.rpc("get_permanent_canvas");
+    if (error || !data?.id) {
+      activeSeason = null;
+      document.getElementById("season-info").textContent = "Карта пока недоступна";
+      console.error("PERMANENT CANVAS:", error || "Apply permanent canvas migration");
+      return null;
+    }
+    activeSeason = data;
+    document.getElementById("season-info").textContent = "Общая карта";
+    return activeSeason;
+  }
+
 
   const seasonElement =
     document.getElementById(
@@ -193,6 +207,7 @@ async function loadActiveSeason() {
 let lastSeasonCheckAt = 0;
 
 async function checkForSeasonChange(force = false) {
+  if (!GAME_CONFIG.SEASONS_ENABLED) return;
 
   if (
     !currentUser ||
@@ -350,6 +365,7 @@ async function checkForSeasonChange(force = false) {
 
 }
 function startSeasonWatcher() {
+  if (!GAME_CONFIG.SEASONS_ENABLED) return;
 
   clearTimeout(seasonCheckTimer);
 
@@ -371,3 +387,4 @@ function startSeasonWatcher() {
     delay
   );
 }
+

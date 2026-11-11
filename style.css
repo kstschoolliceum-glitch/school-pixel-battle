@@ -26,3 +26,7 @@ body {
   min-height: 100vh;
 }
 
+
+
+/* Disabled legacy controls retain their DOM IDs for compatibility. */
+[hidden], [data-season-only] { display: none !important; }
