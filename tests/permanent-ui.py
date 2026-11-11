@@ -5,12 +5,17 @@ async def main():
   browser=await p.chromium.launch(headless=True)
   page=await browser.new_page()
   errors=[]
-  page.on('pageerror',lambda e:errors.append(str(e)))
+  page.on('pageerror',lambda e:errors.append(e.stack or str(e)))
   async def route(r):
    if 'supabase-js' in r.request.url:
     await r.fulfill(content_type='text/javascript',body='''
     const channel={on(){return this},subscribe(){return this},unsubscribe(){},track(){},presenceState(){return {}}};
-    window.supabase={createClient(){return {auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},channel:()=>channel,rpc:async()=>({data:null,error:null}),removeChannel(){}}}};
+    let query;
+    query=new Proxy({}, {get(_target,key){
+      if(key==='then') return (resolve,reject)=>Promise.resolve({data:[],error:null}).then(resolve,reject);
+      return ()=>query;
+    }});
+    window.supabase={createClient(){return {from:()=>query,auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},channel:()=>channel,rpc:async()=>({data:null,error:null}),removeChannel(){}}}};
     ''')
    elif r.request.url.startswith('http://localhost:8080'):
     await r.continue_()
